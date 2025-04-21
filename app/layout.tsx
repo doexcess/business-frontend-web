@@ -33,7 +33,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <body className={`${inter.className} `}>{children}</body>
+          <body className={`font-gilroy`}>{children}</body>
         </ThemeProvider>
       </html>
     </ReduxProvider>

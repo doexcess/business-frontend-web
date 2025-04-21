@@ -14,46 +14,43 @@ const SelectType = () => {
 
   const handleContinue = () => {
     if (selectedRole) {
-      // Here you would typically redirect or handle the selection
       console.log(`Selected role: ${selectedRole}`);
-      // router.push(`/${selectedRole.toLowerCase().replace(' ', '-')}`);
     }
   };
 
   return (
-    <div className='min-h-screen flex flex-col justify-center items-center p-4 bg-gradient-light font-gilroy'>
+    <div className='min-h-screen flex flex-col justify-center items-center p-4 sm:p-6 bg-gradient-light'>
       <Head>
         <title>Select User Type</title>
       </Head>
 
-      <div className='border-2 border-white rounded-2xl w-[646px] bg-primary-light p-[40px] h-[700px]'>
-        <div className='w-[566px] rounded-2xl p-8 bg-white h-[600px] flex flex-col items-center justify-center'>
-          <a
-            href='#'
-            className='flex items-center justify-center mb-8 text-2xl font-semibold lg:mb-6'
-          >
+      <div className='w-full max-w-2xl border-2 border-white rounded-2xl bg-primary-light p-4 sm:p-8 md:p-10'>
+        <div className='w-full rounded-2xl p-6 sm:p-8 bg-white flex flex-col items-center justify-center'>
+          <div className='flex items-center justify-center mb-6 sm:mb-8'>
             <Image
               src={'/icons/icon.png'}
               width={60}
               height={60}
               alt='Logo icon'
-              className='m-auto block rounded-lg'
+              className='rounded-lg'
               priority
             />
-          </a>
-          <h1 className='text-2xl font-bold text-center text-gray-800 mb-2'>
+          </div>
+
+          <h1 className='text-xl sm:text-2xl font-bold text-center text-gray-800 mb-2'>
             Select User Type
           </h1>
-          <p className='text-gray-600 text-center mb-6'>
+
+          <p className='text-sm sm:text-base text-gray-600 text-center mb-6'>
             Please select your role to proceed
           </p>
 
-          <div className='flex flex-col space-y-4 mb-8'>
-            <div className='flex justify-center space-x-4'>
+          <div className='w-full space-y-4 mb-6 sm:mb-8'>
+            <div className='flex flex-col sm:flex-row justify-center gap-4'>
               <button
                 onClick={() => handleRoleSelect('Business Owner')}
                 className={cn(
-                  'flex flex-col justify-center items-center rounded-xl border-2 transition-all pt-[24px] pr-[10px] pb-[11px] pl-[10px] ',
+                  'flex flex-col items-center rounded-xl border-2 transition-all p-4 sm:p-6 w-full sm:w-auto',
                   selectedRole === 'Business Owner'
                     ? 'border-primary-main bg-primary-main text-white'
                     : 'border-gray-300 hover:border-gray-400 text-primary-main'
@@ -65,18 +62,17 @@ const SelectType = () => {
                   width={50}
                   height={50}
                   className={cn(
-                    '',
+                    'mb-2',
                     selectedRole === 'Business Owner' && 'invert brightness-0'
                   )}
-                  objectFit='contain'
                 />
-                <span>Business Owner</span>
+                <span className='text-sm sm:text-base'>Business Owner</span>
               </button>
 
               <button
                 onClick={() => handleRoleSelect('Client')}
                 className={cn(
-                  'flex flex-col justify-center items-center rounded-xl border-2 transition-all pt-[24px] pr-[36px] pb-[11px] pl-[36px] w-[130px]',
+                  'flex flex-col items-center rounded-xl border-2 transition-all p-4 sm:p-6 w-full sm:w-auto',
                   selectedRole === 'Client'
                     ? 'border-primary-main bg-primary-main text-white'
                     : 'border-gray-300 hover:border-gray-400 text-primary-main'
@@ -88,12 +84,11 @@ const SelectType = () => {
                   width={50}
                   height={50}
                   className={cn(
-                    '',
+                    'mb-2',
                     selectedRole === 'Client' && 'invert brightness-0'
                   )}
-                  objectFit='contain'
                 />
-                <span>Client</span>
+                <span className='text-sm sm:text-base'>Customer</span>
               </button>
             </div>
           </div>

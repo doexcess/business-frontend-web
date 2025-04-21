@@ -42,6 +42,7 @@ const config: Config = {
           '800': '#1e40af',
           '900': '#1e3a8a',
           '950': '#172554',
+          faded: '#9a9df0',
           grad: {
             main: 'linear-gradient(57deg, #EDEEFC 50%, #E7FDF2 91.95%, #F7F8F8 91.95%))',
           },
@@ -52,6 +53,8 @@ const config: Config = {
           'main-hover': '#163B8D',
           'main-active': '#112D6A',
         },
+        muted: '#C7C7C7',
+        neutral: 'var(--Neutral-color-600, #686976)',
       },
     },
   },
