@@ -13,13 +13,16 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        custom: ['Gilroy', 'sans-serif'],
+        gilroy: ['Gilroy', 'sans-serif'],
       },
 
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+
+        'gradient-light':
+          'linear-gradient(57deg, #edeefc 50%, #e7fdf2 91.95%, #f7f8f8 91.95%)',
       },
 
       colors: {
@@ -39,6 +42,10 @@ const config: Config = {
           '800': '#1e40af',
           '900': '#1e3a8a',
           '950': '#172554',
+          grad: {
+            main: 'linear-gradient(57deg, #EDEEFC 50%, #E7FDF2 91.95%, #F7F8F8 91.95%))',
+          },
+          light: 'rgba(64, 69, 225, 0.04)',
         },
         secondary: {
           main: '#0D2352',
