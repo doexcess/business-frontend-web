@@ -1,14 +1,13 @@
 'use client';
 
 import { Button } from '@/components/ui/Button';
-import Checkbox from '@/components/ui/Checkbox';
 import Input from '@/components/ui/Input';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState } from 'react';
 
-const Signup = () => {
+const ChangePassword = () => {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
   const handleRoleSelect = (role: string) => {
@@ -24,7 +23,7 @@ const Signup = () => {
   return (
     <div className='min-h-screen flex flex-col justify-center items-center p-4 sm:p-6 bg-gradient-light text-black-1'>
       <Head>
-        <title>Signup</title>
+        <title>Change Password</title>
       </Head>
 
       <div className='w-full max-w-2xl border-2 border-white rounded-2xl bg-primary-light p-4 sm:p-8 md:p-10 my-4 sm:my-8 md:my-12'>
@@ -41,56 +40,21 @@ const Signup = () => {
           </div>
 
           <h1 className='text-xl sm:text-2xl font-bold text-center text-gray-800 mb-2'>
-            Grow Your Business with Doexcess
+            Change Password
           </h1>
 
           <p className='text-sm sm:text-base text-gray-600 text-center mb-6 max-w-md'>
-            Sign up to streamline operations, onboard team members and manage
-            your courses and events.
+            Ensure your new password is different from the old password
           </p>
 
           <div className='w-full space-y-4 mb-6 sm:mb-8'>
             <form className='space-y-4'>
               <div>
                 <label
-                  htmlFor='business-name'
-                  className='block mb-2 text-sm font-bold text-gray-900'
-                >
-                  Business Name
-                </label>
-                <Input
-                  type='text'
-                  name='business-name'
-                  placeholder='Enter your company name'
-                  className='w-full rounded-lg text-gray-900'
-                  value={''}
-                  required={true}
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor='business-email'
-                  className='block mb-2 text-sm font-bold text-gray-900'
-                >
-                  Business Email
-                </label>
-                <Input
-                  type='text'
-                  name='business-email'
-                  placeholder='you@yourcompany.com'
-                  className='w-full rounded-lg text-gray-900'
-                  value={''}
-                  required={true}
-                />
-              </div>
-
-              <div>
-                <label
                   htmlFor='password'
                   className='block mb-2 text-sm font-bold text-gray-900'
                 >
-                  Password
+                  Create new password
                 </label>
                 <Input
                   type='password'
@@ -156,29 +120,21 @@ const Signup = () => {
                 </div>
               </div>
 
-              <div className='flex items-start'>
-                <div className='flex items-center h-5'>
-                  <Checkbox
-                    type='checkbox'
-                    name='remember'
-                    className='bg-white rounded-sm'
-                  />
-                </div>
-                <div className='ml-3 text-sm'>
-                  <label
-                    htmlFor='remember'
-                    className='font-medium text-black-1'
-                  >
-                    I agree to the{' '}
-                    <Link href='/terms' className='underline'>
-                      Terms & Conditions
-                    </Link>{' '}
-                    and{' '}
-                    <Link href='/privacy' className='underline'>
-                      Privacy Policy
-                    </Link>
-                  </label>
-                </div>
+              <div>
+                <label
+                  htmlFor='retype-password'
+                  className='block mb-2 text-sm font-bold text-gray-900'
+                >
+                  Retype Password
+                </label>
+                <Input
+                  type='password'
+                  name='retype-password'
+                  placeholder='Retype your password'
+                  className='w-full rounded-lg text-gray-900'
+                  value={''}
+                  required={true}
+                />
               </div>
             </form>
           </div>
@@ -192,49 +148,12 @@ const Signup = () => {
                 : 'bg-primary-faded cursor-not-allowed'
             }`}
           >
-            Continue
+            Proceed
           </button>
-
-          <div className='relative w-full mt-6 sm:mt-8'>
-            <div className='absolute inset-0 flex items-center'>
-              <div className='w-full border-t border-muted'></div>
-            </div>
-            <div className='relative flex justify-center'>
-              <span className='px-2 bg-white text-sm text-muted-foreground'>
-                or
-              </span>
-            </div>
-          </div>
-
-          <Button
-            className='mt-6 sm:mt-8 text-primary-main w-full border-primary-main flex gap-2 hover:bg-primary-main hover:text-white'
-            variant={'outline'}
-          >
-            <Image
-              src={'/icons/auth/google.svg'}
-              alt='google'
-              width={20}
-              height={20}
-              className='object-contain'
-            />
-            <span className='text-sm sm:text-base'>Sign up with Google</span>
-          </Button>
-
-          <div className='flex flex-wrap justify-center gap-1 sm:gap-2 mt-6 sm:mt-8 mb-4 text-sm sm:text-base'>
-            <p>Already have an account?</p>
-            <Link href='' className='text-primary-main font-bold'>
-              Sign in
-            </Link>
-          </div>
-
-          <div className='flex gap-2 w-full mt-4'>
-            <div className='flex-1 bg-primary-main h-0.5 rounded-md'></div>
-            <div className='flex-1 bg-slate-400 h-0.5 rounded-md'></div>
-          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default Signup;
+export default ChangePassword;
