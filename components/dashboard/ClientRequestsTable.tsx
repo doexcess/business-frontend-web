@@ -17,8 +17,8 @@ interface ClientRequestsTableProps {
 export function ClientRequestsTable({ requests }: ClientRequestsTableProps) {
   return (
     <div className='overflow-x-auto'>
-      <div className='rounded-lg border border-gray-200 dark:border-black-2 overflow-hidden'>
-        <table className='min-w-full divide-y divide-gray-200 dark:divide-black-2'>
+      <div className='rounded-lg border border-gray-200 dark:border-black-2 overflow-x-auto dark:bg-gray-800'>
+        <table className='w-full divide-y divide-gray-200 dark:divide-black-2'>
           <thead>
             <tr>
               <th className='px-4 py-3 text-left text-xs font-medium  uppercase tracking-wider rounded-tl-lg'>
@@ -39,7 +39,7 @@ export function ClientRequestsTable({ requests }: ClientRequestsTableProps) {
               <th className='px-4 py-3 text-left text-xs font-medium  uppercase tracking-wider rounded-tr-lg'></th>
             </tr>
           </thead>
-          <tbody className=' divide-y divide-gray-200'>
+          <tbody className='divide-y divide-gray-200'>
             {requests.map((request, index) => (
               <tr
                 key={request.id}

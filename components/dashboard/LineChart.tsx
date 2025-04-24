@@ -37,6 +37,8 @@ interface LineChartProps {
 export function LineChart({ data }: LineChartProps) {
   const { theme } = useTheme();
 
+  console.log(theme);
+
   // Base colors that work in both themes
   const baseOptions: ChartOptions<'line'> = {
     responsive: true,
@@ -45,10 +47,10 @@ export function LineChart({ data }: LineChartProps) {
       legend: {
         position: 'top',
         labels: {
-          color: theme === 'dark' ? '#e5e7eb' : '#374151', // gray-200 / gray-700
-          font: {
-            family: 'Inter, sans-serif',
-          },
+          color: theme === 'dark' ? '#5c5f63' : '#5c5f63', // gray-200 / gray-700
+          // font: {
+          //   family: 'Inter, sans-serif',
+          // },
           boxWidth: 12,
           padding: 20,
           usePointStyle: true,

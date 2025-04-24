@@ -4,7 +4,6 @@ import { Moon, Sun, Laptop } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
-import { Tooltip } from '@/components/ui/tooltip';
 
 export function ThemeToggle() {
   const { theme, toggleTheme, isMounted, setTheme } = useTheme();
@@ -37,7 +36,7 @@ export function ThemeToggle() {
   return (
     <div className='relative'>
       <button
-        onClick={toggleTheme}
+        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onKeyDown={(e) => {

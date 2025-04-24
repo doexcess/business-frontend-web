@@ -5,8 +5,9 @@ interface IconProps {
   url: string;
   width?: number;
   height?: number;
+  className?: string;
 }
-const Icon = ({ url, width = 20, height = 20 }: IconProps) => {
+const Icon = ({ url, width = 20, height = 20, className }: IconProps) => {
   return (
     <>
       <Image
@@ -15,6 +16,7 @@ const Icon = ({ url, width = 20, height = 20 }: IconProps) => {
         height={height}
         alt='icon'
         objectFit='contain'
+        className={className}
       />
     </>
   );

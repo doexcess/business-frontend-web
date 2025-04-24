@@ -1,9 +1,9 @@
 'use client';
+
 import { Card } from '@/components/dashboard/Card';
 import { ClientRequestsTable } from '@/components/dashboard/ClientRequestsTable';
 import { LineChart } from '@/components/dashboard/LineChart';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
-import Filter from '@/components/Filter';
 import { Button } from '@/components/ui/Button';
 import Icon from '@/components/ui/Icon';
 import { PurchaseItemType } from '@/lib/utils';
@@ -73,18 +73,22 @@ const Home = () => {
 
   return (
     <main className='section-container'>
-      <div className='flex h-screen'>
+      <div className='h-full'>
         {/* Main Content */}
         <div className='flex-1 text-black-1 dark:text-white'>
-          <header className='flex justify-between items-center'>
+          <header className='flex flex-col md:flex-row justify-between md:items-center'>
             <h2 className='text-2xl font-semibold'>Hello, John 👋🏼</h2>
             <div className='flex gap-2'>
-              <Button variant={'primary'} className='hover:bg-primary-800'>
+              <Button
+                variant={'primary'}
+                size={'icon'}
+                className='hover:bg-primary-800'
+              >
                 <Icon url='/icons/landing/plus.svg' />
               </Button>
               <Button
                 variant={'outline'}
-                className='text-lg border-primary-main text-primary-main py-2 dark:text-white hover:bg-primary-800 hover:text-white'
+                className='text-lg border-primary-main text-primary-main py-1 dark:text-white hover:bg-primary-800 hover:text-white'
               >
                 Schedule Message
               </Button>
@@ -92,7 +96,7 @@ const Home = () => {
           </header>
 
           {/* Stats */}
-          <div className='grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6'>
+          <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6'>
             {[
               {
                 label: 'Total Revenue',
@@ -153,7 +157,7 @@ const Home = () => {
             <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
               {/* Performance Chart */}
               <Card className='lg:col-span-2'>
-                <div className='flex justify-between items-center mb-4'>
+                <div className='flex flex-col md:flex-row justify-between md:items-center mb-4'>
                   <div>
                     <h1 className='text-2xl font-bold '>Performance Trends</h1>
                     <p className=''>
@@ -163,14 +167,22 @@ const Home = () => {
                   </div>
 
                   <div className='flex items-center gap-2'>
-                    <select className='bg-gray-50 dark:bg-gray-600 border border-gray-300 text-gray-900 dark:text-gray-300 text-sm rounded-lg px-3'>
+                    <select className='bg-gray-50 dark:bg-gray-800 border border-gray-300 text-gray-900 dark:text-gray-300 dark:border-gray-400 text-sm rounded-lg px-3'>
                       <option>2025</option>
                       <option>2024</option>
                     </select>
-                    <Button variant='outline' size={'icon'} className='py-1'>
+                    <Button
+                      variant='outline'
+                      size={'icon'}
+                      className='py-1 bg-gray-50  dark:bg-gray-800 border border-gray-300 dark:border-gray-400'
+                    >
                       <Icon url='/icons/landing/refresh.svg' />
                     </Button>
-                    <Button variant='outline' size={'icon'} className='py-1'>
+                    <Button
+                      variant='outline'
+                      size={'icon'}
+                      className='py-1 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-400'
+                    >
                       <Icon url='/icons/landing/elipsis.svg' />
                     </Button>
                   </div>
@@ -179,7 +191,7 @@ const Home = () => {
               </Card>
 
               {/* Recent Activity */}
-              <Card className='flex flex-col justify-between'>
+              <Card className='flex flex-col justify-between gap-2'>
                 <div>
                   <div className='flex justify-between items-center mb-4'>
                     <h2 className='text-lg font-semibold'>Recent Activity</h2>
