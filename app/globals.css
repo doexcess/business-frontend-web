@@ -15,7 +15,7 @@ body {
 
 :root {
   --foreground-rgb: 17 24 39;
-  --background-start-rgb: 214, 219, 220;
+  --background-start-rgb: 255, 255, 255;
   --background-end-rgb: 255, 255, 255;
   --active-tab-border: 2px solid hsl(var(--primary));
 }
@@ -107,11 +107,11 @@ body {
 
 @layer utilities {
   .main-container {
-    @apply antialiased bg-gray-50 dark:bg-gray-900;
+    @apply antialiased bg-white dark:bg-gray-900;
   }
 
   .section-container {
-    @apply p-4 md:ml-64 h-auto pt-20;
+    @apply p-4 md:ml-64 h-auto pt-10;
   }
 
   .section-container-reduced-padding {
@@ -160,4 +160,30 @@ body {
 .TabsTrigger {
   transition: all 0.2s ease;
   border-bottom: 2px solid transparent;
+}
+
+@keyframes shimmer-light {
+  0% {
+    transform: translateX(-100%) rotate(15deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(15deg);
+  }
+}
+
+@keyframes shimmer-dark {
+  0% {
+    transform: translateX(-100%) rotate(-15deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(-15deg);
+  }
+}
+
+.animate-shimmer-light {
+  animation: shimmer-light 1.5s infinite;
+}
+
+.animate-shimmer-dark {
+  animation: shimmer-dark 1.5s infinite;
 }

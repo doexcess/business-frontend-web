@@ -3,8 +3,11 @@ import {
   HiBookOpen,
   HiChartPie,
   HiCollection,
+  HiHome,
   HiLogout,
+  HiOutlineQuestionMarkCircle,
   HiOutlineUpload,
+  HiQuestionMarkCircle,
   HiUpload,
   HiUsers,
   HiViewBoards,
@@ -15,8 +18,10 @@ import {
   IoIosBriefcase,
   IoIosCog,
   IoIosFilm,
+  IoIosHelp,
   IoIosPower,
   IoIosPricetag,
+  IoMdChatboxes,
 } from 'react-icons/io';
 
 export enum groups {
@@ -26,128 +31,72 @@ export enum groups {
 
 export const sidebarLinks = [
   {
-    icon: HiChartPie,
+    icon: HiHome,
     route: '/',
-    label: 'Dashboard',
+    label: 'Overview',
     group: groups.ONE,
-  },
-  {
-    icon: HiUsers,
-    route: '/organizations/registered',
-    label: 'Organizations',
-    group: groups.ONE,
-    items: [
-      {
-        route: '/organizations/registered',
-        label: 'Registered',
-      },
-      {
-        route: '/organizations/deleted',
-        label: 'Deleted',
-      },
-    ],
-  },
-  {
-    icon: HiUsers,
-    route: '/subscription/plans',
-    label: 'Subscription',
-    group: groups.ONE,
-    items: [
-      {
-        route: '/subscription/plans',
-        label: 'Plans',
-      },
-      {
-        route: '/subscription/subscribers',
-        label: 'Subscribers',
-      },
-    ],
-  },
-  {
-    icon: HiUsers,
-    route: '/users',
-    label: 'Users',
-    group: groups.ONE,
-  },
-  {
-    icon: IoIosBriefcase,
-    route: '/products',
-    label: 'Products',
-    group: groups.ONE,
-  },
-  {
-    icon: HiBookOpen,
-    route: '/payments',
-    label: 'Payments',
-    group: groups.ONE,
+    activeIconColor: 'text-primary-main', // Add this
   },
   {
     icon: IoIosPricetag,
-    route: '/coupons',
-    label: 'Coupons',
+    route: '/products',
+    label: 'Products',
     group: groups.ONE,
-  },
-  {
-    icon: HiCollection,
-    route: '/cart',
-    label: 'Cart',
-    group: groups.ONE,
-  },
-  {
-    icon: IoIosAnalytics,
-    route: '/logs',
-    label: 'Logs',
-    group: groups.ONE,
-  },
-  // {
-  // icon: HiViewBoards,
-  // route: '/general',
-  // label: 'General',
-  // group: groups.ONE,
-  // items: [
-  // {
-  // route: '/general/ratings',
-  // label: 'Ratings',
-  // },
-  // {
-  // route: '/general/suggestions',
-  // label: 'Suggestions',
-  // },
-  // {
-  // route: '/general/feedbacks',
-  // label: 'Feedbacks',
-  // },
-  // ],
-  // },
-  {
-    icon: HiBell,
-    route: '/notifications/email',
-    label: 'Notifications',
-    group: groups.TWO,
+    activeIconColor: 'text-primary-main', // Add this
     items: [
       {
-        route: '/notifications/email',
-        label: 'Email',
+        route: '/products/courses',
+        label: 'Courses',
+      },
+      {
+        route: '/products/tickets',
+        label: 'Event Tickets',
       },
     ],
   },
+
   {
-    icon: IoIosFilm,
-    route: '/media-library',
-    label: 'Media Library',
-    group: groups.TWO,
+    icon: HiUsers,
+    route: '/users',
+    label: 'Client Management',
+    group: groups.ONE,
+    activeIconColor: 'text-primary-main', // Add this
   },
+  {
+    icon: HiChartPie,
+    route: '/reports',
+    label: 'Reports',
+    group: groups.ONE,
+    activeIconColor: 'text-primary-main', // Add this
+  },
+  {
+    icon: IoIosAnalytics,
+    route: '/payments',
+    label: 'Payments',
+    group: groups.ONE,
+    activeIconColor: 'text-primary-main', // Add this
+  },
+  {
+    icon: IoMdChatboxes,
+    route: '/messages',
+    label: 'Messages',
+    group: groups.ONE,
+    activeIconColor: 'text-primary-main', // Add this
+  },
+
   {
     icon: IoIosCog,
     route: '/settings',
     label: 'Settings',
     group: groups.TWO,
+    activeIconColor: 'text-primary-main', // Add this
   },
   {
-    icon: IoIosPower,
-    route: '/logout',
-    label: 'Logout',
+    icon: HiOutlineQuestionMarkCircle,
+    route: '/help',
+    label: 'Help',
     group: groups.TWO,
+    activeIconColor: 'text-primary-main', // Add this
   },
 ];
 

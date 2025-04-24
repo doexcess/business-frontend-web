@@ -2,7 +2,7 @@ import type { Config } from 'tailwindcss';
 const flowbite = require('flowbite-react/tailwind');
 
 const config: Config = {
-  darkMode: 'class',
+  darkMode: 'media',
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -23,6 +23,9 @@ const config: Config = {
 
         'gradient-light':
           'linear-gradient(57deg, #edeefc 50%, #e7fdf2 91.95%, #f7f8f8 91.95%)',
+      },
+      boxShadow: {
+        light: '0px 2px 14px 0px rgba(0, 0, 0, 0.04)',
       },
 
       colors: {
@@ -55,6 +58,7 @@ const config: Config = {
         },
         muted: '#C7C7C7',
         neutral: 'var(--Neutral-color-600, #686976)',
+        'neutral-2': 'var(--Neutral-color-50, #F7F8F8)',
       },
     },
   },

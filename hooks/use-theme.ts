@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 
-type Theme = 'light' | 'dark';
+type Theme = 'light' | 'dark' | 'system';
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>('light');
@@ -33,5 +33,5 @@ export function useTheme() {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
-  return { theme, toggleTheme, isMounted };
+  return { theme, toggleTheme, isMounted, setTheme };
 }
