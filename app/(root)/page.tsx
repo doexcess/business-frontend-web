@@ -3,8 +3,11 @@ import { Card } from '@/components/dashboard/Card';
 import { ClientRequestsTable } from '@/components/dashboard/ClientRequestsTable';
 import { LineChart } from '@/components/dashboard/LineChart';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
+import Filter from '@/components/Filter';
 import { Button } from '@/components/ui/Button';
 import Icon from '@/components/ui/Icon';
+import { PurchaseItemType } from '@/lib/utils';
+import Link from 'next/link';
 import React from 'react';
 
 const Home = () => {
@@ -32,24 +35,28 @@ const Home = () => {
       title: 'Subscription renewal processed for Jane Smith',
       time: '2 hours ago',
       icon: '🔄',
+      type: PurchaseItemType.SUBSCRIPTION,
     },
     {
       id: 2,
       title: "Event 'Business Leadership' reached 50 registrations",
       time: '3 hours ago',
       icon: '🎯',
+      type: PurchaseItemType.TICKET,
     },
     {
       id: 3,
       title: 'Subscription expired for John Suit',
       time: 'Yesterday',
       icon: '⚠️',
+      type: PurchaseItemType.SUBSCRIPTION,
     },
     {
       id: 4,
       title: "Course 'Digital Marketing Essentials' received 5-star rating",
       time: '4:30 PM - 5:30 PM',
       icon: '⭐',
+      type: PurchaseItemType.COURSE,
     },
   ];
 
@@ -148,55 +155,57 @@ const Home = () => {
               <Card className='lg:col-span-2'>
                 <div className='flex justify-between items-center mb-4'>
                   <div>
-                    <h1 className='text-2xl font-bold text-gray-900'>
-                      Performance Trends
-                    </h1>
-                    <p className='text-gray-600'>
+                    <h1 className='text-2xl font-bold '>Performance Trends</h1>
+                    <p className=''>
                       Monitor your business growth and engagement trends over
                       time.
                     </p>
                   </div>
 
-                  {/* <h2 className='text-lg font-semibold'>This year</h2> */}
-                  <select className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg px-3 py-1'>
-                    <option>2025</option>
-                    <option>2024</option>
-                  </select>
+                  <div className='flex items-center gap-2'>
+                    <select className='bg-gray-50 dark:bg-gray-600 border border-gray-300 text-gray-900 dark:text-gray-300 text-sm rounded-lg px-3'>
+                      <option>2025</option>
+                      <option>2024</option>
+                    </select>
+                    <Button variant='outline' size={'icon'} className='py-1'>
+                      <Icon url='/icons/landing/refresh.svg' />
+                    </Button>
+                    <Button variant='outline' size={'icon'} className='py-1'>
+                      <Icon url='/icons/landing/elipsis.svg' />
+                    </Button>
+                  </div>
                 </div>
                 <LineChart data={performanceData} />
               </Card>
 
               {/* Recent Activity */}
-              <Card>
-                <h2 className='text-lg font-semibold mb-4'>Recent Activity</h2>
-                <RecentActivity activities={recentActivities} />
+              <Card className='flex flex-col justify-between'>
+                <div>
+                  <div className='flex justify-between items-center mb-4'>
+                    <h2 className='text-lg font-semibold'>Recent Activity</h2>
+                    <Link href='' className='text-primary-main dark:text-white'>
+                      View All
+                    </Link>
+                  </div>
+                  <RecentActivity activities={recentActivities} />
+                </div>
+                <button className='px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition w-full'>
+                  Create an Event
+                </button>
               </Card>
             </div>
 
-            <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-              {/* Create Event Card */}
-              <Card className='bg-indigo-50 border-indigo-100'>
-                <div className='flex flex-col items-center justify-center h-full p-6 text-center'>
-                  <div className='w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4'>
-                    <PlusIcon className='w-6 h-6 text-indigo-600' />
-                  </div>
-                  <h3 className='text-lg font-medium text-indigo-800 mb-2'>
-                    Create an Event
-                  </h3>
-                  <p className='text-indigo-600 mb-4'>
-                    Set up a new event for your clients
-                  </p>
-                  <button className='px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition'>
-                    New Event
-                  </button>
-                </div>
-              </Card>
-
+            <div className='grid grid-cols-1  gap-6'>
               {/* Client Requests */}
-              <Card className='lg:col-span-2'>
-                <h2 className='text-lg font-semibold mb-4'>Client Requests</h2>
+              <div className='lg:col-span-2'>
+                <div className='flex justify-between items-center mb-3'>
+                  <h2 className='text-lg font-semibold'>Client Requests</h2>
+                  <Link href='' className='text-primary-main dark:text-white'>
+                    View All
+                  </Link>
+                </div>
                 <ClientRequestsTable requests={clientRequests} />
-              </Card>
+              </div>
             </div>
           </div>
         </div>
@@ -204,24 +213,5 @@ const Home = () => {
     </main>
   );
 };
-
-function PlusIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns='http://www.w3.org/2000/svg'
-      fill='none'
-      viewBox='0 0 24 24'
-      stroke='currentColor'
-    >
-      <path
-        strokeLinecap='round'
-        strokeLinejoin='round'
-        strokeWidth={2}
-        d='M12 6v6m0 0v6m0-6h6m-6 0H6'
-      />
-    </svg>
-  );
-}
 
 export default Home;

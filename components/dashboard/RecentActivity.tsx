@@ -1,8 +1,12 @@
+import { cn, PurchaseItemType } from '@/lib/utils';
+import Icon from '../ui/Icon';
+
 interface Activity {
   id: number;
   title: string;
   time: string;
   icon: string;
+  type: PurchaseItemType;
 }
 
 interface RecentActivityProps {
@@ -12,14 +16,32 @@ interface RecentActivityProps {
 export function RecentActivity({ activities }: RecentActivityProps) {
   return (
     <div className='space-y-4'>
-      {activities.map((activity) => (
-        <div key={activity.id} className='flex items-start gap-3'>
-          <div className='mt-1 flex-shrink-0'>{activity.icon}</div>
+      {activities.map((activity, index) => (
+        <div
+          key={activity.id}
+          className={cn(
+            'flex items-start gap-3',
+            activities.length - 1 !== index && 'border-b pt-1 pb-2'
+          )}
+        >
+          <div className='mt-1 flex-shrink-0'>
+            <Icon
+              url={cn(
+                '',
+                activity.type === PurchaseItemType.SUBSCRIPTION &&
+                  '/icons/landing/credit-card.svg',
+                activity.type === PurchaseItemType.COURSE &&
+                  '/icons/landing/calendar-check.svg',
+                activity.type === PurchaseItemType.TICKET &&
+                  '/icons/landing/notebook.svg'
+              )}
+              width={45}
+              height={45}
+            />
+          </div>
           <div>
-            <p className='text-sm font-medium text-gray-900'>
-              {activity.title}
-            </p>
-            <p className='text-xs text-gray-500'>{activity.time}</p>
+            <p className='text-sm font-medium'>{activity.title}</p>
+            <p className='text-xs'>{activity.time}</p>
           </div>
         </div>
       ))}
