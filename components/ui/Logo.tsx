@@ -5,8 +5,8 @@ const Logo = ({
   width = 150,
   height = 120,
 }: {
-  width: number;
-  height: number;
+  width?: number;
+  height?: number;
 }) => {
   return (
     <>
