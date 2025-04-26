@@ -60,6 +60,7 @@ const config: Config = {
         neutral: 'var(--Neutral-color-600, #686976)',
         'neutral-2': 'var(--Neutral-color-50, #F7F8F8)',
         'neutral-3': 'var(--Neutral-color-200, #D4D5D8)',
+        'neutral-4': 'var(--Neutral-Bg-color, #FAFAFB)',
       },
     },
   },
