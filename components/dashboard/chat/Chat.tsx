@@ -78,7 +78,7 @@ export default function Chat() {
             </p>
             <span className='text-xs text-green-500'>Online</span>
           </div>
-          <div className='ml-auto flex items-center gap-4'>
+          <div className='ml-auto flex items-center gap-5'>
             <button>
               <Icon
                 url='/icons/chat/search.svg'
@@ -89,8 +89,6 @@ export default function Chat() {
               <Icon
                 url='/icons/chat/menu.svg'
                 className='dark:invert dark:brightness-0 w-1 object-contain'
-                // width={20}
-                // height={20}
               />
             </button>
           </div>
@@ -135,10 +133,10 @@ export default function Chat() {
                   </div>
                 )}
                 <div
-                  className={`p-3 rounded-2xl text-sm ${
+                  className={`p-3 rounded-2xl font-medium text-sm ${
                     msg.fromMe
-                      ? 'bg-primary-main text-white'
-                      : 'bg-gray-100 text-gray-700 dark:bg-black-2 dark:text-white'
+                      ? 'bg-neutral-2 text-gray-700 dark:bg-primary-main dark:text-white rounded-se-none'
+                      : 'bg-neutral-5 text-gray-700 dark:bg-black-2 dark:text-white rounded-ss-none'
                   }`}
                 >
                   {msg.text}
