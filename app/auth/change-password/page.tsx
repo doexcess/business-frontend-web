@@ -63,6 +63,7 @@ const ChangePassword = () => {
                   className='w-full rounded-lg text-gray-900'
                   value={''}
                   required={true}
+                  enableDarkMode={false}
                 />
                 <div className='text-neutral mt-2 text-xs sm:text-sm'>
                   <div className='flex flex-wrap gap-x-4 gap-y-1'>
@@ -134,6 +135,7 @@ const ChangePassword = () => {
                   className='w-full rounded-lg text-gray-900'
                   value={''}
                   required={true}
+                  enableDarkMode={false}
                 />
               </div>
             </form>

@@ -5,6 +5,8 @@ import Input from '@/components/ui/Input';
 import Image from 'next/image';
 import { useState } from 'react';
 import { FiSend, FiMic, FiSmile } from 'react-icons/fi';
+import { MessageMenu } from './MessageMenu';
+import Link from 'next/link';
 
 const messages = [
   {
@@ -64,38 +66,34 @@ export default function Chat() {
     <div className='mx-auto flex flex-col justify-between h-full'>
       <div className='flex flex-col'>
         {/* Header */}
-        <div className='flex items-center gap-3 mb-2 px-4 py-2 border-b dark:border-black-2 bg-neutral-4 dark:bg-gray-800 rounded-xl'>
-          <Image
-            src='/icons/chat/avatars/image3.png'
-            alt='Edith Johnson'
-            width={40}
-            height={40}
-            className='rounded-full object-cover'
-          />
+        <div className='flex items-center gap-3 mb-2 px-2 md:px-3 py-2 border-b dark:border-black-2 bg-neutral-4 dark:bg-gray-800 rounded-xl'>
+          <div className='flex items-center'>
+            <Link
+              href='/messages'
+              className='flex md:hidden dark:invert dark:brightness-0'
+            >
+              <Icon url='/icons/clients/angle-left.svg' width={30} />
+            </Link>
+            <Image
+              src='/icons/chat/avatars/image3.png'
+              alt='Edith Johnson'
+              width={40}
+              height={40}
+              className='rounded-full object-cover'
+            />
+          </div>
           <div className='flex flex-col'>
             <p className='font-semibold text-gray-800 dark:text-white'>
               Edith Johnson
             </p>
             <span className='text-xs text-green-500'>Online</span>
           </div>
-          <div className='ml-auto flex items-center gap-5'>
-            <button>
-              <Icon
-                url='/icons/chat/search.svg'
-                className='dark:invert dark:brightness-0'
-              />
-            </button>
-            <button>
-              <Icon
-                url='/icons/chat/menu.svg'
-                className='dark:invert dark:brightness-0 w-1 object-contain'
-              />
-            </button>
-          </div>
+
+          {/* Add Menu options later */}
         </div>
 
         {/* Messages */}
-        <div className='flex-1 overflow-y-auto p-4 space-y-6 max-h-[440px] md:max-h-[587px]'>
+        <div className='flex-1 overflow-y-auto p-4 space-y-6 max-h-[64vh] md:max-h-[60vh] lg:max-h-[68vh]'>
           {messages.map((msg) => (
             <div
               key={msg.id}

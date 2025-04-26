@@ -1,13 +1,23 @@
 'use client';
+
 import React from 'react';
 import { Card } from '../Card';
 import Input from '../../ui/Input';
 import Icon from '../../ui/Icon';
 import MessageList from './MessageList';
+import { cn } from '@/lib/utils';
+import { usePathname } from 'next/navigation';
 
 const ChatSidebar = () => {
+  const pathname = usePathname();
+
   return (
-    <Card className='w-full md:w-[35%] h-full bg-neutral-2 p-4 flex flex-col rounded-lg'>
+    <Card
+      className={cn(
+        'w-full md:w-[35%] h-full bg-neutral-2 p-4 flex-col rounded-lg',
+        pathname === '/messages' ? 'flex' : 'hidden md:flex'
+      )}
+    >
       {/* Header tabs */}
       <div className='flex space-x-4 mb-6'>
         <button className='flex-1 text-sm font-bold text-white bg-primary-main py-2 rounded-lg'>

@@ -11,6 +11,7 @@ declare type InputProps = {
   value?: string;
   onChange?: any;
   readonly?: boolean;
+  enableDarkMode?: boolean;
 };
 
 declare type SelectProps = {

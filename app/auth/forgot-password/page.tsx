@@ -62,6 +62,7 @@ const ForgotPassword = () => {
                   className='w-full rounded-lg text-gray-900'
                   value={''}
                   required={true}
+                  enableDarkMode={false}
                 />
               </div>
             </form>

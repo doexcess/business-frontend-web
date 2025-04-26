@@ -9,12 +9,14 @@ const MessageLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <main className='section-container'>
-      <div className='flex flex-col md:flex-row gap-2 h-[85vh]'>
-        <ChatSidebar />
-        {children}
-      </div>
-    </main>
+    <>
+      <main className='section-container'>
+        <div className='flex flex-col md:flex-row gap-2 md:h-[85vh]'>
+          <ChatSidebar />
+          {children}
+        </div>
+      </main>
+    </>
   );
 };
 

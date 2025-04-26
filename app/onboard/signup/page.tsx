@@ -22,7 +22,7 @@ const Signup = () => {
   };
 
   return (
-    <div className='min-h-screen flex flex-col justify-center items-center p-4 sm:p-6 bg-gradient-light text-black-1'>
+    <div className='min-h-screen flex flex-col justify-center items-center p-4 sm:p-6 bg-gradient-light dark:bg-gray-800 text-black-1'>
       <Head>
         <title>Signup</title>
       </Head>
@@ -65,6 +65,7 @@ const Signup = () => {
                   className='w-full rounded-lg text-gray-900'
                   value={''}
                   required={true}
+                  enableDarkMode={false}
                 />
               </div>
 
@@ -82,6 +83,7 @@ const Signup = () => {
                   className='w-full rounded-lg text-gray-900'
                   value={''}
                   required={true}
+                  enableDarkMode={false}
                 />
               </div>
 
@@ -99,6 +101,7 @@ const Signup = () => {
                   className='w-full rounded-lg text-gray-900'
                   value={''}
                   required={true}
+                  enableDarkMode={false}
                 />
                 <div className='text-neutral mt-2 text-xs sm:text-sm'>
                   <div className='flex flex-wrap gap-x-4 gap-y-1'>
