@@ -2,7 +2,7 @@
 
 declare type InputProps = {
   id?: string;
-  type: string;
+  type?: string;
   name: string;
   placeholder?: string;
   className?: string;
@@ -12,6 +12,7 @@ declare type InputProps = {
   onChange?: any;
   readonly?: boolean;
   enableDarkMode?: boolean;
+  checked?: boolean;
 };
 
 declare type SelectProps = {

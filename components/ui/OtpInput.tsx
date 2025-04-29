@@ -43,8 +43,16 @@ const OTPInput = ({
     index: number,
     e: React.KeyboardEvent<HTMLInputElement>
   ) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
+    if (e.key === 'Backspace') {
+      if (otp[index] && index >= 0) {
+        // If the current input has a value, clear it
+        const newOtp = [...otp];
+        newOtp[index] = '';
+        setOtp(newOtp);
+      } else if (index > 0) {
+        // If the current input is empty, move focus to the previous input
+        inputRefs.current[index - 1]?.focus();
+      }
     }
   };
 

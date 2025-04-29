@@ -3,6 +3,18 @@ import { Gender } from '../utils';
 
 type InferType<T> = T extends Joi.ObjectSchema ? Joi.Schema<T> : never;
 
+export const RegisterFormSchema = Joi.object({
+  name: Joi.string().required(),
+  email: Joi.string().required(),
+  password: Joi.string().min(8).required(),
+  allowOtp: Joi.boolean().optional(),
+});
+
+export const VerifyEmailFormSchema = Joi.object({
+  token: Joi.string().required(),
+  email: Joi.string().required(),
+});
+
 export const LoginFormSchema = Joi.object({
   email: Joi.string().required(),
   password: Joi.string().min(8).required(),
@@ -74,7 +86,13 @@ export interface UpdatePasswordProps {
   new_password: string;
   confirm_password: string;
 }
-
-export type LoginFormProps = InferType<typeof LoginFormSchema>;
-export type VerifyLoginFormProps = InferType<typeof VerifyLoginFormSchema>;
-export type UserProfileSchemaProps = InferType<typeof UserProfileSchema>;
+export interface RegisterFormProps {
+  name: string;
+  email: string;
+  password: string;
+  allowOtp: boolean;
+}
+export interface VerifyEmailFormProps {
+  token: string;
+  email: string;
+}

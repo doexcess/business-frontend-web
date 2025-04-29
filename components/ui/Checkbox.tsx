@@ -1,10 +1,14 @@
+import { cn } from '@/lib/utils';
 import React from 'react';
 
 const Checkbox = ({
-  type,
+  type = 'checkbox',
   name,
   placeholder = '',
-  className = 'w-4 h-4 border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:focus:ring-primary-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600',
+  className,
+  onChange,
+  checked,
+  enableDarkMode = true,
 }: InputProps) => {
   return (
     <>
@@ -13,8 +17,15 @@ const Checkbox = ({
         aria-describedby={name}
         name={name}
         id={name}
-        className={className}
+        className={cn(
+          'w-4 h-4 border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300',
+          className,
+          enableDarkMode &&
+            'dark:focus:ring-primary-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600'
+        )}
         placeholder={placeholder}
+        onChange={onChange}
+        checked={checked}
         required
       />
     </>

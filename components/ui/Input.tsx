@@ -3,7 +3,7 @@ import React from 'react';
 
 const Input = ({
   id,
-  type,
+  type = 'text',
   name,
   placeholder = '',
   className,

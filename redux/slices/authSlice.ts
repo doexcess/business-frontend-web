@@ -1,8 +1,9 @@
 import api from '@/lib/api';
 import {
+  RegisterFormProps,
   UpdatePasswordProps,
   UserProfileProps,
-  UserProfileSchemaProps,
+  VerifyEmailFormProps,
 } from '@/lib/schema/auth.schema';
 import { Profile, ProfileResponse } from '@/types/account';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
@@ -23,6 +24,40 @@ const initialState: AuthState = {
   loading: false,
   error: null,
 };
+
+// Async Thunk to register an organization
+export const registerOrganization = createAsyncThunk(
+  'auth/register',
+  async (credentials: RegisterFormProps, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post('/auth/register', credentials);
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Registration failed');
+    }
+  }
+);
+
+// Async Thunk to verify email
+export const verifyEmail = createAsyncThunk(
+  'auth/verify-email',
+  async (credentials: VerifyEmailFormProps, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post('/auth/verify-email', credentials);
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || 'Email verification failed'
+      );
+    }
+  }
+);
 
 // Async Thunk for login
 export const login = createAsyncThunk(
@@ -121,6 +156,28 @@ const authSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+      .addCase(registerOrganization.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(registerOrganization.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(registerOrganization.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(verifyEmail.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verifyEmail.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(verifyEmail.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
