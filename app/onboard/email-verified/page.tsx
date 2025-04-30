@@ -2,6 +2,7 @@
 
 import Head from 'next/head';
 import Image from 'next/image';
+import Link from 'next/link';
 import React from 'react';
 
 const EmailVerified = () => {
@@ -28,11 +29,12 @@ const EmailVerified = () => {
             Your email address has been successfully verified.
           </p>
 
-          <button
-            className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all bg-primary-main hover:bg-primary-800`}
+          <Link
+            href='/auth/signin'
+            className={`w-full text-center py-3 px-4 rounded-lg font-medium text-white transition-all bg-primary-main hover:bg-primary-800`}
           >
-            View Dashboard
-          </button>
+            Proceed to Signin
+          </Link>
         </div>
       </div>
     </div>

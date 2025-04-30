@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 const OTPInput = ({
   length = 6,
@@ -15,63 +15,100 @@ const OTPInput = ({
   allowDarkMode?: boolean;
 }) => {
   const [otp, setOtp] = useState<string[]>(Array(length).fill(''));
-  const inputRefs = useRef<Array<HTMLInputElement | null>>(
-    Array(length).fill(null)
-  );
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Handle OTP input change
+  // Auto-focus first input on mount
+  useEffect(() => {
+    inputRefs.current[0]?.focus();
+  }, []);
+
   const handleChange = (index: number, value: string) => {
-    if (!/^\d?$/.test(value)) return; // Only allow numbers
+    if (!/^\d*$/.test(value)) return;
 
     const newOtp = [...otp];
-    newOtp[index] = value;
+    newOtp[index] = value.slice(-1); // Ensure only one digit
     setOtp(newOtp);
 
-    // Move to the next input box
+    // Move to next input if current has value
     if (value && index < length - 1) {
       inputRefs.current[index + 1]?.focus();
     }
 
-    // Call onComplete when OTP is fully entered
-    if (newOtp.every((digit) => digit !== '')) {
-      onComplete?.(newOtp.join(''));
-    }
+    checkCompletion(newOtp);
   };
 
-  // Handle backspace key
   const handleKeyDown = (
     index: number,
     e: React.KeyboardEvent<HTMLInputElement>
   ) => {
     if (e.key === 'Backspace') {
-      if (otp[index] && index >= 0) {
-        // If the current input has a value, clear it
-        const newOtp = [...otp];
-        newOtp[index] = '';
-        setOtp(newOtp);
-      } else if (index > 0) {
-        // If the current input is empty, move focus to the previous input
+      // If empty, move to previous input
+      if (!otp[index] && index > 0) {
         inputRefs.current[index - 1]?.focus();
       }
+      // Always clear current input on backspace
+      const newOtp = [...otp];
+      newOtp[index] = '';
+      setOtp(newOtp);
+    }
+  };
+
+  // console.log(otp);
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData
+      .getData('text/plain')
+      .replace(/\D/g, '')
+      .slice(0, length); // Get only first 6 digits
+
+    if (pasteData.length > 0) {
+      const newOtp = [...otp];
+
+      // Fill OTP array with pasted digits
+      pasteData.split('').forEach((char, i) => {
+        if (i < length) newOtp[i] = char;
+      });
+
+      setOtp(newOtp);
+
+      // Focus the next empty input or last one
+      const nextEmptyIndex = newOtp.findIndex((digit) => digit === '');
+      const focusIndex =
+        nextEmptyIndex === -1
+          ? length - 1
+          : Math.min(nextEmptyIndex, length - 1);
+      inputRefs.current[focusIndex]?.focus();
+
+      checkCompletion(newOtp);
+    }
+  };
+
+  const checkCompletion = (currentOtp: string[]) => {
+    if (currentOtp.every((digit) => digit !== '')) {
+      onComplete?.(currentOtp.join(''));
     }
   };
 
   return (
     <div className='flex space-x-2 justify-center'>
-      {otp.map((_, index) => (
+      {otp.map((digit, index) => (
         <input
           key={index}
-          ref={(el) => (inputRefs.current[index] = el) as any}
+          ref={(el: any) => (inputRefs.current[index] = el)}
           type='text'
           inputMode='numeric'
+          autoComplete='one-time-code'
           maxLength={1}
-          value={otp[index]}
+          value={digit}
           onChange={(e) => handleChange(index, e.target.value)}
           onKeyDown={(e) => handleKeyDown(index, e)}
+          onPaste={handlePaste}
+          onFocus={() => inputRefs.current[index]?.select()}
           className={cn(
-            'py-4 text-center bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5',
+            'w-12 h-12 text-center text-xl font-medium bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500',
             allowDarkMode &&
-              'dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500',
+              'dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500',
             className
           )}
         />

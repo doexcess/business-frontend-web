@@ -1,6 +1,7 @@
 import api from '@/lib/api';
 import {
   RegisterFormProps,
+  ResendEmailProps,
   UpdatePasswordProps,
   UserProfileProps,
   VerifyEmailFormProps,
@@ -55,6 +56,22 @@ export const verifyEmail = createAsyncThunk(
       return rejectWithValue(
         error.response?.data || 'Email verification failed'
       );
+    }
+  }
+);
+
+// Async Thunk to resend email
+export const resendEmail = createAsyncThunk(
+  'auth/resend-email',
+  async (credentials: ResendEmailProps, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post('/auth/resend-email', credentials);
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Email resending failed');
     }
   }
 );
@@ -175,6 +192,17 @@ const authSlice = createSlice({
         state.loading = false;
       })
       .addCase(verifyEmail.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(resendEmail.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(resendEmail.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(resendEmail.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

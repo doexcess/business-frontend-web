@@ -9,16 +9,35 @@ export const RegisterFormSchema = Joi.object({
   password: Joi.string().min(8).required(),
   allowOtp: Joi.boolean().optional(),
 });
+export interface RegisterFormProps {
+  name: string;
+  email: string;
+  password: string;
+  allowOtp: boolean;
+}
 
 export const VerifyEmailFormSchema = Joi.object({
   token: Joi.string().required(),
   email: Joi.string().required(),
 });
+export interface VerifyEmailFormProps {
+  token: string;
+  email: string;
+}
 
 export const LoginFormSchema = Joi.object({
   email: Joi.string().required(),
   password: Joi.string().min(8).required(),
 });
+
+export const ResendEmailFormSchema = Joi.object({
+  email: Joi.string().required(),
+  allowOtp: Joi.boolean().optional(),
+});
+export interface ResendEmailProps {
+  email: string;
+  allowOtp: boolean;
+}
 
 export const VerifyLoginFormSchema = Joi.object({
   email: Joi.string().required(),
@@ -85,14 +104,4 @@ export interface UpdatePasswordProps {
   current_password: string;
   new_password: string;
   confirm_password: string;
-}
-export interface RegisterFormProps {
-  name: string;
-  email: string;
-  password: string;
-  allowOtp: boolean;
-}
-export interface VerifyEmailFormProps {
-  token: string;
-  email: string;
 }
