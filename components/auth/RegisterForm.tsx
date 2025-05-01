@@ -186,7 +186,7 @@ const RegisterForm = () => {
             <button
               type='button'
               onClick={() => setShowPassword((prev) => !prev)}
-              className='absolute right-3 top-1/4 -translate-y-1/2 text-sm text-gray-600 hover:text-gray-900 focus:outline-none'
+              className='absolute right-3 top-[31%] -translate-y-1/2 text-sm text-gray-600 hover:text-gray-900 focus:outline-none'
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>

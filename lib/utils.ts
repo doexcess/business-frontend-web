@@ -120,6 +120,11 @@ export enum SystemRole {
   BUSINESS_ADMIN = 'business-administrator',
 }
 
+export enum SignupRole {
+  CUSTOMER = 'customer',
+  BUSINESS_OWNER = 'business-owner',
+}
+
 export const NotificationStatusTypes = [
   { slug: 'immediate', name: 'Immediate', template: EmailTemplate.CUSTOM },
   { slug: 'scheduled', name: 'Scheduled', template: EmailTemplate.WAITLIST },

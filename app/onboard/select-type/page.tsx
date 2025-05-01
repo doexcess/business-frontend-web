@@ -1,11 +1,14 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn, SignupRole } from '@/lib/utils';
 import Head from 'next/head';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 const SelectType = () => {
+  const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
   const handleRoleSelect = (role: string) => {
@@ -14,7 +17,7 @@ const SelectType = () => {
 
   const handleContinue = () => {
     if (selectedRole) {
-      console.log(`Selected role: ${selectedRole}`);
+      router.push(`/onboard/signup?role=${selectedRole}`);
     }
   };
 
@@ -26,7 +29,10 @@ const SelectType = () => {
 
       <div className='w-full max-w-2xl border-2 border-white rounded-2xl bg-primary-light p-4 sm:p-8 md:p-10'>
         <div className='w-full rounded-2xl p-6 sm:p-8 bg-white flex flex-col items-center justify-center'>
-          <div className='flex items-center justify-center mb-6 sm:mb-8'>
+          <Link
+            href={'/'}
+            className='flex items-center justify-center mb-6 sm:mb-8'
+          >
             <Image
               src={'/icons/icon.png'}
               width={60}
@@ -35,7 +41,7 @@ const SelectType = () => {
               className='rounded-lg'
               priority
             />
-          </div>
+          </Link>
 
           <h1 className='text-xl sm:text-2xl font-bold text-center text-gray-800 mb-2'>
             Select User Type
@@ -48,10 +54,10 @@ const SelectType = () => {
           <div className='w-full space-y-4 mb-6 sm:mb-8'>
             <div className='flex flex-col sm:flex-row justify-center gap-4'>
               <button
-                onClick={() => handleRoleSelect('Business Owner')}
+                onClick={() => handleRoleSelect(SignupRole.BUSINESS_OWNER)}
                 className={cn(
                   'flex flex-col items-center rounded-xl border-2 transition-all p-4 sm:p-6 w-full sm:w-auto',
-                  selectedRole === 'Business Owner'
+                  selectedRole === SignupRole.BUSINESS_OWNER
                     ? 'border-primary-main bg-primary-main text-white'
                     : 'border-gray-300 hover:border-gray-400 text-primary-main'
                 )}
@@ -63,17 +69,18 @@ const SelectType = () => {
                   height={50}
                   className={cn(
                     'mb-2',
-                    selectedRole === 'Business Owner' && 'invert brightness-0'
+                    selectedRole === SignupRole.BUSINESS_OWNER &&
+                      'invert brightness-0'
                   )}
                 />
                 <span className='text-sm sm:text-base'>Business Owner</span>
               </button>
 
               <button
-                onClick={() => handleRoleSelect('Client')}
+                onClick={() => handleRoleSelect(SignupRole.CUSTOMER)}
                 className={cn(
                   'flex flex-col items-center rounded-xl border-2 transition-all p-4 sm:p-6 w-full sm:w-auto',
-                  selectedRole === 'Client'
+                  selectedRole === SignupRole.CUSTOMER
                     ? 'border-primary-main bg-primary-main text-white'
                     : 'border-gray-300 hover:border-gray-400 text-primary-main'
                 )}
@@ -85,7 +92,8 @@ const SelectType = () => {
                   height={50}
                   className={cn(
                     'mb-2',
-                    selectedRole === 'Client' && 'invert brightness-0'
+                    selectedRole === SignupRole.CUSTOMER &&
+                      'invert brightness-0'
                   )}
                 />
                 <span className='text-sm sm:text-base'>Customer</span>

@@ -27,7 +27,10 @@ const ForgotPassword = () => {
 
       <div className='w-full max-w-2xl border-2 border-white rounded-2xl bg-primary-light p-4 sm:p-8 md:p-10 my-4 sm:my-8 md:my-12'>
         <div className='w-full rounded-2xl p-6 sm:p-8 bg-white flex flex-col items-center justify-center'>
-          <div className='flex items-center justify-center mb-6 sm:mb-8'>
+          <Link
+            href='/'
+            className='flex items-center justify-center mb-6 sm:mb-8'
+          >
             <Image
               src={'/icons/icon.png'}
               width={60}
@@ -36,7 +39,7 @@ const ForgotPassword = () => {
               className='rounded-lg'
               priority
             />
-          </div>
+          </Link>
 
           <h1 className='text-xl sm:text-2xl font-bold text-center text-gray-800 mb-2'>
             Password Reset
@@ -81,7 +84,10 @@ const ForgotPassword = () => {
           </button>
 
           <div className='flex flex-wrap justify-center gap-1 sm:gap-2 sm:mt-8 mb-4 text-sm sm:text-base'>
-            <Link href='' className='text-primary-main font-bold flex gap-2'>
+            <Link
+              href='/auth/signin'
+              className='text-primary-main font-bold flex gap-2'
+            >
               Back to log in
               <Image
                 src={'/icons/auth/back-arrow.svg'}
