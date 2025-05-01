@@ -1,11 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import Apps from './Apps';
 import Profile from './Profile';
 import Link from 'next/link';
 import MobileNav from '../sidebar/MobileNav';
-import Logo from '@/components/ui/Logo';
 import RecentNotifications from './RecentNotifications';
 import Search from './Search';
 import Icon from '@/components/ui/Icon';

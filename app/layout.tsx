@@ -11,7 +11,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 export const metadata: Metadata = {
-  title: 'Doexcess Business',
+  title: 'Doexcess',
   description: 'Streamline and automate essential processes.',
   icons: {
     icon: '/icons/icon.png',

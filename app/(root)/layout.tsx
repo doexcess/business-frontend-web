@@ -3,12 +3,25 @@
 import React from 'react';
 
 import Bar from '@/components/bar/Index';
+import { useRouter } from 'next/navigation';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/redux/store';
 
 const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const { user, loading, error, token } = useSelector(
+    (state: RootState) => state.auth
+  );
+
+  if (!token) {
+    return router.push('/auth/signin');
+  }
+
   return (
     <main className='flex h-screen w-full font-gilroy bg-white dark:bg-gray-900'>
       <div className='flex size-full flex-col'>

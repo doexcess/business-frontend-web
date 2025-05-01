@@ -1,11 +1,70 @@
 import React, { useState } from 'react';
 import Input from '../ui/Input';
 import Link from 'next/link';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '@/redux/store';
+import { useRouter } from 'next/navigation';
+import { LoginFormSchema } from '@/lib/schema/auth.schema';
+import { login } from '@/redux/slices/authSlice';
+import { encryptInput } from '@/lib/utils';
+import toast from 'react-hot-toast';
+import LoadingIcon from '../ui/icons/LoadingIcon';
+import { Eye, EyeOff } from 'lucide-react';
+
+const defaultValue = {
+  email: '',
+  password: '',
+};
 
 const SigninForm = () => {
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
 
-  const handleSubmit = () => {};
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [body, setBody] = useState(defaultValue);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setBody((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isFormValid) return;
+
+    try {
+      setIsSubmitting(true);
+
+      const { error, value } = LoginFormSchema.validate(body);
+
+      // Handle validation results
+      if (error) {
+        throw new Error(error.details[0].message);
+      }
+
+      const response: any = await dispatch(login(body));
+
+      if (response.type === 'auth/request-otp/rejected') {
+        throw new Error(response.payload.message);
+      }
+
+      // Encrypt input
+      const encrypted = encryptInput(
+        JSON.stringify({ email: body.email, password: body.password })
+      );
+
+      router.push(`/auth/verify-signin?token=${encrypted}`);
+    } catch (error: any) {
+      console.error('Login failed:', error);
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const isFormValid = body.email.trim() !== '' && body.password.trim() !== '';
 
   return (
     <>
@@ -24,13 +83,14 @@ const SigninForm = () => {
                 name='email'
                 placeholder='Enter your business email address'
                 className='w-full rounded-lg text-gray-900'
-                value={''}
+                value={body.email}
                 required={true}
                 enableDarkMode={false}
+                onChange={handleChange}
               />
             </div>
 
-            <div>
+            <div className='relative'>
               <label
                 htmlFor='password'
                 className='block mb-2 text-sm font-bold text-gray-900'
@@ -38,14 +98,22 @@ const SigninForm = () => {
                 Password
               </label>
               <Input
-                type='password'
+                type={showPassword ? 'text' : 'password'}
                 name='password'
                 placeholder='Enter your password'
                 className='w-full rounded-lg text-gray-900'
-                value={''}
+                value={body.password}
                 required={true}
                 enableDarkMode={false}
+                onChange={handleChange}
               />
+              <button
+                type='button'
+                onClick={() => setShowPassword((prev) => !prev)}
+                className='absolute right-3 top-[70%] -translate-y-1/2 text-sm text-gray-600 hover:text-gray-900 focus:outline-none'
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
 
             <div className='flex justify-end'>
@@ -61,14 +129,21 @@ const SigninForm = () => {
 
         <button
           type='submit'
-          disabled={!selectedRole}
+          disabled={!isFormValid || isSubmitting}
           className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all ${
-            selectedRole
+            isFormValid
               ? 'bg-primary-main hover:bg-primary-800'
               : 'bg-primary-faded cursor-not-allowed'
           }`}
         >
-          Sign in
+          {isSubmitting ? (
+            <span className='flex items-center justify-center'>
+              <LoadingIcon />
+              Processing...
+            </span>
+          ) : (
+            'Sign in'
+          )}
         </button>
       </form>
     </>

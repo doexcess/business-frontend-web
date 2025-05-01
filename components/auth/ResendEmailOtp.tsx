@@ -1,42 +1,36 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { LoginProps } from '@/lib/schema/auth.schema';
 import { decryptInput } from '@/lib/utils';
+import { login } from '@/redux/slices/authSlice';
+import { AppDispatch } from '@/redux/store';
+import { useSearchParams } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useDispatch } from 'react-redux';
-import { AppDispatch } from '@/redux/store';
-import { ResendEmailFormSchema } from '@/lib/schema/auth.schema';
-import { resendEmail } from '@/redux/slices/authSlice';
 import LoadingIcon from '../ui/icons/LoadingIcon';
 
 const defaultValue = {
   email: '',
-  allowOtp: '',
+  password: '',
 };
 
 const COUNTDOWN_DURATION = 60; // 1 minute in seconds
-const COUNTDOWN_STORAGE_KEY = 'resendEmailCountdown';
+const COUNTDOWN_STORAGE_KEY = 'resendOtpCountdown';
 
-const ResendEmail = () => {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <ResendEmailContent />
-    </Suspense>
-  );
-};
-
-const ResendEmailContent = () => {
+const ResendEmailOtp = () => {
   const dispatch = useDispatch<AppDispatch>();
   const params = useSearchParams();
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  const decyptedData = decryptInput(params.get('token')!);
+  const decyptedData = JSON.parse(
+    decryptInput(params.get('token')!)
+  ) as LoginProps;
 
   const [body, setBody] = useState({
     ...defaultValue,
-    email: decyptedData,
-    allowOtp: true,
+    email: decyptedData.email,
+    password: decyptedData.password,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -101,26 +95,22 @@ const ResendEmailContent = () => {
     }, 1000);
   };
 
-  const handleResendEmail = async () => {
+  const handleResendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+
     try {
       setIsSubmitting(true);
 
-      const { error, value } = ResendEmailFormSchema.validate(body);
+      const response: any = await dispatch(login(body));
 
-      if (error) {
-        throw new Error(error.details[0].message);
-      }
-
-      const response: any = await dispatch(resendEmail(body));
-
-      if (response.type === 'auth/resend-email/rejected') {
+      if (response.type === 'auth/request-otp/rejected') {
         throw new Error(response.payload.message);
       }
 
       toast.success(response.payload.message);
       startCountdown();
     } catch (error: any) {
-      console.error('Email resending failed:', error);
+      console.error('Resend otp failed:', error);
       toast.error(error.message);
     } finally {
       setIsSubmitting(false);
@@ -136,10 +126,11 @@ const ResendEmailContent = () => {
   };
 
   return (
-    <div className='flex items-center gap-2'>
+    <div className='flex flex-wrap justify-center items-center gap-1 sm:gap-2 mt-6 sm:mt-8 text-sm sm:text-base'>
+      <p>Didn't receive any code? </p>
       <button
         type='button'
-        onClick={handleResendEmail}
+        onClick={handleResendOtp}
         disabled={isSubmitting || !isActive}
         className={`font-bold ${
           isSubmitting || !isActive
@@ -152,10 +143,9 @@ const ResendEmailContent = () => {
             Processing...
           </span>
         ) : (
-          'Resend Email'
+          'Resend'
         )}
       </button>
-
       {!isActive && (
         <p className='text-sm text-gray-500'>
           Available in {formatCountdown(countdown)}
@@ -165,4 +155,4 @@ const ResendEmailContent = () => {
   );
 };
 
-export default ResendEmail;
+export default ResendEmailOtp;

@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
-import { Dropdown, Avatar } from 'flowbite-react';
+'use client';
+
+import React from 'react';
+import useProfile from '@/hooks/page/useProfile';
+import { cn } from '@/lib/utils';
 
 const Profile = ({
   isOpen,
@@ -16,8 +19,11 @@ const Profile = ({
     }>
   >;
 }) => {
+  const { profile } = useProfile();
+
   const handleToggle = () =>
     setIsOpen({ profileDialog: !isOpen.profileDialog, appsDialog: false });
+
   return (
     <div>
       <button
@@ -29,7 +35,10 @@ const Profile = ({
         <span className='sr-only'>Open user menu</span>
         <img
           className='w-8 h-8 rounded-full'
-          src='/icons/profile.png'
+          src={cn(
+            '/icons/profile.png',
+            profile?.profile && profile?.profile?.profile_picture
+          )}
           alt='user photo'
         />
       </button>
@@ -40,10 +49,10 @@ const Profile = ({
         >
           <div className='py-3 px-4'>
             <span className='block text-sm font-semibold text-gray-900 dark:text-white'>
-              Neil Sims
+              {profile?.name}
             </span>
             <span className='block text-sm text-gray-900 truncate dark:text-white'>
-              name@flowbite.com
+              {profile?.email}
             </span>
           </div>
           {/* <ul

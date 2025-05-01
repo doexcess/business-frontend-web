@@ -1,18 +1,24 @@
 'use client';
 
 import RegisterForm from '@/components/auth/RegisterForm';
-import { Button } from '@/components/ui/Button';
-import Checkbox from '@/components/ui/Checkbox';
-import Input from '@/components/ui/Input';
-import { SignupRole, SystemRole } from '@/lib/utils';
+import { SignupRole } from '@/lib/utils';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import React, { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useEffect } from 'react';
 
 const Signup = () => {
+  const router = useRouter();
   const searchParam = useSearchParams();
+
+  const role = searchParam.get('role')! as SignupRole;
+
+  useEffect(() => {
+    if (![SignupRole.BUSINESS_OWNER, SignupRole.CUSTOMER].includes(role)) {
+      router.push('/onboard/select-type');
+    }
+  });
 
   return (
     <div className='min-h-screen flex flex-col justify-center items-center p-4 sm:p-6 bg-gradient-light dark:bg-gray-800 text-black-1'>

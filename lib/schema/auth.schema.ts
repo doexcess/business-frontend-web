@@ -29,6 +29,10 @@ export const LoginFormSchema = Joi.object({
   email: Joi.string().required(),
   password: Joi.string().min(8).required(),
 });
+export interface LoginProps {
+  email: string;
+  password: string;
+}
 
 export const ResendEmailFormSchema = Joi.object({
   email: Joi.string().required(),

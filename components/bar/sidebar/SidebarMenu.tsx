@@ -4,7 +4,6 @@ import React from 'react';
 import { groups, sidebarLinks } from '@/constants';
 
 import { Sidebar } from 'flowbite-react';
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
