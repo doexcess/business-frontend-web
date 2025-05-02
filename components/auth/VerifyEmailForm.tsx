@@ -13,16 +13,17 @@ const defaultValue = {
   token: '',
   email: '',
 };
-const VerifyEmailForm = () => {
+
+interface VerifyEmailFormProps {
+  email: string;
+}
+
+const VerifyEmailForm = ({ email }: VerifyEmailFormProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const params = useSearchParams();
 
-  const token = params.get('token')!;
-
-  const decyptedData = decryptInput(token);
-
-  const [body, setBody] = useState({ ...defaultValue, email: decyptedData });
+  const [body, setBody] = useState({ ...defaultValue, email });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -60,12 +61,6 @@ const VerifyEmailForm = () => {
       setIsSubmitting(false);
     }
   };
-
-  useEffect(() => {
-    if (!token || !isEncrypted(token)) {
-      router.push('/sign-in');
-    }
-  }, [token, dispatch, router]);
 
   return (
     <form onSubmit={handleSubmit}>

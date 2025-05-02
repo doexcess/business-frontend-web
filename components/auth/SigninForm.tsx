@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/redux/store';
 import { useRouter } from 'next/navigation';
-import { LoginFormSchema } from '@/lib/schema/auth.schema';
+import { LoginFormSchema, LoginProps } from '@/lib/schema/auth.schema';
 import { login } from '@/redux/slices/authSlice';
 import { encryptInput } from '@/lib/utils';
 import toast from 'react-hot-toast';
@@ -20,8 +20,10 @@ const SigninForm = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [body, setBody] = useState(defaultValue);
+  const [body, setBody] = useState({
+    ...defaultValue,
+  } as LoginProps);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -46,14 +48,12 @@ const SigninForm = () => {
 
       const response: any = await dispatch(login(body));
 
-      if (response.type === 'auth/request-otp/rejected') {
+      if (response.type === 'auth/request-account-otp/rejected') {
         throw new Error(response.payload.message);
       }
 
       // Encrypt input
-      const encrypted = encryptInput(
-        JSON.stringify({ email: body.email, password: body.password })
-      );
+      const encrypted = encryptInput(JSON.stringify(body));
 
       router.push(`/auth/verify-signin?token=${encrypted}`);
     } catch (error: any) {

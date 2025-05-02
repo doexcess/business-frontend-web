@@ -1,12 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import useProfile from '@/hooks/page/useProfile';
 import { cn } from '@/lib/utils';
+import ActionConfirmationModal from '@/components/ActionConfirmationModal';
+import { useRouter } from 'next/navigation';
 
 const Profile = ({
   isOpen,
   setIsOpen,
+  handleClose,
 }: {
   isOpen: {
     profileDialog: boolean;
@@ -18,11 +21,27 @@ const Profile = ({
       appsDialog: boolean;
     }>
   >;
+  handleClose?: () => void;
 }) => {
+  const router = useRouter();
   const { profile } = useProfile();
+  const [logoutOpenModal, setLogoutOpenModal] = useState(false);
+  const [allowAction, setAllowAction] = useState(false);
 
   const handleToggle = () =>
     setIsOpen({ profileDialog: !isOpen.profileDialog, appsDialog: false });
+
+  const handleLogoutNavigation = () => {
+    router.push('/logout');
+    if (typeof handleClose === 'function') handleClose();
+  };
+
+  useEffect(() => {
+    if (allowAction) {
+      handleLogoutNavigation();
+      setAllowAction(false);
+    }
+  }, [allowAction]);
 
   return (
     <div>
@@ -55,28 +74,6 @@ const Profile = ({
               {profile?.email}
             </span>
           </div>
-          {/* <ul
-            className='py-1 text-gray-700 dark:text-gray-300'
-            aria-labelledby='dropdown'
-          >
-            <li>
-              <a
-                href='#'
-                className='block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white'
-              >
-                My profile
-              </a>
-            </li>
-            <li>
-              <a
-                href='#'
-                className='block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white'
-              >
-                Account settings
-              </a>
-            </li>
-          </ul> */}
-
           <ul
             className='py-1 text-gray-700 dark:text-gray-300'
             aria-labelledby='dropdown'
@@ -84,10 +81,38 @@ const Profile = ({
             <li>
               <a
                 href='#'
-                className='block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white'
+                className='block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white'
+              >
+                Settings
+              </a>
+            </li>
+            <li>
+              <a
+                href='#'
+                className='block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white'
+              >
+                Help
+              </a>
+            </li>
+          </ul>
+
+          <ul
+            className='py-1 text-gray-700 dark:text-gray-300'
+            aria-labelledby='dropdown'
+          >
+            <li>
+              <button
+                onClick={() => setLogoutOpenModal(true)}
+                className='block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white w-full text-left'
               >
                 Sign out
-              </a>
+              </button>
+              <ActionConfirmationModal
+                openModal={logoutOpenModal}
+                setOpenModal={setLogoutOpenModal}
+                allowAction={allowAction}
+                setAllowAction={setAllowAction}
+              />
             </li>
           </ul>
         </div>

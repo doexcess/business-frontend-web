@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import OTPInput from '../ui/OtpInput';
 import Link from 'next/link';
 import { useDispatch } from 'react-redux';
@@ -16,20 +18,17 @@ const defaultValue = {
   otp: '',
 };
 
-const VerifySigninForm = () => {
+interface VerifySigninFormProps {
+  email: string;
+}
+
+const VerifySigninForm = ({ email }: VerifySigninFormProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const params = useSearchParams();
 
-  const token = params.get('token')!;
-
-  const decyptedData = JSON.parse(decryptInput(token)) as LoginProps;
-
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [body, setBody] = useState({
-    ...defaultValue,
-    email: decyptedData.email,
-  });
+  const [body, setBody] = useState({ ...defaultValue, email });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -61,11 +60,12 @@ const VerifySigninForm = () => {
 
       const response: any = await dispatch(verifyLogin(body));
 
-      if (response.type === 'auth/verify-otp/rejected') {
+      if (response.type === 'auth/verify-account-otp/rejected') {
         throw new Error(response.payload.message);
       }
 
       toast.success(response.payload.message);
+
       router.push(`/`);
     } catch (error: any) {
       console.error('Signin verification failed:', error);

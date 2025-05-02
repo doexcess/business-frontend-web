@@ -92,7 +92,7 @@ const RegisterForm = () => {
       }
 
       // Encrypt input
-      const encrypted = encryptInput(body.email);
+      const encrypted = encryptInput(JSON.stringify(body));
 
       router.push(`/onboard/verify-email?token=${encrypted}`);
     } catch (error: any) {

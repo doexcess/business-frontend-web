@@ -2,13 +2,19 @@
 
 import { Button } from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import { useVerifyToken } from '@/hooks/useVerifyToken';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import React, { useState } from 'react';
 
 const ChangePassword = () => {
+  const params = useSearchParams();
+
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
+
+  const { userDetails, setUserDetails } = useVerifyToken(params.get('token')!);
 
   const handleRoleSelect = (role: string) => {
     setSelectedRole(role);

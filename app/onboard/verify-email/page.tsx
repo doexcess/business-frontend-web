@@ -2,15 +2,18 @@
 
 import ResendEmail from '@/components/auth/ResendEmail';
 import VerifyEmailForm from '@/components/auth/VerifyEmailForm';
+import LoadingScreen from '@/components/LoadingScreen';
+import { useTokenDecrypt } from '@/hooks/useDecryptToken';
+import { RegisterFormProps } from '@/lib/schema/auth.schema';
 import { decryptInput, emailSplit, maskSensitiveData } from '@/lib/utils';
 import Head from 'next/head';
 import Image from 'next/image';
-import { useSearchParams } from 'next/navigation';
-import React, { Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import React, { Suspense, useEffect, useState } from 'react';
 
 const VerifyEmail = () => {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<LoadingScreen />}>
       <VerifyEmailContent />
     </Suspense>
   );
@@ -18,10 +21,15 @@ const VerifyEmail = () => {
 
 const VerifyEmailContent = () => {
   const params = useSearchParams();
+  const router = useRouter();
 
-  const decyptedData = decryptInput(params.get('token')!);
+  const { emailData, setEmailData } = useTokenDecrypt<RegisterFormProps>(
+    params.get('token')!
+  );
 
-  const splitEmail = emailSplit(decyptedData);
+  if (!emailData) {
+    return <LoadingScreen />;
+  }
 
   return (
     <div className='min-h-screen flex flex-col justify-center items-center p-4 sm:p-6 bg-gradient-light text-black-1'>
@@ -46,15 +54,16 @@ const VerifyEmailContent = () => {
           </h1>
 
           <p className='text-sm sm:text-base text-gray-600 text-center mb-6 max-w-md'>
-            A 6-Digit code has been sent to {maskSensitiveData(splitEmail[0])}@
-            {splitEmail[1]}. Enter code.
+            A 6-Digit code has been sent to{' '}
+            {maskSensitiveData(emailData?.parts[0]!)}@{emailData?.parts[1]}.
+            Enter code.
           </p>
 
-          <VerifyEmailForm />
+          <VerifyEmailForm email={emailData.full} />
 
           <div className='flex flex-wrap justify-center gap-1 sm:gap-2 mt-6 sm:mt-8 mb-4 text-sm sm:text-base'>
             <p>Didn't receive any code?</p>
-            <ResendEmail />
+            <ResendEmail email={emailData.full} />
           </div>
         </div>
       </div>

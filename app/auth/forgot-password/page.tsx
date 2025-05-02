@@ -1,24 +1,12 @@
 'use client';
 
-import Input from '@/components/ui/Input';
+import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React from 'react';
 
 const ForgotPassword = () => {
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
-
-  const handleRoleSelect = (role: string) => {
-    setSelectedRole(role);
-  };
-
-  const handleContinue = () => {
-    if (selectedRole) {
-      console.log(`Selected role: ${selectedRole}`);
-    }
-  };
-
   return (
     <div className='min-h-screen flex flex-col justify-center items-center p-4 sm:p-6 bg-gradient-light text-black-1'>
       <Head>
@@ -49,39 +37,7 @@ const ForgotPassword = () => {
             Enter the email address associated with your Doexcess account
           </p>
 
-          <div className='w-full space-y-4 mb-6 sm:mb-8'>
-            <form className='space-y-4'>
-              <div>
-                <label
-                  htmlFor='email'
-                  className='block mb-2 text-sm font-bold text-gray-900'
-                >
-                  Email address
-                </label>
-                <Input
-                  type='email'
-                  name='email'
-                  placeholder='Enter your business email address'
-                  className='w-full rounded-lg text-gray-900'
-                  value={''}
-                  required={true}
-                  enableDarkMode={false}
-                />
-              </div>
-            </form>
-          </div>
-
-          <button
-            onClick={handleContinue}
-            disabled={!selectedRole}
-            className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all ${
-              selectedRole
-                ? 'bg-primary-main hover:bg-primary-800'
-                : 'bg-primary-faded cursor-not-allowed'
-            }`}
-          >
-            Continue
-          </button>
+          <ForgotPasswordForm />
 
           <div className='flex flex-wrap justify-center gap-1 sm:gap-2 sm:mt-8 mb-4 text-sm sm:text-base'>
             <Link

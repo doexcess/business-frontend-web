@@ -103,7 +103,7 @@ const ResendEmailOtp = () => {
 
       const response: any = await dispatch(login(body));
 
-      if (response.type === 'auth/request-otp/rejected') {
+      if (response.type === 'auth/request-account-otp/rejected') {
         throw new Error(response.payload.message);
       }
 

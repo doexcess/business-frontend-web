@@ -18,24 +18,25 @@ const defaultValue = {
 const COUNTDOWN_DURATION = 60; // 1 minute in seconds
 const COUNTDOWN_STORAGE_KEY = 'resendEmailCountdown';
 
-const ResendEmail = () => {
+interface ResendEmailProps {
+  email: string;
+}
+const ResendEmail = ({ email }: ResendEmailProps) => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <ResendEmailContent />
+      <ResendEmailContent email={email} />
     </Suspense>
   );
 };
 
-const ResendEmailContent = () => {
+const ResendEmailContent = ({ email }: ResendEmailProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const params = useSearchParams();
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  const decyptedData = decryptInput(params.get('token')!);
-
   const [body, setBody] = useState({
     ...defaultValue,
-    email: decyptedData,
+    email,
     allowOtp: true,
   });
 

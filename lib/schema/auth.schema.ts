@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { Gender } from '../utils';
+import { Gender, SystemRole } from '../utils';
 
 type InferType<T> = T extends Joi.ObjectSchema ? Joi.Schema<T> : never;
 
@@ -108,4 +108,27 @@ export interface UpdatePasswordProps {
   current_password: string;
   new_password: string;
   confirm_password: string;
+}
+
+export const RequestPasswordResetFormSchema = Joi.object({
+  email: Joi.string().required(),
+});
+export interface RequestPasswordResetProps {
+  email: string;
+}
+
+export const VerifyPasswordTokenFormSchema = Joi.object({
+  token: Joi.string().required(),
+});
+export interface VerifyPasswordTokenProps {
+  token: string;
+}
+
+export const ResetPasswordFormSchema = Joi.object({
+  reset_token: Joi.string().required(),
+  new_password: Joi.string().required(),
+});
+export interface ResetPasswordProps {
+  reset_token: string;
+  new_password: string;
 }

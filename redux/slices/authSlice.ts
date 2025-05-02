@@ -1,10 +1,14 @@
 import api from '@/lib/api';
 import {
+  LoginProps,
   RegisterFormProps,
+  RequestPasswordResetProps,
   ResendEmailProps,
+  ResetPasswordProps,
   UpdatePasswordProps,
   UserProfileProps,
   VerifyEmailFormProps,
+  VerifyPasswordTokenProps,
 } from '@/lib/schema/auth.schema';
 import { Profile, ProfileResponse } from '@/types/account';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
@@ -78,15 +82,12 @@ export const resendEmail = createAsyncThunk(
 
 // Async Thunk for login
 export const login = createAsyncThunk(
-  'auth/request-otp',
-  async (
-    credentials: { email: string; password: string },
-    { rejectWithValue }
-  ) => {
+  'auth/request-account-otp',
+  async (credentials: LoginProps, { rejectWithValue }) => {
     try {
-      const response = await api.post('/auth/request-otp', credentials);
-      const { user, token } = response.data;
-      return { user, token };
+      const response = await api.post('/auth/request-account-otp', credentials);
+      const { user, token, data, message } = response.data;
+      return { user, token, data, message };
     } catch (error: any) {
       // console.log(error);
       return rejectWithValue(error.response?.data || 'Login failed');
@@ -96,16 +97,68 @@ export const login = createAsyncThunk(
 
 // Async Thunk for verify login
 export const verifyLogin = createAsyncThunk(
-  'auth/verify-otp',
+  'auth/verify-account-otp',
   async (credentials: { email: string; otp: string }, { rejectWithValue }) => {
     try {
-      const response = await api.post('/auth/verify-otp', credentials);
+      const response = await api.post('/auth/verify-account-otp', credentials);
       const { accessToken: token, message } = response.data;
       Cookies.set('token', token, { expires: 3 });
       return { token, message };
     } catch (error: any) {
       // console.log(error);
       return rejectWithValue(error.response?.data || 'OTP verification failed');
+    }
+  }
+);
+
+// Async Thunk for password reset request
+export const requestPasswordReset = createAsyncThunk(
+  'auth/request-password-reset',
+  async (credentials: RequestPasswordResetProps, { rejectWithValue }) => {
+    try {
+      const response = await api.post(
+        '/auth/request-password-reset',
+        credentials
+      );
+      const { message } = response.data;
+      return { message };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || 'Password reset request failed'
+      );
+    }
+  }
+);
+
+// Async Thunk to verify password token
+export const verifyPasswordToken = createAsyncThunk(
+  'auth/verify-password-token',
+  async (credentials: VerifyPasswordTokenProps, { rejectWithValue }) => {
+    try {
+      const response = await api.post(
+        '/auth/verify-password-token',
+        credentials
+      );
+      const { message, data } = response.data;
+      return { message, data };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || 'Password token verification failed'
+      );
+    }
+  }
+);
+
+// Async Thunk to reset password
+export const resetPassword = createAsyncThunk(
+  'auth/reset-password',
+  async (credentials: ResetPasswordProps, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/auth/reset-password', credentials);
+      const { message } = response.data;
+      return { message };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Password reset failed');
     }
   }
 );
@@ -228,6 +281,39 @@ const authSlice = createSlice({
         state.token = action.payload.token;
       })
       .addCase(verifyLogin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(requestPasswordReset.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(requestPasswordReset.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(requestPasswordReset.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(verifyPasswordToken.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verifyPasswordToken.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(verifyPasswordToken.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(resetPassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(resetPassword.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(resetPassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
