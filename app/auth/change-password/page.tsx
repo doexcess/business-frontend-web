@@ -1,5 +1,6 @@
 'use client';
 
+import ChangePasswordForm from '@/components/auth/ChangePasswordForm';
 import { Button } from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { useVerifyToken } from '@/hooks/useVerifyToken';
@@ -14,7 +15,9 @@ const ChangePassword = () => {
 
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
-  const { userDetails, setUserDetails } = useVerifyToken(params.get('token')!);
+  const { userDetails, setUserDetails, token } = useVerifyToken(
+    params.get('token')!
+  );
 
   const handleRoleSelect = (role: string) => {
     setSelectedRole(role);
@@ -53,111 +56,7 @@ const ChangePassword = () => {
             Ensure your new password is different from the old password
           </p>
 
-          <div className='w-full space-y-4 mb-6 sm:mb-8'>
-            <form className='space-y-4'>
-              <div>
-                <label
-                  htmlFor='password'
-                  className='block mb-2 text-sm font-bold text-gray-900'
-                >
-                  Create new password
-                </label>
-                <Input
-                  type='password'
-                  name='password'
-                  placeholder='Create a password'
-                  className='w-full rounded-lg text-gray-900'
-                  value={''}
-                  required={true}
-                  enableDarkMode={false}
-                />
-                <div className='text-neutral mt-2 text-xs sm:text-sm'>
-                  <div className='flex flex-wrap gap-x-4 gap-y-1'>
-                    <p className='flex gap-1'>
-                      <Image
-                        src='/icons/auth/check.svg'
-                        width='20'
-                        height='20'
-                        objectFit='contain'
-                        alt='check-icon'
-                      />
-                      Must be at least 8 characters
-                    </p>
-                    <p className='flex gap-1'>
-                      <Image
-                        src='/icons/auth/check.svg'
-                        width='20'
-                        height='20'
-                        objectFit='contain'
-                        alt='check-icon'
-                      />
-                      Lower case
-                    </p>
-                    <p className='flex gap-1'>
-                      <Image
-                        src='/icons/auth/check.svg'
-                        width='20'
-                        height='20'
-                        objectFit='contain'
-                        alt='check-icon'
-                      />
-                      Upper case
-                    </p>
-                    <p className='flex gap-1'>
-                      <Image
-                        src='/icons/auth/check.svg'
-                        width='20'
-                        height='20'
-                        objectFit='contain'
-                        alt='check-icon'
-                      />
-                      One special character
-                    </p>
-                    <p className='flex gap-1'>
-                      <Image
-                        src='/icons/auth/check.svg'
-                        width='20'
-                        height='20'
-                        objectFit='contain'
-                        alt='check-icon'
-                      />
-                      Digit
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor='retype-password'
-                  className='block mb-2 text-sm font-bold text-gray-900'
-                >
-                  Retype Password
-                </label>
-                <Input
-                  type='password'
-                  name='retype-password'
-                  placeholder='Retype your password'
-                  className='w-full rounded-lg text-gray-900'
-                  value={''}
-                  required={true}
-                  enableDarkMode={false}
-                />
-              </div>
-            </form>
-          </div>
-
-          <button
-            onClick={handleContinue}
-            disabled={!selectedRole}
-            className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all ${
-              selectedRole
-                ? 'bg-primary-main hover:bg-primary-800'
-                : 'bg-primary-faded cursor-not-allowed'
-            }`}
-          >
-            Proceed
-          </button>
+          <ChangePasswordForm token={token} />
         </div>
       </div>
     </div>

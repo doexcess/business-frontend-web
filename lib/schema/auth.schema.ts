@@ -123,10 +123,29 @@ export const VerifyPasswordTokenFormSchema = Joi.object({
 export interface VerifyPasswordTokenProps {
   token: string;
 }
-
 export const ResetPasswordFormSchema = Joi.object({
-  reset_token: Joi.string().required(),
-  new_password: Joi.string().required(),
+  reset_token: Joi.string().required().label('Reset Token'),
+
+  new_password: Joi.string()
+    .min(8)
+    .max(32)
+    .pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$'))
+    .required()
+    .label('New Password')
+    .messages({
+      'string.min': '{{#label}} must be at least 8 characters long.',
+      'string.max': '{{#label}} must not exceed 32 characters.',
+      'string.pattern.base':
+        '{{#label}} must include at least one uppercase letter, one lowercase letter, and one number.',
+    }),
+
+  new_password_confirmation: Joi.any()
+    .equal(Joi.ref('new_password'))
+    .required()
+    .label('Password Confirmation')
+    .messages({
+      'any.only': '{{#label}} does not match New Password.',
+    }),
 });
 export interface ResetPasswordProps {
   reset_token: string;

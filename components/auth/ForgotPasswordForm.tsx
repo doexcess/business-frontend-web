@@ -16,8 +16,6 @@ const ForgotPasswordForm = () => {
 
   const [body, setBody] = useState(defaultValue);
 
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -56,7 +56,7 @@ export const useVerifyToken = (token: string) => {
   const handleError = (message: string) => {
     setError(message);
     toast.error(message);
-    router.back();
+    router.push('/auth/signin');
   };
 
   return {
@@ -64,5 +64,6 @@ export const useVerifyToken = (token: string) => {
     isLoading,
     error,
     setUserDetails,
+    token,
   };
 };
