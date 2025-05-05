@@ -51,13 +51,11 @@ const Signup = () => {
             your courses and events.
           </p>
 
-          {searchParam.get('role') === SignupRole.BUSINESS_OWNER && (
-            <>
-              <RegisterForm />
+          <>
+            <RegisterForm role={role} />
 
-              {/* Google signup to be implemented later */}
-            </>
-          )}
+            {/* Google signup to be implemented later */}
+          </>
 
           <div className='flex flex-wrap justify-center gap-1 sm:gap-2 mt-6 sm:mt-8 mb-4 text-sm sm:text-base'>
             <p>Already have an account?</p>

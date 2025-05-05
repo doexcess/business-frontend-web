@@ -50,7 +50,7 @@ const VerifyEmailContent = () => {
             />
           </div>
           <h1 className='text-xl sm:text-2xl font-bold text-center text-gray-800 mb-2'>
-            Verify Mail
+            Verify Email Address
           </h1>
 
           <p className='text-sm sm:text-base text-gray-600 text-center mb-6 max-w-md'>

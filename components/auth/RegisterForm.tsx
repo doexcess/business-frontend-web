@@ -8,12 +8,15 @@ import Link from 'next/link';
 import Icon from '../ui/Icon';
 import XIcon from '../ui/icons/XIcon';
 import { Eye, EyeOff } from 'lucide-react';
-import { RegisterFormSchema } from '@/lib/schema/auth.schema';
+import {
+  RegisterFormProps,
+  RegisterFormSchema,
+} from '@/lib/schema/auth.schema';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/redux/store';
-import { useRouter } from 'next/navigation';
-import { registerOrganization } from '@/redux/slices/authSlice';
-import { encryptInput } from '@/lib/utils';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { register } from '@/redux/slices/authSlice';
+import { actualRole, encryptInput, SignupRole } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import LoadingIcon from '../ui/icons/LoadingIcon';
 
@@ -21,6 +24,7 @@ const defaultValue = {
   name: '',
   email: '',
   password: '',
+  role: '',
   allowOtp: true,
 };
 
@@ -32,12 +36,18 @@ type PasswordStrength = {
   digit: boolean;
 };
 
-const RegisterForm = () => {
+interface RegisterFormCompProps {
+  role: SignupRole;
+}
+const RegisterForm = ({ role }: RegisterFormCompProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [body, setBody] = useState(defaultValue);
+  const [body, setBody] = useState<RegisterFormProps>({
+    ...defaultValue,
+    role: actualRole(role),
+  });
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({
     length: false,
@@ -85,7 +95,7 @@ const RegisterForm = () => {
         throw new Error(error.details[0].message);
       }
 
-      const response: any = await dispatch(registerOrganization(body));
+      const response: any = await dispatch(register(body));
 
       if (response.type === 'auth/register/rejected') {
         throw new Error(response.payload.message);
@@ -94,6 +104,7 @@ const RegisterForm = () => {
       // Encrypt input
       const encrypted = encryptInput(JSON.stringify(body));
 
+      toast.success(response.payload.message);
       router.push(`/onboard/verify-email?token=${encrypted}`);
     } catch (error: any) {
       console.error('Registration failed:', error);
@@ -133,12 +144,14 @@ const RegisterForm = () => {
               htmlFor='name'
               className='block mb-2 text-sm font-bold text-gray-900'
             >
-              Business Name
+              {role === SignupRole.BUSINESS_OWNER ? 'Business Name' : 'Name'}
             </label>
             <Input
               type='text'
               name='name'
-              placeholder='Enter your company name'
+              placeholder={`Enter your ${
+                role === SignupRole.BUSINESS_OWNER ? 'company name' : 'name'
+              }`}
               className='w-full rounded-lg text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500'
               value={body.name}
               required
@@ -152,12 +165,16 @@ const RegisterForm = () => {
               htmlFor='email'
               className='block mb-2 text-sm font-bold text-gray-900'
             >
-              Business Email
+              {role === SignupRole.BUSINESS_OWNER ? 'Business Email' : 'Email'}
             </label>
             <Input
               type='email'
               name='email'
-              placeholder='you@yourcompany.com'
+              placeholder={
+                role === SignupRole.BUSINESS_OWNER
+                  ? 'you@yourcompany.com'
+                  : 'you@example.com'
+              }
               className='w-full rounded-lg text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500'
               value={body.email}
               required
@@ -190,28 +207,6 @@ const RegisterForm = () => {
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
-
-            {body.password && (
-              <div className='mt-3 space-y-2'>
-                <div className='flex justify-between items-center'>
-                  <span className='text-xs font-medium'>
-                    Password Strength:
-                  </span>
-                  <span className={`text-xs font-bold ${getStrengthColor()}`}>
-                    {getStrengthText()}
-                  </span>
-                </div>
-                <div className='w-full bg-gray-200 rounded-full h-1.5'>
-                  <div
-                    className={`h-1.5 rounded-full ${getStrengthColor().replace(
-                      'text',
-                      'bg'
-                    )}`}
-                    style={{ width: `${(passwordScore / 5) * 100}%` }}
-                  />
-                </div>
-              </div>
-            )}
 
             <div className='mt-3 text-xs sm:text-sm'>
               <div className='grid grid-cols-2 gap-2'>

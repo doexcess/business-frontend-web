@@ -259,3 +259,13 @@ export enum ActionKind {
 export enum NotificationType {
   EMAIL = 'EMAIL',
 }
+
+export const actualRole = (role: SignupRole): SystemRole | string => {
+  let roleName = '';
+  if (role === SignupRole.CUSTOMER) {
+    roleName = SystemRole.USER;
+  } else if (role === SignupRole.BUSINESS_OWNER) {
+    roleName = SystemRole.BUSINESS_SUPER_ADMIN;
+  }
+  return roleName;
+};

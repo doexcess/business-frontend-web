@@ -30,8 +30,8 @@ const initialState: AuthState = {
   error: null,
 };
 
-// Async Thunk to register an organization
-export const registerOrganization = createAsyncThunk(
+// Async Thunk to register
+export const register = createAsyncThunk(
   'auth/register',
   async (credentials: RegisterFormProps, { rejectWithValue }) => {
     try {
@@ -226,14 +226,14 @@ const authSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(registerOrganization.pending, (state) => {
+      .addCase(register.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(registerOrganization.fulfilled, (state, action) => {
+      .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
       })
-      .addCase(registerOrganization.rejected, (state, action) => {
+      .addCase(register.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

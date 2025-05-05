@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import { Gender, SystemRole } from '../utils';
+import { Role } from '@/types/product';
 
 type InferType<T> = T extends Joi.ObjectSchema ? Joi.Schema<T> : never;
 
@@ -7,12 +8,16 @@ export const RegisterFormSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().required(),
   password: Joi.string().min(8).required(),
+  role: Joi.string()
+    .valid(...Object.values(SystemRole))
+    .required(),
   allowOtp: Joi.boolean().optional(),
 });
 export interface RegisterFormProps {
   name: string;
   email: string;
   password: string;
+  role: SystemRole | string;
   allowOtp: boolean;
 }
 
