@@ -105,7 +105,7 @@ const ChatSidebar = () => {
     dispatch(
       retrieveChats({
         token,
-        status: chatTab !== ChatTab.ALL ? ChatReadStatus.READ : undefined,
+        status: chatTab !== ChatTab.ALL ? ChatReadStatus.UNREAD : undefined,
       })
     );
 
@@ -126,7 +126,7 @@ const ChatSidebar = () => {
       <div className='flex space-x-4 mb-6'>
         <button
           className={cn(
-            'flex-1 text-sm font-bold py-2 ',
+            'flex-1 text-sm font-bold py-2',
             chatTab === ChatTab.ALL && 'bg-primary-main rounded-lg text-white'
           )}
           onClick={() => fetchChats(ChatTab.ALL)}
@@ -173,13 +173,15 @@ const ChatSidebar = () => {
       ) : chats.length === 0 ? (
         <>
           {/* Empty state */}
-          <div className='flex-1 flex flex-col items-center justify-center text-center'>
-            <Icon url='/icons/chat/chats.svg' width={40} height={40} />
+          <div className='h-[64vh] flex justify-center items-center'>
+            <div className='flex-1 flex flex-col items-center justify-center text-center'>
+              <Icon url='/icons/chat/chats.svg' width={40} height={40} />
 
-            <p className='mb-1 font-bold'>No chats</p>
-            <p className='text-sm mb-6'>
-              You have not started any conversation
-            </p>
+              <p className='mb-1 font-bold'>No chats</p>
+              <p className='text-sm mb-6'>
+                You have not started any conversation
+              </p>
+            </div>
           </div>
         </>
       ) : (

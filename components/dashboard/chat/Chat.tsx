@@ -15,18 +15,155 @@ import {
 } from '@/redux/slices/chatSlice';
 import { useParams } from 'next/navigation';
 import { useSocket } from '@/context/SocketProvider';
-import { MessagesResponse, SentMessageResponse } from '@/types/chat';
+import { Message, MessagesResponse, SentMessageResponse } from '@/types/chat';
 import Link from 'next/link';
+import {
+  IoIosDocument,
+  IoIosHeadset,
+  IoIosImage,
+  IoIosVideocam,
+  IoIosClose,
+  IoIosDownload,
+} from 'react-icons/io';
+import { uploadImage } from '@/redux/slices/multimediaSlice';
+import Image from 'next/image';
+
+interface FileUploadOption {
+  type: string;
+  label: string;
+  icon: React.ReactNode;
+  accept: string;
+}
+
+interface FilePreview {
+  url: string;
+  type: string;
+  name: string;
+}
+
+const FILE_UPLOAD_OPTIONS: FileUploadOption[] = [
+  {
+    type: 'image',
+    label: 'Image',
+    icon: <IoIosImage className='text-xl' />,
+    accept: 'image/*',
+  },
+  {
+    type: 'document',
+    label: 'Document',
+    icon: <IoIosDocument className='text-xl' />,
+    accept: '.pdf,.doc,.docx,.txt',
+  },
+  {
+    type: 'video',
+    label: 'Video',
+    icon: <IoIosVideocam className='text-xl' />,
+    accept: 'video/*',
+  },
+  {
+    type: 'audio',
+    label: 'Audio',
+    icon: <IoIosHeadset className='text-xl' />,
+    accept: 'audio/*',
+  },
+];
+
+interface FilePreviewModalProps {
+  file: {
+    url: string;
+    type: string;
+    name: string;
+  };
+  onClose: () => void;
+}
+
+const FilePreviewModal = ({ file, onClose }: FilePreviewModalProps) => {
+  return (
+    <div className='fixed inset-0 bg-black bg-opacity-0 flex items-center justify-center z-50 animate-fadeIn'>
+      <div
+        className='absolute inset-0 bg-black bg-opacity-50 animate-fadeIn'
+        onClick={onClose}
+      />
+      <div className='bg-white dark:bg-gray-800 rounded-lg p-4 max-w-2xl w-full mx-4 relative animate-slideUp'>
+        <div className='flex justify-between items-center mb-4'>
+          <h3 className='text-lg font-semibold text-gray-800 dark:text-white'>
+            {file.name}
+          </h3>
+          <div className='flex items-center gap-2'>
+            <a
+              href={file.url}
+              download={file.name}
+              className='text-gray-500 hover:text-primary-main p-1'
+              target='_blank'
+              rel='noopener noreferrer'
+            >
+              <IoIosDownload className='text-2xl' />
+            </a>
+            <button
+              onClick={onClose}
+              className='text-gray-500 hover:text-red-500'
+            >
+              <IoIosClose className='text-2xl' />
+            </button>
+          </div>
+        </div>
+
+        <div className='relative aspect-video w-full bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden'>
+          {file.type.startsWith('image/') ? (
+            <Image
+              src={file.url}
+              alt={file.name}
+              fill
+              className='object-contain'
+            />
+          ) : (
+            <div className='w-full h-full flex items-center justify-center'>
+              <div className='text-center'>
+                <IoIosDocument className='text-4xl mx-auto mb-2' />
+                <p className='text-sm text-gray-600 dark:text-gray-300'>
+                  {file.name}
+                </p>
+                <a
+                  href={file.url}
+                  download={file.name}
+                  className='mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary-main text-white rounded-lg hover:bg-primary-dark'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                >
+                  <IoIosDownload className='text-xl' />
+                  <span>Download</span>
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function Chat() {
   const { id: chatId, chatbuddyId }: { id: string; chatbuddyId: string } =
     useParams();
   const { isConnected } = useSocket();
   const [input, setInput] = useState('');
+  const [filePreview, setFilePreview] = useState<FilePreview | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [showFileMenu, setShowFileMenu] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileMenuRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const dispatch = useDispatch<AppDispatch>();
   const [isLoading, setIsLoading] = useState(true);
   const [isMessageSent, setIsMessageSent] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [uploadAbortController, setUploadAbortController] =
+    useState<AbortController | null>(null);
+  const [previewFile, setPreviewFile] = useState<{
+    url: string;
+    type: string;
+    name: string;
+  } | null>(null);
 
   const { token, profile } = useSelector((state: RootState) => state.auth);
   const { messages, chat, latestMessage } = useSelector(
@@ -69,7 +206,6 @@ export default function Chat() {
 
     const handleMessagesSent = (response: SentMessageResponse) => {
       if (response.status === 'success') {
-        console.log(response.data);
         dispatch(messagesSent(response.data));
         setIsMessageSent(false);
       }
@@ -87,21 +223,141 @@ export default function Chat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Handle click outside to close file menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        fileMenuRef.current &&
+        !fileMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowFileMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleFileSelect = async (file: File) => {
+    if (!file || !token) return;
+
+    try {
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      // Create preview URL for images
+      if (file.type.startsWith('image/')) {
+        const previewUrl = URL.createObjectURL(file);
+        setFilePreview({
+          url: previewUrl,
+          type: file.type,
+          name: file.name,
+        });
+      } else {
+        setFilePreview({
+          url: '',
+          type: file.type,
+          name: file.name,
+        });
+      }
+
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('image', file);
+
+      // Create new AbortController for this upload
+      const controller = new AbortController();
+      setUploadAbortController(controller);
+
+      // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return prev;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
+      const response: any = await dispatch(
+        uploadImage({
+          form_data: formData,
+        })
+      );
+
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
+      if (response.type === 'multimedia-upload/image/rejected') {
+        throw new Error(response.payload.message);
+      }
+
+      // Update preview with actual URL
+      setFilePreview((prev) =>
+        prev
+          ? {
+              ...prev,
+              url: response.payload.multimedia.url,
+            }
+          : null
+      );
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.log('Upload cancelled');
+      } else {
+        console.error('File upload error:', error);
+      }
+      setFilePreview(null);
+      // TODO: Add proper error handling/notification
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+      setUploadAbortController(null);
+    }
+  };
+
+  const handleFileUpload = (accept: string) => {
+    if (!fileInputRef.current) return;
+    fileInputRef.current.accept = accept;
+    fileInputRef.current.click();
+    setShowFileMenu(false);
+  };
+
+  const removeFilePreview = () => {
+    if (filePreview?.url) {
+      URL.revokeObjectURL(filePreview.url);
+    }
+    setFilePreview(null);
+  };
+
+  const handleCancelUpload = () => {
+    if (uploadAbortController) {
+      uploadAbortController.abort();
+      setUploadAbortController(null);
+    }
+    setIsUploading(false);
+    setUploadProgress(0);
+    removeFilePreview();
+  };
+
   const handleSendMessage = () => {
-    if (!input.trim() || !token) return;
+    if ((!input.trim() && !filePreview) || !token) return;
 
     setIsMessageSent(true);
     dispatch(
       sendMessage({
         token,
         chatBuddy: chatbuddyId,
-        message: input,
+        ...(input && { message: input }),
+        ...(filePreview && { file: filePreview.url }),
       })
     );
     setInput('');
+    removeFilePreview();
   };
 
-  const renderMessage = (message: any) => (
+  const renderMessage = (message: Message) => (
     <div
       key={message.id}
       className={`flex ${
@@ -115,9 +371,79 @@ export default function Chat() {
             : 'bg-gray-100 dark:bg-gray-700 rounded-ss-none'
         }`}
       >
-        <p className='text-sm text-gray-800 dark:text-white font-bold'>
-          {message.message}
-        </p>
+        {message.file && (
+          <div className='mb-2 relative group'>
+            {message.file.startsWith('data:image/') ||
+            message.file.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+              <div
+                className='relative w-[200px] h-[200px] rounded-lg overflow-hidden cursor-pointer'
+                onClick={() =>
+                  setPreviewFile({
+                    url: message.file as string,
+                    type: 'image',
+                    name: 'Image',
+                  })
+                }
+              >
+                <Image
+                  src={message.file}
+                  alt='Uploaded content'
+                  fill
+                  className='object-cover'
+                />
+                <div className='absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center'>
+                  <div className='opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-2'>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (message.file) {
+                          window.open(message.file, '_blank');
+                        }
+                      }}
+                      className='p-2 bg-white rounded-full shadow-lg hover:bg-gray-100'
+                      title='Download'
+                    >
+                      <IoIosDownload className='text-xl text-gray-700' />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div
+                className='flex items-center gap-2 p-3 bg-white dark:bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700'
+                onClick={() =>
+                  setPreviewFile({
+                    url: message.file as string,
+                    type: 'document',
+                    name: 'Document',
+                  })
+                }
+              >
+                <IoIosDocument className='text-2xl text-gray-500' />
+                <span className='text-sm text-gray-700 dark:text-gray-300'>
+                  Document
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (message.file) {
+                      window.open(message.file, '_blank');
+                    }
+                  }}
+                  className='ml-auto p-1 text-gray-500 hover:text-primary-main'
+                  title='Download'
+                >
+                  <IoIosDownload className='text-xl' />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+        {message.message && (
+          <p className='text-sm text-gray-800 dark:text-white font-bold'>
+            {message.message}
+          </p>
+        )}
         <div className='flex justify-end items-center mt-1 gap-1'>
           <span className='text-xs text-gray-500 dark:text-gray-300'>
             {new Date(message.created_at).toLocaleTimeString([], {
@@ -174,32 +500,126 @@ export default function Chat() {
         </div>
       </div>
 
+      {/* Hidden file input */}
+      <input
+        type='file'
+        ref={fileInputRef}
+        className='hidden'
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleFileSelect(file);
+        }}
+      />
+
       {/* Message Input */}
       <div className='p-4 dark:border-black-2 bg-neutral-4 dark:bg-gray-800 flex gap-2 rounded-xl border-t'>
-        <button className='text-gray-400'>
-          <Icon url='/icons/chat/clip.svg' width={30} />
-        </button>
-        <Input
-          type='text'
-          name='message'
-          className='flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-main'
-          placeholder='Type something'
-          value={input}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setInput(e.target.value)
-          }
-          onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
-            e.key === 'Enter' && handleSendMessage()
-          }
-        />
+        <div className='relative flex items-center' ref={fileMenuRef}>
+          <button
+            className='text-gray-400 hover:text-primary-main transition-colors disabled:opacity-50'
+            onClick={() => setShowFileMenu(!showFileMenu)}
+            disabled={isUploading}
+          >
+            <Icon url='/icons/chat/clip.svg' width={30} />
+          </button>
+
+          {showFileMenu && (
+            <div className='absolute bottom-full left-0 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border dark:border-gray-700'>
+              <div className='py-1'>
+                {FILE_UPLOAD_OPTIONS.map((option) => (
+                  <button
+                    key={option.type}
+                    onClick={() => handleFileUpload(option.accept)}
+                    className='w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2'
+                  >
+                    {option.icon}
+                    <span>{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className='flex-1 relative'>
+          <Input
+            type='text'
+            name='message'
+            className='w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-main'
+            placeholder='Type something'
+            value={input}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setInput(e.target.value)
+            }
+            onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
+              e.key === 'Enter' && handleSendMessage()
+            }
+            disabled={isUploading}
+          />
+
+          {/* File Preview with Progress */}
+          {filePreview && (
+            <div className='absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-800 rounded-lg p-2 shadow-lg border dark:border-gray-700'>
+              <div className='flex items-center gap-2'>
+                {filePreview.type.startsWith('image/') ? (
+                  <Image
+                    src={filePreview.url}
+                    alt='Preview'
+                    width={40}
+                    height={40}
+                    className='rounded object-cover'
+                  />
+                ) : (
+                  <div className='w-10 h-10 flex items-center justify-center bg-gray-200 dark:bg-gray-600 rounded'>
+                    <IoIosDocument className='text-xl' />
+                  </div>
+                )}
+                <div className='flex-1 min-w-0'>
+                  <p className='text-sm truncate'>{filePreview.name}</p>
+                  {isUploading && (
+                    <div className='mt-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden'>
+                      <div
+                        className='h-full bg-primary-main transition-all duration-300'
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+                {isUploading ? (
+                  <button
+                    onClick={handleCancelUpload}
+                    className='text-red-500 hover:text-red-600 p-1'
+                  >
+                    <IoIosClose className='text-xl' />
+                  </button>
+                ) : (
+                  <button
+                    onClick={removeFilePreview}
+                    className='text-gray-500 hover:text-red-500 p-1'
+                  >
+                    <IoIosClose className='text-xl' />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
         <button
           className='bg-primary-main p-2 rounded-lg text-white disabled:opacity-50'
           onClick={handleSendMessage}
-          disabled={!input.trim()}
+          disabled={(!input.trim() && !filePreview) || isUploading}
         >
           <Icon url='/icons/chat/send.svg' />
         </button>
       </div>
+
+      {/* File Preview Modal */}
+      {previewFile && (
+        <FilePreviewModal
+          file={previewFile}
+          onClose={() => setPreviewFile(null)}
+        />
+      )}
     </div>
   );
 }

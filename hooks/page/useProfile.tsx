@@ -6,15 +6,27 @@ import { useDispatch, useSelector } from 'react-redux';
 const useProfile = () => {
   const dispatch = useDispatch<AppDispatch>();
 
-  let { profile, loading } = useSelector((state: RootState) => state.auth);
+  const { profile, loading, error } = useSelector(
+    (state: RootState) => state.auth
+  );
 
   useEffect(() => {
-    dispatch(viewProfile());
+    const fetchProfile = async () => {
+      try {
+        await dispatch(viewProfile()).unwrap();
+      } catch (err) {
+        console.error('Failed to fetch profile:', err);
+      }
+    };
+
+    fetchProfile();
   }, [dispatch]);
 
   return {
     profile,
     loading,
+    error,
+    isAuthenticated: !!profile,
   };
 };
 
