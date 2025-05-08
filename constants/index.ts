@@ -1,3 +1,4 @@
+import { SignupRole, SystemRole } from '@/lib/utils';
 import {
   HiBell,
   HiBookOpen,
@@ -35,6 +36,7 @@ export const sidebarLinks = [
     route: '/',
     label: 'Overview',
     group: groups.ONE,
+    roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN, SystemRole.USER],
     activeIconColor: 'text-primary-main', // Add this
   },
   {
@@ -42,6 +44,7 @@ export const sidebarLinks = [
     route: '/products',
     label: 'Products',
     group: groups.ONE,
+    roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN],
     activeIconColor: 'text-primary-main', // Add this
     items: [
       {
@@ -60,6 +63,7 @@ export const sidebarLinks = [
     route: '/users',
     label: 'Client Management',
     group: groups.ONE,
+    roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN],
     activeIconColor: 'text-primary-main', // Add this
   },
   {
@@ -67,6 +71,7 @@ export const sidebarLinks = [
     route: '/reports',
     label: 'Reports',
     group: groups.ONE,
+    roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN],
     activeIconColor: 'text-primary-main', // Add this
   },
   {
@@ -74,6 +79,7 @@ export const sidebarLinks = [
     route: '/payments',
     label: 'Payments',
     group: groups.ONE,
+    roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN, SystemRole.USER],
     activeIconColor: 'text-primary-main', // Add this
   },
   {
@@ -81,6 +87,7 @@ export const sidebarLinks = [
     route: '/messages',
     label: 'Messages',
     group: groups.ONE,
+    roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN, SystemRole.USER],
     activeIconColor: 'text-primary-main', // Add this
   },
 
@@ -89,6 +96,7 @@ export const sidebarLinks = [
     route: '/settings',
     label: 'Settings',
     group: groups.TWO,
+    roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN, SystemRole.USER],
     activeIconColor: 'text-primary-main', // Add this
   },
   {
@@ -96,6 +104,7 @@ export const sidebarLinks = [
     route: '/help',
     label: 'Help',
     group: groups.TWO,
+    roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN, SystemRole.USER],
     activeIconColor: 'text-primary-main', // Add this
   },
 ];

@@ -1,6 +1,12 @@
 import { cn } from '@/lib/utils';
 import React from 'react';
 
+interface InputProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onKeyPress'> {
+  enableDarkMode?: boolean;
+  onKeyPress?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+}
+
 const Input = ({
   id,
   type = 'text',
@@ -11,8 +17,10 @@ const Input = ({
   value,
   defaultValue,
   required,
-  readonly = false,
+  readOnly = false,
   enableDarkMode = true,
+  onKeyPress,
+  ...props
 }: InputProps) => {
   return (
     <>
@@ -31,7 +39,9 @@ const Input = ({
         onChange={onChange}
         value={value}
         required={required}
-        {...(readonly ? { readOnly: true } : {})}
+        onKeyPress={onKeyPress}
+        readOnly={readOnly}
+        {...props}
       />
     </>
   );

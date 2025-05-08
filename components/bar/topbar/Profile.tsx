@@ -5,6 +5,11 @@ import useProfile from '@/hooks/page/useProfile';
 import { cn } from '@/lib/utils';
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
 import { useRouter } from 'next/navigation';
+import { socketService } from '@/lib/services/socketService';
+import { useSocket } from '@/context/SocketProvider';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '@/redux/store';
+import { userOnline } from '@/redux/slices/chatSlice';
 
 const Profile = ({
   isOpen,
@@ -23,10 +28,13 @@ const Profile = ({
   >;
   handleClose?: () => void;
 }) => {
+  const dispatch = useDispatch<AppDispatch>();
+
   const router = useRouter();
   const { profile } = useProfile();
   const [logoutOpenModal, setLogoutOpenModal] = useState(false);
   const [allowAction, setAllowAction] = useState(false);
+  const { isConnected } = useSocket();
 
   const handleToggle = () =>
     setIsOpen({ profileDialog: !isOpen.profileDialog, appsDialog: false });
@@ -37,11 +45,17 @@ const Profile = ({
   };
 
   useEffect(() => {
-    if (allowAction) {
-      handleLogoutNavigation();
-      setAllowAction(false);
-    }
-  }, [allowAction]);
+    if (!isConnected) return;
+
+    const fetchData = async () => {
+      if (allowAction) {
+        handleLogoutNavigation();
+        setAllowAction(false);
+      }
+    };
+
+    fetchData();
+  }, [allowAction, isConnected]);
 
   return (
     <div>

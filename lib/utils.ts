@@ -125,6 +125,11 @@ export enum SignupRole {
   BUSINESS_OWNER = 'business-owner',
 }
 
+export enum ChatReadStatus {
+  READ = 'read',
+  UNREAD = 'unread',
+}
+
 export const NotificationStatusTypes = [
   { slug: 'immediate', name: 'Immediate', template: EmailTemplate.CUSTOM },
   { slug: 'scheduled', name: 'Scheduled', template: EmailTemplate.WAITLIST },

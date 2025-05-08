@@ -1,23 +1,30 @@
 import Icon from '@/components/ui/Icon';
+import { AppDispatch } from '@/redux/store';
+import { Chat } from '@/types/chat';
 import clsx from 'clsx';
+import moment from 'moment';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
+import { useDispatch } from 'react-redux';
 
 interface MessageListContentProps {
   index: number;
-  msg: any;
-  messages: any[];
+  chat: Chat & { isShimmer?: boolean };
+  chats: (Chat & { isShimmer?: boolean })[];
 }
 const MessageListContent = ({
   index,
-  msg,
-  messages,
+  chat,
+  chats,
 }: MessageListContentProps) => {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const { id: chatId }: { id: string } = useParams();
 
   const openChat = () => {
-    router.push(`/messages/${msg.id}`);
+    router.push(`/messages/${chat.id}/chat/${chat.chat_buddy.id}`);
   };
 
   return (
@@ -25,15 +32,14 @@ const MessageListContent = ({
       key={index}
       className={clsx(
         'flex items-center px-4 py-3 border-b dark:border-black-2 border-gray-400 cursor-pointer hover:bg-primary-main hover:text-white dark:hover:text-white',
-        msg.isActive && 'bg-primary-main text-white',
-        index === messages.length - 1 && 'border-b-0',
+        chatId === chat.id && 'bg-primary-main text-white',
+        index === chats.length - 1 && 'border-b-0',
         index === 0 && 'pb-3'
       )}
       onClick={openChat}
     >
-      <Image
-        src={msg.avatar}
-        alt={msg.name}
+      <Icon
+        url={chat.chat_buddy?.profile?.profile_picture || '/icons/icon.png'}
         width={48}
         height={48}
         className='rounded-full object-cover'
@@ -43,25 +49,27 @@ const MessageListContent = ({
           <p
             className={clsx(
               'font-bold text-sm truncate',
-              msg.isActive ? 'text-white' : ' dark:text-gray-100'
+              chatId === chat.id ? 'text-white' : ' dark:text-gray-100'
             )}
           >
-            {msg.name}
+            {chat.chat_buddy.name}
           </p>
-          <span className={clsx('text-xs font-medium')}>{msg.time}</span>
+          <span className={clsx('text-xs font-medium')}>
+            {moment(chat.messages[0].created_at).fromNow()}
+          </span>
         </div>
         <div className='flex justify-between items-center'>
-          <p className={clsx('text-sm truncate')}>{msg.message}</p>
-          {msg.unreadCount > 0 && (
+          <p className={clsx('text-sm truncate')}>{chat.last_message}</p>
+          {chat.unread > 0 && (
             <span
               className={clsx(
                 'ml-2 text-xs px-2 py-1 rounded-full bg-indigo-100 text-primary-main font-semibold'
               )}
             >
-              {msg.unreadCount}
+              {chat.unread}
             </span>
           )}
-          {msg.isRead && msg.isActive && <Icon url='/icons/chat/check.svg' />}
+          {chat.messages[0].read && <Icon url='/icons/chat/check.svg' />}
         </div>
       </div>
     </div>

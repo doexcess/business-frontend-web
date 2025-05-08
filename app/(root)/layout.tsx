@@ -6,6 +6,7 @@ import Bar from '@/components/bar/Index';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
+import { SocketProvider } from '@/context/SocketProvider';
 
 const RootLayout = ({
   children,
@@ -23,14 +24,16 @@ const RootLayout = ({
   }
 
   return (
-    <main className='flex h-screen w-full font-gilroy bg-white dark:bg-gray-900'>
-      <div className='flex size-full flex-col'>
-        <div className='main-container'>
-          <Bar />
-          {children}
+    <SocketProvider>
+      <main className='flex h-screen w-full font-gilroy bg-white dark:bg-gray-900'>
+        <div className='flex size-full flex-col'>
+          <div className='main-container'>
+            <Bar />
+            {children}
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </SocketProvider>
   );
 };
 

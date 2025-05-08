@@ -5,17 +5,24 @@ import { groups, sidebarLinks } from '@/constants';
 
 import { Sidebar } from 'flowbite-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
+import { cn, SystemRole } from '@/lib/utils';
+import { RootState } from '@/redux/store';
+import { useSelector } from 'react-redux';
 
 const SidebarMenu = ({ handleClose }: { handleClose?: () => void }) => {
   const router = useRouter();
   const pathname = usePathname(); // Get current path
+  let { profile, loading } = useSelector((state: RootState) => state.auth);
 
   const groupOneSidebarLinks = sidebarLinks.filter(
-    (sidebarLink) => sidebarLink.group === groups.ONE
+    (sidebarLink) =>
+      sidebarLink.group === groups.ONE &&
+      sidebarLink.roleOptions.includes(profile?.role?.role_id as SystemRole)
   );
   const groupTwoSidebarLinks = sidebarLinks.filter(
-    (sidebarLink) => sidebarLink.group === groups.TWO
+    (sidebarLink) =>
+      sidebarLink.group === groups.TWO &&
+      sidebarLink.roleOptions.includes(profile?.role?.role_id as SystemRole)
   );
 
   const html = groupTwoSidebarLinks.map((sidebarLink) =>

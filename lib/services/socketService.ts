@@ -1,0 +1,259 @@
+import { io, Socket } from 'socket.io-client';
+import { store } from '@/redux/store';
+import {
+  chatsRetrieved,
+  messagesRetrieved,
+  updateMessageStatus,
+  userOnline,
+  userOffline,
+} from '@/redux/slices/chatSlice';
+import {
+  RetrieveChatsProps,
+  RetrieveMessagesProps,
+  SendMessageProps,
+  retrieveChatsSchema,
+  retrieveMessagesSchema,
+  sendMessageSchema,
+} from '@/lib/schema/chat.schema';
+import {
+  ChatResponse,
+  Message,
+  MessagesResponse,
+  SentMessageResponse,
+} from '@/types/chat';
+
+interface SocketAuth {
+  token: string;
+  userId: string;
+}
+
+class SocketService {
+  private socket: Socket | null = null;
+  private static instance: SocketService;
+  private listenerCallbacks: {
+    [event: string]: ((...args: any[]) => void)[];
+  } = {};
+
+  private onlineUsers = new Set<string>();
+
+  private constructor() {}
+
+  public static getInstance(): SocketService {
+    if (!SocketService.instance) {
+      SocketService.instance = new SocketService();
+    }
+    return SocketService.instance;
+  }
+
+  public isConnected(): boolean {
+    return this.socket?.connected || false;
+  }
+
+  public connect(token: string) {
+    if (this.socket) return;
+
+    // Extract user ID from token (assuming it's a JWT)
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const userId = payload.id;
+
+    this.socket = io('http://localhost:3001', {
+      auth: { token, userId } as SocketAuth,
+      transports: ['websocket'],
+    });
+
+    // this.setupListeners();
+
+    // Emit user online status when connecting
+    this.socket.on('connect', () => {
+      this.socket?.emit('userOnline', { userId });
+    });
+
+    // Emit user offline status when disconnecting
+    this.socket.on('disconnect', () => {
+      this.socket?.emit('userOffline', { userId });
+    });
+
+    this.setupPresenceListeners();
+  }
+
+  // Call this after connection
+  private setupPresenceListeners() {
+    this.socket?.on(
+      'presenceUpdate',
+      ({ userId, isOnline }: { userId: string; isOnline: boolean }) => {
+        if (isOnline) {
+          this.onlineUsers.add(userId);
+        } else {
+          this.onlineUsers.delete(userId);
+        }
+      }
+    );
+  }
+
+  isUserOnline(userId: string): boolean {
+    return this.onlineUsers.has(userId);
+  }
+
+  public on(event: string, callback: (...args: any[]) => void) {
+    if (!this.listenerCallbacks[event]) {
+      this.listenerCallbacks[event] = [];
+    }
+    this.listenerCallbacks[event].push(callback);
+
+    // If socket is already connected, register immediately
+    if (this.socket) {
+      this.socket.on(event, callback);
+    }
+  }
+
+  public off(event: string, callback?: (...args: any[]) => void) {
+    if (!this.socket) return;
+
+    if (callback) {
+      this.socket.off(event, callback);
+      this.listenerCallbacks[event] = this.listenerCallbacks[event]?.filter(
+        (cb) => cb !== callback
+      );
+    } else {
+      this.socket.off(event);
+      delete this.listenerCallbacks[event];
+    }
+  }
+
+  // private setupListeners() {
+  //   if (!this.socket) return;
+
+  //   this.socket.on('connect', () => {
+  //     console.log('Socket connected');
+  //     // Get user ID from auth
+  //     const userId = (this.socket?.auth as SocketAuth)?.userId;
+  //     if (userId) {
+  //       // Add user to online users list
+  //       store.dispatch(userOnline(userId));
+  //       // Notify server about user being online
+  //       this.socket?.emit('userOnline', { userId });
+  //     }
+  //   });
+
+  //   this.socket.on('disconnect', () => {
+  //     console.log('Socket disconnected');
+  //     // Get user ID from auth
+  //     const userId = (this.socket?.auth as SocketAuth)?.userId;
+  //     if (userId) {
+  //       // Remove user from online users list
+  //       store.dispatch(userOffline(userId));
+  //       // Notify server about user being offline
+  //       this.socket?.emit('userOffline', { userId });
+  //     }
+  //   });
+
+  //   this.socket.on('error', (error) => console.error('Socket error:', error));
+
+  //   // Chat-specific listeners
+  //   this.socket.on('messagesRetrieved', (response: MessagesResponse) => {
+  //     if (response.status === 'success') {
+  //       store.dispatch(
+  //         messagesRetrieved({
+  //           messages: response.data.result,
+  //           chatId: response.data.chatId,
+  //         })
+  //       );
+  //     }
+  //   });
+
+  //   // Online status listeners
+  //   this.socket.on('userOnline', (data: { userId: string }) => {
+  //     console.log(data);
+
+  //     store.dispatch(userOnline(data.userId));
+  //   });
+
+  //   this.socket.on('userOffline', (data: { userId: string }) => {
+  //     store.dispatch(userOffline(data.userId));
+  //   });
+
+  //   this.socket.on('messageRead', (data: { messageId: string }) => {
+  //     store.dispatch(
+  //       updateMessageStatus({
+  //         messageId: data.messageId,
+  //         read: true,
+  //       })
+  //     );
+  //   });
+  // }
+
+  public async chatsRetrieved(user_id: string) {
+    // Chat-specific listeners
+    this.socket?.on(`chatsRetrieved:${user_id}`, (response: ChatResponse) => {
+      if (response.status === 'success') {
+        console.log(response.data);
+
+        store.dispatch(chatsRetrieved(response.data.result));
+      }
+    });
+  }
+
+  public async retrieveChats(payload: RetrieveChatsProps) {
+    const { error } = retrieveChatsSchema.validate(payload);
+    if (error) throw new Error(error.message);
+
+    this.socket?.emit('retrieveChats', payload);
+  }
+
+  public async retrieveMessages(
+    payload: RetrieveMessagesProps
+  ): Promise<MessagesResponse> {
+    const { error } = retrieveMessagesSchema.validate(payload);
+    if (error) throw new Error(error.message);
+
+    return new Promise((resolve, reject) => {
+      this.socket?.emit(
+        'retrieveMessages',
+        payload,
+        (response: MessagesResponse) => {
+          response.status === 'success'
+            ? resolve(response)
+            : reject(response.message);
+        }
+      );
+    });
+  }
+
+  public async sendMessage(
+    payload: SendMessageProps
+  ): Promise<SentMessageResponse> {
+    const { error } = sendMessageSchema.validate(payload);
+    if (error) throw new Error(error.message);
+
+    return new Promise((resolve, reject) => {
+      this.socket?.emit(
+        'sendMessage',
+        payload,
+        (response: SentMessageResponse) => {
+          response.status === 'success'
+            ? resolve(response)
+            : reject(response.message);
+        }
+      );
+    });
+  }
+
+  public emit(event: string, data: any) {
+    this.socket?.emit(event, data);
+  }
+
+  public disconnect() {
+    this.socket?.disconnect();
+    this.socket = null;
+  }
+
+  public setUserOnline(userId: string) {
+    this.socket?.emit('userOnline', { userId });
+  }
+
+  public setUserOffline(userId: string) {
+    this.socket?.emit('userOffline', { userId });
+  }
+}
+
+export const socketService = SocketService.getInstance();
