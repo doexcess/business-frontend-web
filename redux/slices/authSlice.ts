@@ -172,6 +172,7 @@ export const saveProfile = createAsyncThunk(
 
       return {
         message: data.message,
+        profile: data.data,
       };
     } catch (error: any) {
       // console.log(error);
@@ -326,6 +327,7 @@ const authSlice = createSlice({
       })
       .addCase(saveProfile.fulfilled, (state, action) => {
         state.loading = false;
+        state.profile = action.payload.profile;
       })
       .addCase(saveProfile.rejected, (state, action) => {
         state.loading = false;

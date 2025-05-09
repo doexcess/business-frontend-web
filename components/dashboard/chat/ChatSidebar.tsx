@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Card } from '../Card';
 import Input from '../../ui/Input';
 import Icon from '../../ui/Icon';
@@ -17,6 +17,7 @@ import {
 } from '@/redux/slices/chatSlice';
 import { useSocket } from '@/context/SocketProvider';
 import { RecentChatRetrievedResponse } from '@/types/chat';
+import { useDebounce } from '@/hooks/use-debounce';
 
 const shimmerMessages = Array(7).fill({
   id: '',
@@ -42,31 +43,72 @@ const ChatSidebar = () => {
   const { token, profile } = useSelector((state: RootState) => state.auth);
   const [isLoading, setIsLoading] = useState(true);
   const [chatTab, setChatTab] = useState(ChatTab.ALL);
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   const { isConnected } = useSocket();
 
+  const fetchChats = useCallback(
+    (tab: ChatTab, query: string = '') => {
+      if (!token) return;
+
+      setIsLoading(true);
+      setChatTab(tab);
+
+      dispatch(
+        retrieveChats({
+          token,
+          status: tab !== ChatTab.ALL ? ChatReadStatus.UNREAD : undefined,
+          ...(query && { q: query }),
+        })
+      ).finally(() => setIsLoading(false));
+    },
+    [token, dispatch]
+  );
+
+  // Handle initial load and tab changes
+  useEffect(() => {
+    fetchChats(chatTab);
+  }, [chatTab, fetchChats]);
+
+  // Handle debounced search
+  useEffect(() => {
+    if (debouncedSearchQuery !== undefined) {
+      fetchChats(chatTab, debouncedSearchQuery);
+    }
+  }, [debouncedSearchQuery, chatTab, fetchChats]);
+
+  // Socket event listeners
   useEffect(() => {
     if (!isConnected || !token) return;
 
     const handleChatRetrieved = (response: RecentChatRetrievedResponse) => {
       if (response.status === 'success') {
-        console.log(response.data);
         dispatch(recentChatRetrieved(response.data));
       }
     };
 
+    const handleChatsRetrieved = (response: any) => {
+      if (response.status === 'success') {
+        dispatch(chatsRetrieved(response.data.result));
+      }
+    };
+
     socketService.on(`recentChatRetrieved:${profile?.id}`, handleChatRetrieved);
+    socketService.on(`chatsRetrieved:${profile?.id}`, handleChatsRetrieved);
 
     return () => {
       socketService.off(
         `recentChatRetrieved:${profile?.id}`,
         handleChatRetrieved
       );
+      socketService.off(`chatsRetrieved:${profile?.id}`, handleChatsRetrieved);
     };
-  }, [token, dispatch, isConnected]);
+  }, [token, dispatch, isConnected, profile?.id]);
 
   const ChatShimmer = shimmerMessages.map((shimmer, index) => (
     <div
+      key={`shimmer-${index}`}
       className={`flex items-center gap-3 p-4 ${
         index !== chats.length - 1
           ? 'border-b border-gray-100 dark:border-gray-700'
@@ -82,39 +124,6 @@ const ChatSidebar = () => {
     </div>
   ));
 
-  const fetchChats = (tab: ChatTab) => {
-    setIsLoading(true);
-    setChatTab(tab);
-  };
-
-  useEffect(() => {
-    if (!token) return;
-    if (!isConnected) return;
-
-    // Setup event listeners
-    const handleChatsRetrieved = (response: any) => {
-      if (response.status === 'success') {
-        dispatch(chatsRetrieved(response.data.result));
-        setIsLoading(false);
-      }
-    };
-
-    socketService.on(`chatsRetrieved:${profile?.id}`, handleChatsRetrieved);
-
-    // Load initial chats
-    dispatch(
-      retrieveChats({
-        token,
-        status: chatTab !== ChatTab.ALL ? ChatReadStatus.UNREAD : undefined,
-      })
-    );
-
-    return () => {
-      // Clean up listeners and disconnect
-      socketService.off(`chatsRetrieved:${profile?.id}`, handleChatsRetrieved);
-    };
-  }, [token, dispatch, profile, chatTab, isConnected]);
-
   return (
     <Card
       className={cn(
@@ -129,17 +138,17 @@ const ChatSidebar = () => {
             'flex-1 text-sm font-bold py-2',
             chatTab === ChatTab.ALL && 'bg-primary-main rounded-lg text-white'
           )}
-          onClick={() => fetchChats(ChatTab.ALL)}
+          onClick={() => fetchChats(ChatTab.ALL, searchQuery)}
         >
           All Chats
         </button>
         <button
           className={cn(
-            'flex-1 text-sm font-bold py-2 ',
+            'flex-1 text-sm font-bold py-2',
             chatTab === ChatTab.UNREAD &&
               'bg-primary-main rounded-lg text-white'
           )}
-          onClick={() => fetchChats(ChatTab.UNREAD)}
+          onClick={() => fetchChats(ChatTab.UNREAD, searchQuery)}
         >
           Unread
         </button>
@@ -151,6 +160,9 @@ const ChatSidebar = () => {
           type='text'
           placeholder='Search'
           name='search'
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          disabled={isLoading}
           className='w-full pl-8 pr-3 py-2 text-sm border rounded-md dark:border-black-2 focus:outline-none focus:ring-1 focus:ring-blue-500'
         />
         <svg
@@ -171,19 +183,19 @@ const ChatSidebar = () => {
       {isLoading ? (
         ChatShimmer
       ) : chats.length === 0 ? (
-        <>
-          {/* Empty state */}
-          <div className='h-[64vh] flex justify-center items-center'>
-            <div className='flex-1 flex flex-col items-center justify-center text-center'>
-              <Icon url='/icons/chat/chats.svg' width={40} height={40} />
-
-              <p className='mb-1 font-bold'>No chats</p>
-              <p className='text-sm mb-6'>
-                You have not started any conversation
-              </p>
-            </div>
+        <div className='h-[64vh] flex justify-center items-center'>
+          <div className='flex-1 flex flex-col items-center justify-center text-center'>
+            <Icon url='/icons/chat/chats.svg' width={40} height={40} />
+            <p className='mb-1 font-bold'>
+              {searchQuery ? 'No matching chats found' : 'No chats'}
+            </p>
+            <p className='text-sm mb-6'>
+              {searchQuery
+                ? 'Try a different search term'
+                : 'You have not started any conversation'}
+            </p>
           </div>
-        </>
+        </div>
       ) : (
         <main>
           <MessageList chats={chats} />

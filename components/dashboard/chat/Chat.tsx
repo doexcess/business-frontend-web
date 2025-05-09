@@ -7,7 +7,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
 import { socketService } from '@/lib/services/socketService';
 import {
-  clearChatState,
   messagesRetrieved,
   messagesSent,
   retrieveMessages,
@@ -19,13 +18,11 @@ import { Message, MessagesResponse, SentMessageResponse } from '@/types/chat';
 import Link from 'next/link';
 import {
   IoIosDocument,
-  IoIosHeadset,
   IoIosImage,
-  IoIosVideocam,
   IoIosClose,
   IoIosDownload,
 } from 'react-icons/io';
-import { uploadImage } from '@/redux/slices/multimediaSlice';
+import { uploadImage, uploadDocument } from '@/redux/slices/multimediaSlice';
 import Image from 'next/image';
 
 interface FileUploadOption {
@@ -53,18 +50,6 @@ const FILE_UPLOAD_OPTIONS: FileUploadOption[] = [
     label: 'Document',
     icon: <IoIosDocument className='text-xl' />,
     accept: '.pdf,.doc,.docx,.txt',
-  },
-  {
-    type: 'video',
-    label: 'Video',
-    icon: <IoIosVideocam className='text-xl' />,
-    accept: 'video/*',
-  },
-  {
-    type: 'audio',
-    label: 'Audio',
-    icon: <IoIosHeadset className='text-xl' />,
-    accept: 'audio/*',
   },
 ];
 
@@ -136,6 +121,42 @@ const FilePreviewModal = ({ file, onClose }: FilePreviewModalProps) => {
               </div>
             </div>
           )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const MessageSkeleton = ({ isOwnMessage }: { isOwnMessage: boolean }) => {
+  return (
+    <div
+      className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} mb-4`}
+    >
+      <div
+        className={`max-w-xs md:max-w-md lg:max-w-lg p-3 rounded-2xl ${
+          isOwnMessage
+            ? 'bg-indigo-100 dark:bg-primary-main rounded-se-none'
+            : 'bg-gray-100 dark:bg-gray-700 rounded-ss-none'
+        }`}
+      >
+        <div className='space-y-2'>
+          <div
+            className='h-4 bg-gray-300 dark:bg-gray-600 rounded animate-pulse'
+            style={{ width: `${Math.random() * 100 + 50}px` }}
+          />
+          <div
+            className='h-4 bg-gray-300 dark:bg-gray-600 rounded animate-pulse'
+            style={{ width: `${Math.random() * 100 + 100}px` }}
+          />
+          {Math.random() > 0.5 && (
+            <div
+              className='h-4 bg-gray-300 dark:bg-gray-600 rounded animate-pulse'
+              style={{ width: `${Math.random() * 50 + 50}px` }}
+            />
+          )}
+        </div>
+        <div className='flex justify-end mt-2'>
+          <div className='h-3 w-12 bg-gray-300 dark:bg-gray-600 rounded animate-pulse' />
         </div>
       </div>
     </div>
@@ -263,7 +284,11 @@ export default function Chat() {
 
       // Create FormData for file upload
       const formData = new FormData();
-      formData.append('image', file);
+      if (file.type.startsWith('image/')) {
+        formData.append('image', file);
+      } else {
+        formData.append('document', file);
+      }
 
       // Create new AbortController for this upload
       const controller = new AbortController();
@@ -280,17 +305,36 @@ export default function Chat() {
         });
       }, 200);
 
-      const response: any = await dispatch(
-        uploadImage({
-          form_data: formData,
-        })
-      );
+      let response: any;
+      try {
+        if (file.type.startsWith('image/')) {
+          response = await dispatch(
+            uploadImage({
+              form_data: formData,
+            })
+          );
+        } else {
+          response = await dispatch(
+            uploadDocument({
+              form_data: formData,
+            })
+          );
+        }
+      } catch (error) {
+        throw error;
+      }
 
       clearInterval(progressInterval);
       setUploadProgress(100);
 
-      if (response.type === 'multimedia-upload/image/rejected') {
-        throw new Error(response.payload.message);
+      if (file.type.startsWith('image/')) {
+        if (response.type === 'multimedia-upload/image/rejected') {
+          throw new Error(response.payload.message);
+        }
+      } else {
+        if (response.type === 'multimedia-upload/document/rejected') {
+          throw new Error(response.payload.message);
+        }
       }
 
       // Update preview with actual URL
@@ -309,7 +353,6 @@ export default function Chat() {
         console.error('File upload error:', error);
       }
       setFilePreview(null);
-      // TODO: Add proper error handling/notification
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -495,7 +538,17 @@ export default function Chat() {
 
         {/* Messages */}
         <div className='flex-1 overflow-y-auto p-4 space-y-6 max-h-[64vh] md:max-h-[60vh] lg:max-h-[68vh]'>
-          {messages.map(renderMessage)}
+          {isLoading ? (
+            <>
+              <MessageSkeleton isOwnMessage={false} />
+              <MessageSkeleton isOwnMessage={true} />
+              <MessageSkeleton isOwnMessage={false} />
+              <MessageSkeleton isOwnMessage={true} />
+              <MessageSkeleton isOwnMessage={false} />
+            </>
+          ) : (
+            messages.map(renderMessage)
+          )}
           <div ref={messagesEndRef} />
         </div>
       </div>

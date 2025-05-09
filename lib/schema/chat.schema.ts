@@ -4,6 +4,7 @@ import { ChatReadStatus } from '../utils';
 export interface RetrieveChatsProps {
   token: string;
   status?: ChatReadStatus;
+  q?: string;
 }
 
 export interface RetrieveMessagesProps {
@@ -23,6 +24,7 @@ export const retrieveChatsSchema = Joi.object<RetrieveChatsProps>({
   status: Joi.string()
     .valid(...Object.values(ChatReadStatus))
     .optional(),
+  q: Joi.string().optional(),
 });
 
 export const retrieveMessagesSchema = Joi.object<RetrieveMessagesProps>({

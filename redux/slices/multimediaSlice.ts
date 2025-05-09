@@ -3,6 +3,7 @@ import api from '@/lib/api';
 import {
   MediaDetails,
   MediaDetailsResponse,
+  UploadDocumentResponse,
   UploadMediaResponse,
 } from '@/types/multimedia';
 
@@ -73,13 +74,47 @@ export const uploadImage = createAsyncThunk(
     form_data: FormData;
     business_id?: string;
   }) => {
-    const params: Record<string, any> = {};
+    const headers: Record<string, any> = {
+      'Content-Type': 'multipart/form-data',
+    };
 
-    if (business_id !== undefined) params['business_id'] = business_id;
+    if (business_id !== undefined) {
+      headers['Business-Id'] = business_id;
+    }
 
     const { data } = await api.post<UploadMediaResponse>(
       '/multimedia-upload/image',
-      form_data
+      form_data,
+      { headers }
+    );
+
+    return {
+      multimedia: data.data,
+    };
+  }
+);
+
+export const uploadDocument = createAsyncThunk(
+  'multimedia-upload/document',
+  async ({
+    form_data,
+    business_id,
+  }: {
+    form_data: FormData;
+    business_id?: string;
+  }) => {
+    const headers: Record<string, any> = {
+      'Content-Type': 'multipart/form-data',
+    };
+
+    if (business_id !== undefined) {
+      headers['Business-Id'] = business_id;
+    }
+
+    const { data } = await api.post<UploadMediaResponse>(
+      '/multimedia-upload/document',
+      form_data,
+      { headers }
     );
 
     return {
@@ -124,6 +159,17 @@ const multimediaSlice = createSlice({
       .addCase(uploadImage.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to upload images';
+      })
+      .addCase(uploadDocument.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(uploadDocument.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(uploadDocument.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to upload document';
       });
   },
 });

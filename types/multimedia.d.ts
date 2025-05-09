@@ -65,3 +65,9 @@ export interface UploadMediaResponse {
   message: string;
   data: MediaDetails;
 }
+
+export interface UploadDocumentResponse {
+  statusCode: number;
+  message: string;
+  data: MediaDetails[];
+}

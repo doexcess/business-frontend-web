@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import useProfile from '@/hooks/page/useProfile';
 import { cn } from '@/lib/utils';
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
@@ -10,6 +10,8 @@ import { useSocket } from '@/context/SocketProvider';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/redux/store';
 import { userOnline } from '@/redux/slices/chatSlice';
+import Icon from '@/components/ui/Icon';
+import Link from 'next/link';
 
 const Profile = ({
   isOpen,
@@ -29,6 +31,7 @@ const Profile = ({
   handleClose?: () => void;
 }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const router = useRouter();
   const { profile } = useProfile();
@@ -57,6 +60,23 @@ const Profile = ({
     fetchData();
   }, [allowAction, isConnected]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen((prev) => ({ ...prev, profileDialog: false }));
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <div>
       <button
@@ -66,17 +86,17 @@ const Profile = ({
         id='user-menu-button'
       >
         <span className='sr-only'>Open user menu</span>
-        <img
+        <Icon
           className='w-8 h-8 rounded-full'
-          src={cn(
-            '/icons/profile.png',
-            profile?.profile && profile?.profile?.profile_picture
-          )}
-          alt='user photo'
+          url={
+            (profile?.profile && profile?.profile?.profile_picture) ||
+            '/icons/icon.png'
+          }
         />
       </button>
       {isOpen.profileDialog && (
         <div
+          ref={dropdownRef}
           className='absolute z-50 my-4 w-56 text-base list-none bg-white divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600 rounded-xl right-3'
           id='dropdown'
         >
@@ -93,17 +113,17 @@ const Profile = ({
             aria-labelledby='dropdown'
           >
             <li>
-              <a
-                href='#'
-                className='block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white'
+              <Link
+                href='/settings'
+                className='block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-300 dark:hover:text-white'
               >
                 Settings
-              </a>
+              </Link>
             </li>
             <li>
               <a
-                href='#'
-                className='block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white'
+                href='/help'
+                className='block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-300 dark:hover:text-white'
               >
                 Help
               </a>

@@ -7,10 +7,14 @@ import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { Button } from '@/components/ui/Button';
 import Icon from '@/components/ui/Icon';
 import { PurchaseItemType } from '@/lib/utils';
+import { RootState } from '@/redux/store';
 import Link from 'next/link';
 import React from 'react';
+import { useSelector } from 'react-redux';
 
 const Home = () => {
+  const { profile } = useSelector((state: RootState) => state.auth);
+
   const performanceData = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr'],
     datasets: [
@@ -77,7 +81,9 @@ const Home = () => {
         {/* Main Content */}
         <div className='flex-1 text-black-1 dark:text-white'>
           <header className='flex flex-col md:flex-row justify-between md:items-center'>
-            <h2 className='text-2xl font-semibold'>Hello, John 👋🏼</h2>
+            <h2 className='text-2xl font-semibold'>
+              Hello, {profile?.name} 👋🏼
+            </h2>
             <div className='flex gap-2'>
               <Button
                 variant={'primary'}

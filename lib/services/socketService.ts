@@ -73,7 +73,7 @@ class SocketService {
       this.socket?.emit('userOffline', { userId });
     });
 
-    this.setupPresenceListeners();
+    // this.setupPresenceListeners();
   }
 
   // Call this after connection
@@ -119,68 +119,6 @@ class SocketService {
       delete this.listenerCallbacks[event];
     }
   }
-
-  // private setupListeners() {
-  //   if (!this.socket) return;
-
-  //   this.socket.on('connect', () => {
-  //     console.log('Socket connected');
-  //     // Get user ID from auth
-  //     const userId = (this.socket?.auth as SocketAuth)?.userId;
-  //     if (userId) {
-  //       // Add user to online users list
-  //       store.dispatch(userOnline(userId));
-  //       // Notify server about user being online
-  //       this.socket?.emit('userOnline', { userId });
-  //     }
-  //   });
-
-  //   this.socket.on('disconnect', () => {
-  //     console.log('Socket disconnected');
-  //     // Get user ID from auth
-  //     const userId = (this.socket?.auth as SocketAuth)?.userId;
-  //     if (userId) {
-  //       // Remove user from online users list
-  //       store.dispatch(userOffline(userId));
-  //       // Notify server about user being offline
-  //       this.socket?.emit('userOffline', { userId });
-  //     }
-  //   });
-
-  //   this.socket.on('error', (error) => console.error('Socket error:', error));
-
-  //   // Chat-specific listeners
-  //   this.socket.on('messagesRetrieved', (response: MessagesResponse) => {
-  //     if (response.status === 'success') {
-  //       store.dispatch(
-  //         messagesRetrieved({
-  //           messages: response.data.result,
-  //           chatId: response.data.chatId,
-  //         })
-  //       );
-  //     }
-  //   });
-
-  //   // Online status listeners
-  //   this.socket.on('userOnline', (data: { userId: string }) => {
-  //     console.log(data);
-
-  //     store.dispatch(userOnline(data.userId));
-  //   });
-
-  //   this.socket.on('userOffline', (data: { userId: string }) => {
-  //     store.dispatch(userOffline(data.userId));
-  //   });
-
-  //   this.socket.on('messageRead', (data: { messageId: string }) => {
-  //     store.dispatch(
-  //       updateMessageStatus({
-  //         messageId: data.messageId,
-  //         read: true,
-  //       })
-  //     );
-  //   });
-  // }
 
   public async chatsRetrieved(user_id: string) {
     // Chat-specific listeners
