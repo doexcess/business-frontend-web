@@ -3,16 +3,16 @@ import PageHeading from '@/components/PageHeading';
 import { Button } from '@/components/ui/Button';
 import React from 'react';
 
-const CourseContent = () => {
+const CoursePreview = () => {
   return (
     <main className='min-h-screen'>
       <div className='section-container pb-4'>
         <PageHeading
-          title='Add course contents'
+          title='Preview your course'
           enableBreadCrumb={true}
           layer2='Products'
           layer3='Courses'
-          layer4='Contents'
+          layer4='Preview'
           enableBackButton={true}
           ctaButtons={
             <div className='flex gap-2 h-10'>
@@ -26,7 +26,7 @@ const CourseContent = () => {
                 variant='primary'
                 className='dark:text-white hover:bg-primary-800 hover:text-white'
               >
-                Next
+                Publish
               </Button>
             </div>
           }
@@ -34,11 +34,11 @@ const CourseContent = () => {
 
         <section className='mt-4'>
           {/* Step Progress Indicator */}
-          <CourseProgressIndicator step={2} />
+          <CourseProgressIndicator step={3} />
         </section>
       </div>
     </main>
   );
 };
 
-export default CourseContent;
+export default CoursePreview;
