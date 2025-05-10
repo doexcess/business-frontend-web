@@ -98,7 +98,12 @@ const Filter = ({
             </h1>
           )}
         </div>
-        <div className={`flex items-center flex-row-reverse lg:flex-row gap-2`}>
+        <div
+          className={cn(
+            `flex items-center flex-row-reverse lg:flex-row gap-2`,
+            enableRightSearchBar && 'flex-row'
+          )}
+        >
           {enableRightSearchBar && (
             <form
               onSubmit={handleSearchFormSubmit}

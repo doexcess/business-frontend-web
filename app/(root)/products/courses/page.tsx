@@ -1,8 +1,8 @@
-import CourseFilters from '@/components/dashboard/course/CourseFilters';
 import RecentCourses from '@/components/dashboard/course/RecentCourses';
 import PageHeading from '@/components/PageHeading';
-import { Button } from '@/components/ui/Button';
+
 import Icon from '@/components/ui/Icon';
+import Link from 'next/link';
 import React from 'react';
 
 const Courses = () => {
@@ -17,9 +17,12 @@ const Courses = () => {
           layer3='Courses'
           ctaButtons={
             <div className='flex-shrink-0 self-start'>
-              <Button variant='primary' className='text-md py-2 flex gap-1'>
-                <Icon url='/icons/landing/plus.svg' /> Create Course
-              </Button>
+              <Link
+                href='/products/courses/add'
+                className='text-md flex gap-1 bg-primary p-2 px-4 rounded-lg'
+              >
+                <Icon url='/icons/landing/plus.svg' /> Add Course
+              </Link>
             </div>
           }
         />
