@@ -11,8 +11,10 @@ import { cn, getISODateString, now, oneMonthAgo } from '@/lib/utils';
 
 const Filter = ({
   pageTitle,
+  pageTitleClass,
   extra,
   showSearch = true,
+  enableRightSearchBar = false,
   showFullSearchWidth = false,
   searchPlaceholder = 'Search',
   showPeriod = true,
@@ -21,8 +23,10 @@ const Filter = ({
   handleRefresh,
 }: {
   pageTitle?: string;
+  pageTitleClass?: string;
   extra?: JSX.Element;
   showSearch?: boolean;
+  enableRightSearchBar?: boolean;
   showFullSearchWidth?: boolean;
   searchPlaceholder?: string;
   showPeriod?: boolean;
@@ -66,7 +70,7 @@ const Filter = ({
         } lg:flex-row gap-3 lg:gap-0`}
       >
         <div className={`flex items-center gap-2 flex-[4]`}>
-          {showSearch ? (
+          {enableRightSearchBar === false && showSearch ? (
             <form
               onSubmit={handleSearchFormSubmit}
               className={cn(
@@ -84,20 +88,45 @@ const Filter = ({
               />
             </form>
           ) : (
-            <h1 className='text-2xl font-bold'>{pageTitle!}</h1>
+            <h1
+              className={cn(
+                'text-2xl font-bold',
+                pageTitleClass && pageTitleClass
+              )}
+            >
+              {pageTitle!}
+            </h1>
           )}
         </div>
         <div className={`flex items-center flex-row-reverse lg:flex-row gap-2`}>
+          {enableRightSearchBar && (
+            <form
+              onSubmit={handleSearchFormSubmit}
+              className={cn(
+                'w-full',
+                !showFullSearchWidth && 'lg:w-[50%] xl:w-[35%]'
+              )}
+            >
+              <Input
+                type='text'
+                name='search'
+                placeholder={searchPlaceholder}
+                value={searchQuery}
+                onChange={(e: any) => setSearchQuery(e.target.value)}
+                className='w-full bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500'
+              />
+            </form>
+          )}
           <button
             title='Search with date filter'
-            className='text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-2 py-2 me-2 dark:bg-gray-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800 flex gap-1 items-center'
+            className='text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-2 py-2 dark:bg-gray-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800 flex gap-1 items-center'
             onClick={() => setOpenModal(true)}
           >
             <HiDotsVertical size={20} className={'text-2xl'} />
           </button>
           <button
             title='Refresh'
-            className='text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-2 py-2 me-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 flex gap-1 items-center'
+            className='text-white bg-primary-main hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-2 py-2 dark:bg-primary-main dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 flex gap-1 items-center'
             onClick={handleRefreshClick}
           >
             <HiRefresh size={20} className={'text-2xl'} />

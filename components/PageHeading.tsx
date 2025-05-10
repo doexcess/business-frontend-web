@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 
 const PageHeading = ({
   title,
+  brief,
   enableBreadCrumb,
   layer1 = 'Dashboard',
   layer2,
@@ -16,6 +17,7 @@ const PageHeading = ({
   ctaButtons,
 }: {
   title?: string | JSX.Element;
+  brief?: string | JSX.Element;
   enableBreadCrumb?: boolean;
   layer1?: string;
   layer2?: string;
@@ -147,15 +149,14 @@ const PageHeading = ({
             Go Back
           </Button>
         )}
-        <div className='flex justify-between'>
-          {title && (
-            <h1
-              className='text-2xl font-bold text-gray-700
+        <div className='flex flex-col md:flex-row justify-between gap-1'>
+          <div
+            className='text-gray-700
 dark:text-white'
-            >
-              {title}
-            </h1>
-          )}
+          >
+            {title && <h1 className='text-2xl font-bold '>{title}</h1>}
+            <p>{brief && brief}</p>
+          </div>
           {ctaButtons}
         </div>
       </div>

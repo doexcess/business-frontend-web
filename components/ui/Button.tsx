@@ -23,7 +23,7 @@ const buttonVariants = cva(
         green:
           'bg-green-600 text-white hover:bg-green-700 focus:ring-4 focus:ring-green-300 dark:bg-green-800 dark:hover:bg-green-900 dark:focus:ring-green-900',
         primary:
-          'bg-primary-main text-white hover:bg-primary-400 focus:ring-4 focus:ring-primary-400 dark:bg-primary-main dark:hover:bg-primary-400 dark:focus:bg-primary-400',
+          'bg-primary-main text-white hover:bg-primary-400 focus:ring-4 focus:ring-primary-800 dark:bg-primary-main dark:hover:bg-primary-800 dark:focus:bg-primary-800',
       },
       size: {
         default: 'px-5 py-3',

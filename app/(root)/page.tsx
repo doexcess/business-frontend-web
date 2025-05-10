@@ -86,8 +86,8 @@ const Home = () => {
             </h2>
             <div className='flex gap-2'>
               <Button
-                variant={'primary'}
-                size={'icon'}
+                variant='primary'
+                size='icon'
                 className='hover:bg-primary-800'
               >
                 <Icon url='/icons/landing/plus.svg' />

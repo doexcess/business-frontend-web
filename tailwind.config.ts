@@ -69,6 +69,7 @@ const config: Config = {
   plugins: [
     require('@tailwindcss/forms'),
     require('flowbite/plugin'),
+    require('tailwind-scrollbar-hide'),
     flowbite.plugin(),
   ],
 };
