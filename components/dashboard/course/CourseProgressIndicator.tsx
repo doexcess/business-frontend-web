@@ -70,7 +70,7 @@ const CourseProgressIndicator = ({ step = 1 }: CourseProgressIndicator) => {
           <div className='flex flex-col'>
             <div
               className={cn(
-                'w-full flex items-center justify-center  font-semibold',
+                'w-full flex items-center justify-center font-semibold text-sm md:text-base',
                 (step === 1 || step === 2 || step === 3) && 'dark:text-white'
               )}
             >
@@ -83,7 +83,7 @@ const CourseProgressIndicator = ({ step = 1 }: CourseProgressIndicator) => {
           <div className='flex flex-col'>
             <div
               className={cn(
-                'w-full flex items-center justify-center  font-semibold',
+                'w-full flex items-center justify-center text-sm md:text-base font-semibold',
                 (step === 2 || step === 3) && 'dark:text-white'
               )}
             >
@@ -95,7 +95,7 @@ const CourseProgressIndicator = ({ step = 1 }: CourseProgressIndicator) => {
           <div className='flex flex-col'>
             <div
               className={cn(
-                'w-full flex items-center justify-center  font-semibold',
+                'w-full flex items-center justify-center text-sm md:text-base font-semibold',
                 step === 3 && 'dark:text-white'
               )}
             >

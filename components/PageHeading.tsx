@@ -144,7 +144,7 @@ const PageHeading = ({
 
       <div className='space-y-4 gap-4 mt-5'>
         {enableBackButton && (
-          <Button className='p-2 px-3' onClick={goBack}>
+          <Button className='p-2 px-3 w-32' onClick={goBack}>
             <IoIosArrowBack />
             Go Back
           </Button>
