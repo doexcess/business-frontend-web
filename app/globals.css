@@ -196,3 +196,31 @@ body {
 .animate-shimmer-dark {
   animation: shimmer-dark 1.5s infinite;
 }
+
+/* Mobile Layout: Stack sidebar vertically */
+@media (max-width: 768px) {
+  .md\:grid {
+    display: block;
+  }
+
+  .md\:col-span-1 {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .md\:col-span-3 {
+    width: 100%;
+  }
+
+  .section-container {
+    padding: 15px;
+  }
+}
+
+/* Optional: Sticky Sidebar on Larger Screens */
+@media (min-width: 768px) {
+  .md\:col-span-1 {
+    position: sticky;
+    top: 20px;
+  }
+}

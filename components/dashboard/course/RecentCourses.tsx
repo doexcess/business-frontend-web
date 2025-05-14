@@ -1,10 +1,6 @@
-import CircularProgress from '@/components/CircularProgress';
 import ThemeDiv from '@/components/ui/ThemeDiv';
-import ThemeDivBorder from '@/components/ui/ThemeDivBorder';
-import Image from 'next/image';
 import React from 'react';
 import CourseCard from './CourseCard';
-import Input from '@/components/ui/Input';
 import CourseGridItem from './CourseGridItem';
 import Filter from '@/components/Filter';
 

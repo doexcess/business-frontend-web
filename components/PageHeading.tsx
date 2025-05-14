@@ -41,7 +41,7 @@ const PageHeading = ({
               <li className='inline-flex items-center'>
                 <Link
                   href='/'
-                  className='inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white'
+                  className='inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-main dark:text-gray-400 dark:hover:text-white'
                 >
                   <svg
                     className='w-3 h-3 me-2.5'
@@ -144,7 +144,7 @@ const PageHeading = ({
 
       <div className='space-y-4 gap-4 mt-5'>
         {enableBackButton && (
-          <Button className='p-2 px-3 w-32' onClick={goBack}>
+          <Button variant='primary' className='p-2 px-3' onClick={goBack}>
             <IoIosArrowBack />
             Go Back
           </Button>

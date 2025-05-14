@@ -5,7 +5,7 @@ import CourseProgressIndicator from '@/components/dashboard/course/CourseProgres
 import PageHeading from '@/components/PageHeading';
 import { Button } from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/textarea';
+import ThemeDivBorder from '@/components/ui/ThemeDivBorder';
 
 type Lesson = {
   title: string;
@@ -82,6 +82,18 @@ const CourseContent = () => {
     }
   };
 
+  const removeModule = (index: number) => {
+    const updatedModules = [...modules];
+    updatedModules.splice(index, 1);
+    setModules(updatedModules);
+  };
+
+  const removeLesson = (moduleIndex: number, lessonIndex: number) => {
+    const updatedModules = [...modules];
+    updatedModules[moduleIndex].lessons.splice(lessonIndex, 1);
+    setModules(updatedModules);
+  };
+
   const handleSave = () => {
     console.log('Modules to Save:', modules);
     // You can replace this with an API call and handle file uploads using FormData.
@@ -122,7 +134,10 @@ const CourseContent = () => {
 
         <div className='mt-6 space-y-6'>
           {modules.map((module, mIndex) => (
-            <div key={mIndex} className='border rounded-lg p-4 shadow-sm'>
+            <ThemeDivBorder
+              key={mIndex}
+              className='border rounded-lg p-4 shadow-sm'
+            >
               <h3 className='text-lg font-semibold mb-2'>
                 Module {mIndex + 1}
               </h3>
@@ -156,7 +171,7 @@ const CourseContent = () => {
                       )
                     }
                   />
-                  <Textarea
+                  {/* <Textarea
                     placeholder='Lesson Content'
                     className='mb-2'
                     value={lesson.content}
@@ -168,7 +183,7 @@ const CourseContent = () => {
                         e.target.value
                       )
                     }
-                  />
+                  /> */}
 
                   <div className='mb-2'>
                     <label className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
@@ -194,6 +209,15 @@ const CourseContent = () => {
                         />
                       </div>
                     )}
+                    {module.lessons.length > 1 && (
+                      <Button
+                        variant='ghost'
+                        className='text-red-500 text-sm'
+                        onClick={() => removeLesson(mIndex, lIndex)}
+                      >
+                        Remove Lesson
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -205,10 +229,19 @@ const CourseContent = () => {
               >
                 + Add Lesson
               </Button>
-            </div>
+              {modules.length > 1 && (
+                <Button
+                  variant='ghost'
+                  className='text-red-600 mt-2'
+                  onClick={() => removeModule(mIndex)}
+                >
+                  Remove Module
+                </Button>
+              )}
+            </ThemeDivBorder>
           ))}
 
-          <Button variant='secondary' onClick={addModule}>
+          <Button variant='primary' onClick={addModule}>
             + Add Module
           </Button>
         </div>
