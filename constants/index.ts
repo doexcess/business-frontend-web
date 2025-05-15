@@ -22,6 +22,7 @@ import {
   IoIosHelp,
   IoIosPower,
   IoIosPricetag,
+  IoIosWallet,
   IoMdChatboxes,
 } from 'react-icons/io';
 
@@ -70,6 +71,32 @@ export const sidebarLinks = [
     icon: HiChartPie,
     route: '/reports',
     label: 'Reports',
+    group: groups.ONE,
+    roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN],
+    activeIconColor: 'text-primary-main', // Add this
+  },
+  {
+    icon: IoIosWallet,
+    route: '/finanacials',
+    label: 'Financials',
+    group: groups.ONE,
+    roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN],
+    activeIconColor: 'text-primary-main', // Add this
+    items: [
+      {
+        route: '/financials/wallet',
+        label: 'Wallet',
+      },
+      {
+        route: '/financials/payouts',
+        label: 'Payouts',
+      },
+    ],
+  },
+  {
+    icon: IoIosPricetag,
+    route: '/coupons',
+    label: 'Coupons',
     group: groups.ONE,
     roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN],
     activeIconColor: 'text-primary-main', // Add this

@@ -55,6 +55,7 @@ const RecentCourses = () => {
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((item) => (
             <CourseGridItem
               key={item}
+              id={item.toString()}
               imageSrc='/images/course/course2.png'
               title='Design Essentials'
               price={4000}

@@ -224,3 +224,79 @@ body {
     top: 20px;
   }
 }
+
+/* Dark mode support for Quill Editor */
+.dark .quill-container .ql-toolbar {
+  background-color: #1f2937; /* gray-800 */
+  border-color: #374151; /* gray-700 */
+  color: #ffffff;
+}
+
+.dark .quill-container .ql-toolbar button,
+.dark .quill-container .ql-toolbar .ql-picker-label,
+.dark .quill-container .ql-toolbar .ql-picker-item {
+  color: #ffffff !important;
+  /* fill: #ffffff !important; */
+  /* stroke: #ffffff !important; */
+  background-color: transparent;
+  border: none;
+}
+
+/* Dropdown (font, size, etc.) */
+.dark .quill-container .ql-picker-options {
+  background-color: #1f2937;
+  color: #ffffff;
+  border-color: #4b5563; /* gray-600 */
+}
+
+/* Hover and active styles */
+.dark .quill-container .ql-toolbar button:hover,
+.dark .quill-container .ql-toolbar .ql-picker-label:hover {
+  background-color: #374151; /* gray-700 */
+}
+
+/* Active format buttons */
+.dark .quill-container .ql-toolbar button.ql-active {
+  background-color: #4b5563 !important; /* gray-600 */
+}
+
+/* Editor content area */
+.dark .quill-container .ql-container {
+  background-color: #111827; /* gray-900 */
+  border-color: #374151;
+  color: #ffffff;
+}
+
+.dark .quill-container .ql-editor {
+  color: #ffffff;
+  min-height: 150px;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Scrollbar styling (optional) */
+.dark .quill-container .ql-editor::-webkit-scrollbar {
+  width: 8px;
+}
+.dark .quill-container .ql-editor::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+}
+
+/* For modal */
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 0.25s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
