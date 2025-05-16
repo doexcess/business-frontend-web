@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Select from '@/components/ui/Select';
+import Select from '@/components/Select';
 import Icon from '@/components/ui/Icon';
 
 const CourseFilters = () => {

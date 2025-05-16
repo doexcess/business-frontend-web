@@ -10,6 +10,7 @@ import {
   HiOutlineUpload,
   HiQuestionMarkCircle,
   HiUpload,
+  HiUserGroup,
   HiUsers,
   HiViewBoards,
 } from 'react-icons/hi';
@@ -68,6 +69,14 @@ export const sidebarLinks = [
     activeIconColor: 'text-primary-main', // Add this
   },
   {
+    icon: HiUserGroup,
+    route: '/team',
+    label: 'Team',
+    group: groups.ONE,
+    roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN],
+    activeIconColor: 'text-primary-main', // Add this
+  },
+  {
     icon: HiChartPie,
     route: '/reports',
     label: 'Reports',
@@ -77,21 +86,11 @@ export const sidebarLinks = [
   },
   {
     icon: IoIosWallet,
-    route: '/finanacials',
-    label: 'Financials',
+    route: '/wallet',
+    label: 'Wallet',
     group: groups.ONE,
     roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN],
     activeIconColor: 'text-primary-main', // Add this
-    items: [
-      {
-        route: '/financials/wallet',
-        label: 'Wallet',
-      },
-      {
-        route: '/financials/payouts',
-        label: 'Payouts',
-      },
-    ],
   },
   {
     icon: IoIosPricetag,

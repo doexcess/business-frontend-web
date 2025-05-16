@@ -68,7 +68,7 @@ const SecuritySettings = () => {
   return (
     <div className='text-black-1 dark:text-white'>
       <form className='space-y-6' onSubmit={handleSubmit}>
-        <Card className='dark:border-gray-800'>
+        <Card className='dark:border-gray-600'>
           <CardHeader>
             <CardTitle>Password</CardTitle>
           </CardHeader>

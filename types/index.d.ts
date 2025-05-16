@@ -19,7 +19,7 @@ declare type SelectProps = {
   name: string;
   defaultValue?: string;
   className?: string;
-  data: string[];
+  data: string[] | any[];
   required?: boolean;
   value?: string | string[];
   onChange?: any;

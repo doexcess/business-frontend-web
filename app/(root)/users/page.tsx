@@ -1,33 +1,29 @@
 import ClientMgtTable from '@/components/dashboard/ClientMgtTable';
 import ClientTableFilters from '@/components/dashboard/ClientTableFilters';
+import PageHeading from '@/components/PageHeading';
 import { Button } from '@/components/ui/Button';
 import Icon from '@/components/ui/Icon';
 import React from 'react';
 
 const Users = () => {
   return (
-    <main className='section-container'>
-      <div className='h-full space-y-3'>
-        {/* Main Content */}
-        <div className='flex-1 text-black-1 dark:text-white mb-3'>
-          <header className='flex flex-col md:flex-row justify-between md:items-center gap-2 md:gap-0'>
-            <div>
-              <h2 className='text-2xl font-semibold'>Client Management</h2>
-              <p className='text-muted'>
-                Monitor your business growth and engagement trends overtime
-              </p>
-            </div>
-            <div className='flex gap-2'>
-              <Button
-                variant={'primary'}
-                className='text-lg py-1 md:py-2 flex gap-2'
-              >
+    <main className='min-h-screen bg-gray-50 dark:bg-gray-900'>
+      <div className='section-container space-y-6'>
+        {/* Header */}
+        <PageHeading
+          title='Client Management'
+          brief='Monitor your business growth and engagement trends overtime'
+          enableBreadCrumb={true}
+          layer2='Client Management'
+          ctaButtons={
+            <div className='flex-shrink-0 self-start'>
+              <Button className='text-md bg-primary text-md flex p-2 px-4 gap-2'>
                 <Icon url='/icons/clients/download-all.svg' />
                 Download All
               </Button>
             </div>
-          </header>
-        </div>
+          }
+        />
 
         <ClientTableFilters />
 

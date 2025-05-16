@@ -14,6 +14,8 @@ import {
 import { Table } from '@/components/ui/table'; // hypothetical reusable table component
 import { cn } from '@/lib/utils'; // optional utility for className handling
 import { Modal } from '@/components/ui/Modal';
+import Link from 'next/link';
+import Input from '@/components/ui/Input';
 
 const mockTransactions = [
   {
@@ -78,7 +80,7 @@ const Wallet = () => {
               <FaListUl className='dark:text-white' />
             </div>
             <div>
-              <p className='text-sm text-gray-500 dark:text-gray-400'>
+              <p className=' text-gray-500 dark:text-white'>
                 Total Transactions
               </p>
               <h4 className='text-xl font-bold text-gray-800 dark:text-white'>
@@ -93,9 +95,7 @@ const Wallet = () => {
               <FaArrowDown />
             </div>
             <div>
-              <p className='text-sm text-gray-500 dark:text-gray-400'>
-                Total Credit
-              </p>
+              <p className=' text-gray-500 dark:text-white'>Total Credit</p>
               <h4 className='text-xl font-bold text-green-600'>
                 ₦{totalCredit.toLocaleString()}
               </h4>
@@ -108,9 +108,7 @@ const Wallet = () => {
               <FaArrowUp />
             </div>
             <div>
-              <p className='text-sm text-gray-500 dark:text-gray-400'>
-                Total Debit
-              </p>
+              <p className=' text-gray-500 dark:text-white'>Total Debit</p>
               <h4 className='text-xl font-bold text-red-600'>
                 ₦{totalDebit.toLocaleString()}
               </h4>
@@ -119,14 +117,12 @@ const Wallet = () => {
 
           {/* Available Funds */}
           <div className='rounded-lg p-5 bg-white dark:bg-gray-800 border dark:border-gray-700 shadow-sm flex items-center gap-4'>
-            <div className='p-3 bg-blue-100 text-blue-600 rounded-full'>
+            <div className='p-3 bg-blue-100 text-primary-main rounded-full'>
               <FaWallet />
             </div>
             <div>
-              <p className='text-sm text-gray-500 dark:text-gray-400'>
-                Available Funds
-              </p>
-              <h4 className='text-xl font-bold text-blue-600'>
+              <p className=' text-gray-500 dark:text-white'>Available Funds</p>
+              <h4 className='text-xl font-bold dark:text-primary-faded text-primary-main'>
                 ₦{walletBalance.toLocaleString()}
               </h4>
             </div>
@@ -139,9 +135,9 @@ const Wallet = () => {
             <h3 className='text-lg font-semibold text-gray-800 dark:text-white'>
               Recent Transactions
             </h3>
-            <Button size='sm' variant='ghost' className='text-primary'>
+            <Link href='/payments' className='dark:text-white'>
               View All
-            </Button>
+            </Link>
           </div>
 
           {mockTransactions.length > 0 ? (
@@ -236,18 +232,19 @@ const Wallet = () => {
               <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
                 Amount to Withdraw
               </label>
-              <input
+              <Input
                 type='number'
                 value={withdrawAmount}
                 onChange={(e) => setWithdrawAmount(e.target.value)}
                 placeholder='₦5000'
-                className='w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white'
+                className='w-full px-4 py-2 border rounded-md dark:bg-gray-600 dark:border-gray-600 dark:text-white'
               />
             </div>
 
             <div className='flex justify-end gap-2'>
               <Button
                 variant='outline'
+                className='dark:border-gray-600 dark:text-white text-gray-600'
                 onClick={() => setWithdrawModalOpen(false)}
               >
                 Cancel
@@ -255,6 +252,7 @@ const Wallet = () => {
               <Button
                 disabled={!withdrawAmount || Number(withdrawAmount) <= 0}
                 onClick={handleWithdraw}
+                className='dark:text-white'
               >
                 Submit
               </Button>

@@ -1,5 +1,5 @@
 import Input from '@/components/ui/Input';
-import Select from '@/components/ui/Select';
+import Select from '@/components/Select';
 import { Textarea } from '@/components/ui/textarea';
 import ThemeDiv from '@/components/ui/ThemeDiv';
 import React from 'react';

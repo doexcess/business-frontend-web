@@ -14,7 +14,7 @@ import useProfile from '@/hooks/page/useProfile';
 import { saveProfile } from '@/redux/slices/authSlice';
 import toast from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
-import Select from '../ui/Select';
+import Select from '../Select';
 import { Gender } from '@/lib/utils';
 import { Textarea } from '../ui/textarea';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
@@ -116,7 +116,7 @@ const GeneralSettings = () => {
   return (
     <div className='text-black-1 dark:text-white'>
       <form onSubmit={handleSubmit} className='space-y-6'>
-        <Card className='dark:border-gray-800'>
+        <Card className='dark:border-gray-600'>
           <CardHeader>
             <CardTitle>Profile Information</CardTitle>
           </CardHeader>
@@ -227,7 +227,7 @@ const GeneralSettings = () => {
           </CardContent>
         </Card>
 
-        <Card className='dark:border-gray-800'>
+        <Card className='dark:border-gray-600'>
           <CardHeader>
             <CardTitle>Preferences</CardTitle>
           </CardHeader>

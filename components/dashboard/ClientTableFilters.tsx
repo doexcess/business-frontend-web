@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Select from '../ui/Select';
+import Select from '../Select';
 import Icon from '../ui/Icon';
 
 const ClientTableFilters = () => {

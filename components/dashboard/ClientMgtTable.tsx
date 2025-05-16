@@ -165,26 +165,29 @@ const ClientMgtTable = () => {
         </table>
       </div>
 
-      <div className='flex justify-between items-center mt-4 pt-4 border-t border-gray-200'>
-        <div className='text-sm text-gray-500'>
+      <div className='flex justify-between items-center mt-4 pt-4 border-t border-gray-200 dark:border-gray-600'>
+        <div className='text-sm text-gray-500 dark:text-white'>
           Showing <span className='font-medium'>1</span> to{' '}
           <span className='font-medium'>11</span> of{' '}
           <span className='font-medium'>11</span> entries
         </div>
         <div className='flex space-x-2'>
-          <button className='px-3 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200'>
+          <button className='px-3 py-1 rounded-md bg-gray-100 border dark:bg-gray-800 dark:text-white dark:border-gray-600 text-gray-700 hover:bg-gray-200'>
             First
           </button>
-          <button className='px-3 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200'>
-            <Icon url='/icons/clients/angle-left.svg' />
+          <button className='px-3 py-1 rounded-md bg-gray-100 border dark:bg-gray-800 dark:text-white dark:border-gray-600 text-gray-700 hover:bg-gray-200'>
+            <Icon
+              url='/icons/clients/angle-left.svg'
+              className='dark:invert dark:brightness-0'
+            />
           </button>
-          <span className='px-3 py-1 text-gray-700 border rounded-lg'>
+          <span className='px-3 py-1 text-gray-700 border dark:bg-gray-800 dark:border-gray-600 dark:text-white rounded-lg'>
             Page 10 of 100
           </span>
-          <button className='px-3 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200'>
+          <button className='px-3 py-1 rounded-md bg-gray-100 border dark:bg-gray-800 dark:text-white dark:border-gray-600 text-gray-700 hover:bg-gray-200'>
             <Icon url='/icons/clients/angle-right.svg' />
           </button>
-          <button className='px-3 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200'>
+          <button className='px-3 py-1 rounded-md bg-gray-100 border dark:bg-gray-800 dark:text-white dark:border-gray-600 text-gray-700 hover:bg-gray-200'>
             Last
           </button>
         </div>
