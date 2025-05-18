@@ -6,8 +6,8 @@ import { cn } from '@/lib/utils';
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
 import { useRouter } from 'next/navigation';
 import { useSocket } from '@/context/SocketProvider';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '@/redux/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/redux/store';
 import { userOnline } from '@/redux/slices/chatSlice';
 import Icon from '@/components/ui/Icon';
 import Link from 'next/link';
@@ -38,7 +38,7 @@ const Profile = ({
   const router = useRouter();
   const { profile } = useProfile();
   const { orgs } = useOrgs();
-  const { org: organization } = useOrg();
+  const { org: organization } = useSelector((state: RootState) => state.org);
   const { isConnected } = useSocket();
 
   const [logoutOpenModal, setLogoutOpenModal] = useState(false);
@@ -158,7 +158,7 @@ const Profile = ({
                         {org.business_name}{' '}
                       </p>
                       {org.id === organization?.id && (
-                        <Icon url='icons/landing/selected.svg' width={15} />
+                        <Icon url='/icons/course/selected.png' width={15} />
                       )}
                     </button>
                   </li>
