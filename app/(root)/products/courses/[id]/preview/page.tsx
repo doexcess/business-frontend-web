@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Menu } from 'lucide-react';
+import { ChevronRight, ChevronDown, Menu } from 'lucide-react';
 import CourseProgressIndicator from '@/components/dashboard/course/CourseProgressIndicator';
 import VideoPlayer from '@/components/VideoPlayer';
 import PageHeading from '@/components/PageHeading';
 import { Button } from '@/components/ui/Button';
 import ThemeDivBorder from '@/components/ui/ThemeDivBorder';
 import { useConfettiStore } from '@/hooks/use-confetti-store'; // adjust path as needed
+import { cn } from '@/lib/utils';
 
 type Lesson = {
   title: string;
@@ -105,62 +106,9 @@ const CoursePreview = () => {
           <CourseProgressIndicator step={3} />
         </section>
 
-        {/* Mobile Toggle Button */}
-        <div className='md:hidden flex justify-between items-center mb-4 dark:text-white'>
-          <Button
-            variant='outline'
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className='flex items-center gap-2'
-          >
-            <Menu className='w-5 h-5' />
-            <span>{isSidebarOpen ? 'Hide Lessons' : 'Show Lessons'}</span>
-          </Button>
-        </div>
-
         <div className='flex flex-col md:grid md:grid-cols-4 gap-6'>
-          {/* Sidebar */}
-          <aside
-            className={`
-    md:col-span-1 bg-white dark:bg-gray-900 border dark:border-gray-600 rounded-md p-4 max-h-[80vh] overflow-y-auto
-    ${isSidebarOpen ? 'block' : 'hidden'} md:block
-  `}
-          >
-            {sampleModules.map((module, mIdx) => (
-              <div key={mIdx} className='mb-4'>
-                <h3 className='font-bold mb-2 text-primary-main text-lg'>
-                  Module {mIdx + 1}: {module.title}
-                </h3>
-                <ul className='space-y-1'>
-                  {module.lessons.map((lesson, lIdx) => (
-                    <li
-                      key={lIdx}
-                      onClick={() => {
-                        setSelectedLesson(lesson);
-                        setIsSidebarOpen(false); // Close on mobile
-                      }}
-                      className={`cursor-pointer px-3 py-2 rounded hover:bg-primary-50 dark:hover:bg-gray-800 transition dark:text-white ${
-                        selectedLesson?.title === lesson.title
-                          ? 'bg-primary-100 dark:bg-primary-800'
-                          : ''
-                      }`}
-                    >
-                      <div className='relative'>
-                        <span
-                          className='block text-ellipsis overflow-hidden whitespace-nowrap'
-                          title={lesson.title} // Tooltip for full text on hover
-                        >
-                          {lesson.title}
-                        </span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </aside>
-
           {/* Main Content */}
-          <ThemeDivBorder className='md:col-span-3 bg-white dark:bg-gray-900 dark:border-gray-600 border rounded-md p-4 md:p-6'>
+          <ThemeDivBorder className='order-1 md:order-none md:col-span-3 bg-white dark:bg-gray-900 dark:border-gray-600 border rounded-md p-4 md:p-6 flex flex-col'>
             {selectedLesson && (
               <>
                 <h2 className='text-xl md:text-2xl font-semibold mb-2'>
@@ -191,6 +139,78 @@ const CoursePreview = () => {
               </>
             )}
           </ThemeDivBorder>
+
+          {/* Sidebar & Mobile Toggle */}
+          <div className='order-2 md:order-none flex flex-col'>
+            {/* Toggle Button - mobile only */}
+            <div className='md:hidden flex justify-end my-4 px-4 dark:text-white'>
+              <Button
+                variant='outline'
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className='flex items-center gap-2 w-full max-w-40 justify-center'
+              >
+                <Menu className='w-5 h-5' />
+                <span>{isSidebarOpen ? 'Hide Lessons' : 'Show Lessons'}</span>
+              </Button>
+            </div>
+
+            {/* Sidebar */}
+            <aside
+              className={cn(
+                'md:col-span-1 bg-white dark:bg-gray-900 border dark:border-gray-600 rounded-md p-4 flex-1 overflow-y-auto',
+                isSidebarOpen ? 'block' : 'hidden md:block'
+              )}
+              style={{ maxHeight: 'calc(100vh - 100px)' }}
+            >
+              {sampleModules.map((module, mIdx) => {
+                const [isOpen, setIsOpen] = useState(true);
+                return (
+                  <div key={mIdx} className='mb-4'>
+                    <div
+                      className='flex items-center justify-between cursor-pointer mb-2'
+                      onClick={() => setIsOpen(!isOpen)}
+                    >
+                      <h3 className='font-bold text-primary-main text-lg'>
+                        Module {mIdx + 1}: {module.title}
+                      </h3>
+                      {isOpen ? (
+                        <ChevronDown className='w-4 h-4' />
+                      ) : (
+                        <ChevronRight className='w-4 h-4' />
+                      )}
+                    </div>
+
+                    {isOpen && (
+                      <ul className='space-y-1'>
+                        {module.lessons.map((lesson, lIdx) => (
+                          <li
+                            key={lIdx}
+                            onClick={() => {
+                              setSelectedLesson(lesson);
+                              setIsSidebarOpen(false);
+                            }}
+                            className={cn(
+                              'cursor-pointer px-3 py-2 rounded hover:bg-primary-50 dark:hover:bg-gray-800 transition dark:text-white',
+                              selectedLesson?.title === lesson.title
+                                ? 'bg-primary-100 dark:bg-primary-800'
+                                : ''
+                            )}
+                          >
+                            <span
+                              className='block text-ellipsis overflow-hidden whitespace-nowrap'
+                              title={lesson.title}
+                            >
+                              {lesson.title}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })}
+            </aside>
+          </div>
         </div>
       </div>
     </main>

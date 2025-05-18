@@ -1,4 +1,4 @@
-import RecentCourses from '@/components/dashboard/course/RecentCourses';
+import CoursesComp from '@/components/dashboard/course/Courses';
 import PageHeading from '@/components/PageHeading';
 
 import Icon from '@/components/ui/Icon';
@@ -28,8 +28,8 @@ const Courses = () => {
         />
 
         <section className='my-4'>
-          {/* Recents */}
-          <RecentCourses />
+          {/* Courses component */}
+          <CoursesComp />
         </section>
       </div>
     </main>

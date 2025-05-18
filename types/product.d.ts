@@ -1,3 +1,5 @@
+import { ProductStatus } from '@/lib/utils';
+
 export interface BusinessInfo {
   id: string;
   user_id: string;
@@ -95,11 +97,11 @@ export enum Productinterface {
   TICKET = 'TICKET',
 }
 
-export enum ProductStatus {
-  DRAFT = 'DRAFT',
-  PUBLISHED = 'PUBLISHED',
-  ARCHIVED = 'ARCHIVED',
-}
+// export enum ProductStatus {
+//   DRAFT = 'DRAFT',
+//   PUBLISHED = 'PUBLISHED',
+//   ARCHIVED = 'ARCHIVED',
+// }
 
 export interface ProductDetails {
   id: string;
@@ -146,7 +148,7 @@ export interface CategoryWithCreator {
 
 export interface CategoryResponse {
   statusCode: number;
-  data: CategoryWithCreatory[];
+  data: CategoryWithCreator[];
   count: number;
 }
 
@@ -154,4 +156,51 @@ export interface CreateCourseResponse {
   statusCode: number;
   message: string;
   data: ProductDetails;
+}
+
+export interface Course {
+  id: string;
+  title: string;
+  description: string;
+  price: string; // You can change this to `number` if it's numeric in actual use
+  currency: string;
+  keywords: string | null;
+  metadata: any | null; // Define a specific shape if metadata has a known structure
+  status: ProductStatus;
+  published_at: string | null;
+  archived_at: string | null;
+  creator_id: string;
+  created_at: string;
+  creator: CreatorBasic;
+  multimedia: Multimedia;
+  category: Category;
+}
+
+export interface CourseResponse {
+  statusCode: number;
+  data: Course[];
+  count: number;
+}
+
+export interface CourseDetails {
+  id: string;
+  title: string;
+  description: string;
+  price: string;
+  currency: string;
+  keywords: string | null;
+  metadata: any | null;
+  status: ProductStatus;
+  published_at: string | null;
+  archived_at: string | null;
+  creator_id: string;
+  created_at: string;
+  creator: Creator;
+  multimedia: Multimedia;
+  category: Category;
+}
+
+export interface CourseDetailsResponse {
+  statusCode: number;
+  data: CourseDetails;
 }

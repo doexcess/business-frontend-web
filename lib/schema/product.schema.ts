@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { ProductStatus } from '../utils';
 
 export const CreateCourseSchema = Joi.object({
   title: Joi.string().trim().min(3).max(255).required(),
@@ -32,6 +33,29 @@ export interface CreateCourseProps {
   multimedia_id: string;
   price: number | null;
   category_id: string;
+}
+
+export const UpdateCourseSchema = Joi.object({
+  title: Joi.string().min(3).max(255).optional(),
+  price: Joi.number().min(0).required(),
+  description: Joi.string().min(10).optional(),
+  keywords: Joi.string().allow(null, '').optional(),
+  metadata: Joi.object().unknown(true).allow(null).optional(), // if metadata is a JSON object
+  category_id: Joi.string().uuid().optional(),
+  multimedia_id: Joi.string().uuid().optional(),
+  status: Joi.string()
+    .valid(...Object.values(ProductStatus))
+    .optional(),
+});
+export interface UpdateCourseProps {
+  title?: string;
+  price?: number | null;
+  description?: string;
+  keywords?: string;
+  metadata?: string;
+  category_id?: string;
+  multimedia_id?: string;
+  status?: string;
 }
 
 export const CreateBusinessProfileSchema = Joi.object({

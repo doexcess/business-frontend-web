@@ -1,10 +1,29 @@
+'use client';
+
 import { cn } from '@/lib/utils';
+import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
 
 interface CourseProgressIndicator {
   step?: number;
 }
 const CourseProgressIndicator = ({ step = 1 }: CourseProgressIndicator) => {
+  const params = useParams();
+  const router = useRouter();
+
+  const openStepPage = (newStep: number) => {
+    const path = `/products/courses/${params.id}`;
+    if (params?.id) {
+      if (newStep === 1) {
+        router.push(`${path}/edit`);
+      } else if (newStep === 2) {
+        router.push(`${path}/contents`);
+      } else if (newStep === 3) {
+        router.push(`${path}/preview`);
+      }
+    }
+  };
+
   return (
     <>
       <div className='flex items-center justify-between mx-auto mb-2'>
@@ -14,8 +33,10 @@ const CourseProgressIndicator = ({ step = 1 }: CourseProgressIndicator) => {
               className={cn(
                 'w-8 h-8 flex items-center justify-center rounded-full font-semibold border-2 border-primary-main text-primary-main',
                 (step === 1 || step === 2 || step === 3) &&
-                  'bg-primary-main text-white'
+                  'bg-primary-main text-white',
+                params?.id && 'hover:cursor-pointer'
               )}
+              onClick={openStepPage.bind(this, 1)}
             >
               1
             </div>
@@ -33,8 +54,10 @@ const CourseProgressIndicator = ({ step = 1 }: CourseProgressIndicator) => {
             <div
               className={cn(
                 'w-8 h-8 flex items-center justify-center rounded-full font-semibold border-2 border-primary-main text-primary-main',
-                (step === 2 || step === 3) && 'bg-primary-main text-white'
+                (step === 2 || step === 3) && 'bg-primary-main text-white',
+                params?.id && 'hover:cursor-pointer'
               )}
+              onClick={openStepPage.bind(this, 2)}
             >
               2
             </div>
@@ -51,8 +74,10 @@ const CourseProgressIndicator = ({ step = 1 }: CourseProgressIndicator) => {
             <div
               className={cn(
                 'w-8 h-8 flex items-center justify-center rounded-full font-semibold border-2 border-primary-main text-primary-main',
-                step === 3 && 'bg-primary-main text-white'
+                step === 3 && 'bg-primary-main text-white',
+                params?.id && 'hover:cursor-pointer'
               )}
+              onClick={openStepPage.bind(this, 3)}
             >
               3
             </div>

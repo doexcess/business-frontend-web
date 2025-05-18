@@ -149,7 +149,7 @@ const PageHeading = ({
             Go Back
           </Button>
         )}
-        <div className='flex flex-col md:flex-row justify-between items-center gap-1'>
+        <div className='flex flex-col md:flex-row md:justify-between md:items-center gap-1'>
           <div
             className='text-gray-700
 dark:text-white mr-auto'
