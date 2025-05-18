@@ -5,13 +5,16 @@ import useProfile from '@/hooks/page/useProfile';
 import { cn } from '@/lib/utils';
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
 import { useRouter } from 'next/navigation';
-import { socketService } from '@/lib/services/socketService';
 import { useSocket } from '@/context/SocketProvider';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/redux/store';
 import { userOnline } from '@/redux/slices/chatSlice';
 import Icon from '@/components/ui/Icon';
 import Link from 'next/link';
+import useOrgs from '@/hooks/page/useOrgs';
+import { IoIosAdd } from 'react-icons/io';
+import { fetchOrg, switchToOrg } from '@/redux/slices/orgSlice';
+import useOrg from '@/hooks/page/useOrg';
 
 const Profile = ({
   isOpen,
@@ -32,12 +35,14 @@ const Profile = ({
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-
   const router = useRouter();
   const { profile } = useProfile();
+  const { orgs } = useOrgs();
+  const { org: organization } = useOrg();
+  const { isConnected } = useSocket();
+
   const [logoutOpenModal, setLogoutOpenModal] = useState(false);
   const [allowAction, setAllowAction] = useState(false);
-  const { isConnected } = useSocket();
 
   const handleToggle = () =>
     setIsOpen({ profileDialog: !isOpen.profileDialog, appsDialog: false });
@@ -47,17 +52,17 @@ const Profile = ({
     if (typeof handleClose === 'function') handleClose();
   };
 
+  const handleSwitchOrg = (id: string) => {
+    dispatch(fetchOrg(id));
+  };
+
   useEffect(() => {
     if (!isConnected) return;
 
-    const fetchData = async () => {
-      if (allowAction) {
-        handleLogoutNavigation();
-        setAllowAction(false);
-      }
-    };
-
-    fetchData();
+    if (allowAction) {
+      handleLogoutNavigation();
+      setAllowAction(false);
+    }
   }, [allowAction, isConnected]);
 
   useEffect(() => {
@@ -71,10 +76,7 @@ const Profile = ({
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   return (
@@ -88,17 +90,14 @@ const Profile = ({
         <span className='sr-only'>Open user menu</span>
         <Icon
           className='w-8 h-8 rounded-full'
-          url={
-            (profile?.profile && profile?.profile?.profile_picture) ||
-            '/icons/icon.png'
-          }
+          url={profile?.profile?.profile_picture || '/icons/icon.png'}
         />
       </button>
+
       {isOpen.profileDialog && (
         <div
           ref={dropdownRef}
           className='absolute z-50 my-4 w-56 text-base list-none bg-white divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600 rounded-xl right-3'
-          id='dropdown'
         >
           <div className='py-3 px-4'>
             <span className='block text-sm font-semibold text-gray-900 dark:text-white'>
@@ -108,49 +107,83 @@ const Profile = ({
               {profile?.email}
             </span>
           </div>
-          <ul
-            className='py-1 text-gray-700 dark:text-gray-300'
-            aria-labelledby='dropdown'
-          >
+
+          <ul className='py-1 text-gray-700 dark:text-gray-300'>
             <li>
               <Link
                 href='/settings'
-                className='block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-300 dark:hover:text-white'
+                className='block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white'
               >
                 Settings
               </Link>
             </li>
             <li>
-              <a
+              <Link
                 href='/help'
-                className='block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-300 dark:hover:text-white'
+                className='block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white'
               >
                 Help
-              </a>
+              </Link>
             </li>
-          </ul>
-
-          <ul
-            className='py-1 text-gray-700 dark:text-gray-300'
-            aria-labelledby='dropdown'
-          >
             <li>
               <button
                 onClick={() => setLogoutOpenModal(true)}
-                className='block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white w-full text-left'
+                className='block w-full text-left py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white'
               >
                 Sign out
               </button>
-              <ActionConfirmationModal
-                openModal={logoutOpenModal}
-                setOpenModal={setLogoutOpenModal}
-                allowAction={allowAction}
-                setAllowAction={setAllowAction}
-              />
             </li>
           </ul>
+
+          <div>
+            <div className='pt-3 px-4'>
+              <span className='block text-sm font-semibold text-gray-900 dark:text-white'>
+                Switch Business Account
+              </span>
+            </div>
+            <ul className='py-1 text-gray-700 dark:text-gray-300'>
+              {orgs.length > 0 &&
+                orgs.map((org) => (
+                  <li key={org.id}>
+                    <button
+                      onClick={handleSwitchOrg.bind(this, org.id)}
+                      className='flex items-center gap-2 w-full text-left py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white justify-between'
+                    >
+                      <p className='flex gap-1'>
+                        <img
+                          src={org.logo_url}
+                          alt={`${org.business_name} logo`}
+                          className='w-5 h-5 rounded-full object-contain border dark:border-gray-600 border-graay-400 '
+                        />
+                        {org.business_name}{' '}
+                      </p>
+                      {org.id === organization?.id && (
+                        <Icon url='icons/landing/selected.svg' width={15} />
+                      )}
+                    </button>
+                  </li>
+                ))}
+
+              <li>
+                <Link
+                  href='/business/create'
+                  className='flex items-center gap-2 py-2 px-4 text-sm font-medium text-primary-main hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-primary-faded dark:hover:text-white'
+                >
+                  <IoIosAdd size={20} />
+                  Create New Business
+                </Link>
+              </li>
+            </ul>
+          </div>
         </div>
       )}
+
+      <ActionConfirmationModal
+        openModal={logoutOpenModal}
+        setOpenModal={setLogoutOpenModal}
+        allowAction={allowAction}
+        setAllowAction={setAllowAction}
+      />
     </div>
   );
 };

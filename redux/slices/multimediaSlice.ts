@@ -3,7 +3,6 @@ import api from '@/lib/api';
 import {
   MediaDetails,
   MediaDetailsResponse,
-  UploadDocumentResponse,
   UploadMediaResponse,
 } from '@/types/multimedia';
 

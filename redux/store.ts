@@ -1,6 +1,8 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import chatReducer from './slices/chatSlice';
+import productReducer from './slices/productSlice';
+import orgReducer from './slices/orgSlice';
 import storage from 'redux-persist/lib/storage'; // Uses localStorage
 import { persistReducer } from 'redux-persist';
 
@@ -8,13 +10,15 @@ import { persistReducer } from 'redux-persist';
 const persistConfig = {
   key: 'auth',
   storage,
-  whitelist: ['auth'], // Only persist the auth slice
+  whitelist: ['auth', 'org'], // Only persist the auth slice
 };
 
 // Combine reducers
 const rootReducer = combineReducers({
   auth: persistReducer(persistConfig, authReducer),
   chat: chatReducer,
+  product: productReducer,
+  org: persistReducer(persistConfig, orgReducer),
 });
 
 export const store = configureStore({

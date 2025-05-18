@@ -1,4 +1,4 @@
-export type BusinessInfo = {
+export interface BusinessInfo {
   id: string;
   user_id: string;
   business_name: string;
@@ -14,9 +14,9 @@ export type BusinessInfo = {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-};
+}
 
-export type Role = {
+export interface Role {
   id: string;
   name: string;
   role_id: string;
@@ -25,9 +25,9 @@ export type Role = {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-};
+}
 
-export type Creator = {
+export interface Creator {
   id: string;
   name: string;
   email: string;
@@ -40,30 +40,30 @@ export type Creator = {
   deleted_at: string | null;
   role_identity: string;
   role: Role;
-};
+}
 
-export type Category = {
+export interface Category {
   id: string;
   name: string;
   creator_id: string;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-};
+}
 
-export type Multimedia = {
+export interface Multimedia {
   id: string;
   url: string;
-  type: string;
+  interface: string;
   creator_id: string;
   business_id: string;
   provider: string;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-};
+}
 
-export type TicketTier = {
+export interface TicketTier {
   id: string;
   ticket_id: string;
   name: string;
@@ -79,18 +79,18 @@ export type TicketTier = {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-};
+}
 
-export type Ticket = {
+export interface Ticket {
   id: string;
   event_start_date: string;
   event_end_date: string;
   event_location: string;
-  event_type: string;
+  event_interface: string;
   ticket_tiers: TicketTier[];
-};
+}
 
-export enum ProductType {
+export enum Productinterface {
   COURSE = 'COURSE',
   TICKET = 'TICKET',
 }
@@ -101,7 +101,7 @@ export enum ProductStatus {
   ARCHIVED = 'ARCHIVED',
 }
 
-export type ProductDetails = {
+export interface ProductDetails {
   id: string;
   title: string;
   description: string | null;
@@ -110,7 +110,7 @@ export type ProductDetails = {
   keywords: string | null;
   metadata: any | null;
   status: ProductStatus;
-  type: ProductType;
+  interface: Productinterface;
   published_at: string;
   archived_at: string | null;
   creator_id: string;
@@ -121,10 +121,37 @@ export type ProductDetails = {
   ticket: Ticket;
   business_id: string;
   business_info: BusinessInfo;
-};
+}
 
-export type ProductsResponse = {
+export interface ProductsResponse {
   statusCode: number;
   data: ProductDetails[];
   count: number;
-};
+}
+
+export interface CreatorBasic {
+  id: string;
+  name: string;
+  role: Role;
+}
+
+export interface CategoryWithCreator {
+  id: string;
+  name: string;
+  creator_id: string;
+  created_at: string; // ISO datetime string
+  updated_at: string; // ISO datetime string
+  creator: CreatorBasic;
+}
+
+export interface CategoryResponse {
+  statusCode: number;
+  data: CategoryWithCreatory[];
+  count: number;
+}
+
+export interface CreateCourseResponse {
+  statusCode: number;
+  message: string;
+  data: ProductDetails;
+}

@@ -152,7 +152,7 @@ const PageHeading = ({
         <div className='flex flex-col md:flex-row justify-between items-center gap-1'>
           <div
             className='text-gray-700
-dark:text-white'
+dark:text-white mr-auto'
           >
             {title && <h1 className='text-2xl font-bold '>{title}</h1>}
             <p>{brief && brief}</p>

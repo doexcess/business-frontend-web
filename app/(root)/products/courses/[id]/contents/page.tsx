@@ -212,7 +212,7 @@ const CourseContent = () => {
                     {module.lessons.length > 1 && (
                       <Button
                         variant='ghost'
-                        className='text-red-500 text-sm'
+                        className='text-red-500 dark:text-red-600 text-sm'
                         onClick={() => removeLesson(mIndex, lIndex)}
                       >
                         Remove Lesson
@@ -224,7 +224,7 @@ const CourseContent = () => {
 
               <Button
                 variant='ghost'
-                className='text-primary-main mt-2'
+                className='text-primary-main dark:text-primary-faded mt-2'
                 onClick={() => addLesson(mIndex)}
               >
                 + Add Lesson
@@ -232,7 +232,7 @@ const CourseContent = () => {
               {modules.length > 1 && (
                 <Button
                   variant='ghost'
-                  className='text-red-600 mt-2'
+                  className='text-red-600 dark:text-red-600 mt-2'
                   onClick={() => removeModule(mIndex)}
                 >
                   Remove Module
