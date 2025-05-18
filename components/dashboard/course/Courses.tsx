@@ -18,34 +18,39 @@ const RecentCourses = () => {
     handleFilterByDateSubmit,
   } = useCourses();
 
+  const draftedCourses = courses.filter(
+    (course) => course.status === ProductStatus.DRAFT
+  );
+
   return (
     <ThemeDiv className='mt-3'>
       <div className=''>
         {/* Header */}
-        <h1 className='text-xl font-semibold leading-8'>Recent Drafts</h1>
-        <div className='flex max-w-full overflow-x-auto mb-8 gap-3 scroll-smooth scrollbar-hide'>
-          {[
-            ...courses.filter(
-              (course) => course.status === ProductStatus.DRAFT
-            ),
-          ]
-            .sort(
-              (a, b) =>
-                new Date(b.created_at).getTime() -
-                new Date(a.created_at).getTime()
-            )
-            .slice(0, 3)
-            .map((course, index) => (
-              <div key={index} className='flex-shrink-0 w-72 lg:w-1/3'>
-                <CourseCard
-                  title={course.title}
-                  description={course.description || 'No description'}
-                  imageSrc={course.multimedia?.url}
-                  progress={0}
-                />
-              </div>
-            ))}
-        </div>
+        {Boolean(draftedCourses.length) && (
+          <>
+            <h1 className='text-xl font-semibold leading-8'>Recent Drafts</h1>
+            <div className='flex max-w-full overflow-x-auto mb-8 gap-3 scroll-smooth scrollbar-hide'>
+              {[...draftedCourses]
+                .sort(
+                  (a, b) =>
+                    new Date(b.created_at).getTime() -
+                    new Date(a.created_at).getTime()
+                )
+                .slice(0, 3)
+                .map((course, index) => (
+                  <div key={index} className='flex-shrink-0 w-72 lg:w-1/3'>
+                    <CourseCard
+                      title={course.title}
+                      description={course.description || 'No description'}
+                      imageSrc={course.multimedia?.url}
+                      progress={0}
+                      data={course}
+                    />
+                  </div>
+                ))}
+            </div>
+          </>
+        )}
 
         {/* Search and Filter - exact replication */}
         <div className='mb-2'>

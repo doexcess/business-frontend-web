@@ -70,6 +70,7 @@ const config: Config = {
     require('@tailwindcss/forms'),
     require('flowbite/plugin'),
     require('tailwind-scrollbar-hide'),
+    require('@tailwindcss/line-clamp'),
     flowbite.plugin(),
   ],
 };

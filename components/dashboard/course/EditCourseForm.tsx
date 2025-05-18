@@ -13,8 +13,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  CreateCourseProps,
-  CreateCourseSchema,
   UpdateCourseProps,
   UpdateCourseSchema,
 } from '@/lib/schema/product.schema';
@@ -25,8 +23,7 @@ import { AppDispatch, RootState } from '@/redux/store';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
-import { createCourse, updateCourse } from '@/redux/slices/productSlice';
-import useCourse from '@/hooks/page/useCourse';
+import { updateCourse } from '@/redux/slices/productSlice';
 
 const defaultValue = {
   title: '',

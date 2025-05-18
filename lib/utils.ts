@@ -274,3 +274,8 @@ export const actualRole = (role: SignupRole): SystemRole | string => {
   }
   return roleName;
 };
+
+export const truncate = (text: string, maxLength: number) => {
+  if (!text) return '';
+  return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
+};
