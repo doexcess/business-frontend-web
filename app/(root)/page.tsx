@@ -6,7 +6,7 @@ import { LineChart } from '@/components/dashboard/LineChart';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { Button } from '@/components/ui/Button';
 import Icon from '@/components/ui/Icon';
-import { PurchaseItemType } from '@/lib/utils';
+import { PurchaseItemType, SystemRole } from '@/lib/utils';
 import { RootState } from '@/redux/store';
 import Link from 'next/link';
 import React from 'react';
@@ -81,28 +81,30 @@ const Home = () => {
         {/* Main Content */}
         <div className='flex-1 text-black-1 dark:text-white'>
           {/* Urgent Info Banner */}
-          <div className='bg-yellow-100 border-l-4 border-yellow-500 text-yellow-900 dark:bg-yellow-900 dark:text-yellow-100 dark:border-yellow-400 p-4 rounded-md mb-6'>
-            <div className='flex justify-between items-start flex-col md:flex-row gap-2'>
-              <div className='flex-1'>
-                <h3 className='font-semibold text-lg mb-1'>
-                  Action Required: Complete Your Profile
-                </h3>
-                <p className='text-sm'>
-                  To unlock full features and payouts, please complete your
-                  profile by adding your <strong>bank account details</strong>{' '}
-                  and <strong>inviting your team members</strong>.
-                </p>
-              </div>
-              <div className='flex gap-2 mt-2 md:mt-0'>
-                <Link
-                  href='/settings'
-                  className='bg-primary px-4 p-2 rounded-lg'
-                >
-                  Complete Now
-                </Link>
+          {profile?.role.role_id === SystemRole.BUSINESS_SUPER_ADMIN && (
+            <div className='bg-yellow-100 border-l-4 border-yellow-500 text-yellow-900 dark:bg-yellow-900 dark:text-yellow-100 dark:border-yellow-400 p-4 rounded-md mb-6'>
+              <div className='flex justify-between items-start flex-col md:flex-row gap-2'>
+                <div className='flex-1'>
+                  <h3 className='font-semibold text-lg mb-1'>
+                    Action Required: Complete Your Profile
+                  </h3>
+                  <p className='text-sm'>
+                    To unlock full features and payouts, please complete your
+                    profile by adding your <strong>bank account details</strong>{' '}
+                    and <strong>inviting your team members</strong>.
+                  </p>
+                </div>
+                <div className='flex gap-2 mt-2 md:mt-0'>
+                  <Link
+                    href='/settings'
+                    className='bg-primary px-4 p-2 rounded-lg'
+                  >
+                    Complete Now
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
+          )}
           <header className='flex flex-col md:flex-row justify-between md:items-center'>
             <h2 className='text-2xl font-semibold'>
               Hello, {profile?.name} 👋🏼

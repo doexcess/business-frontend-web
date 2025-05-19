@@ -8,9 +8,11 @@ import {
   CourseDetailsResponse,
   CourseResponse,
   CreateCourseResponse,
+  ModuleResponse,
 } from '@/types/product';
 import {
   CreateCourseProps,
+  CreateModuleProps,
   UpdateCourseProps,
 } from '@/lib/schema/product.schema';
 
@@ -233,6 +235,78 @@ export const deleteCourse = createAsyncThunk(
   }
 );
 
+// Async thunk to create bulk module with contents
+export const createBulkModule = createAsyncThunk(
+  'course-module/bulk',
+  async (
+    {
+      credentials,
+      business_id,
+    }: { credentials: CreateModuleProps; business_id: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const { data } = await api.post<GenericResponse>(
+        '/course-module/bulk',
+        credentials,
+        {
+          headers: {
+            'Business-Id': business_id,
+          },
+        }
+      );
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      // console.log(error);
+      return rejectWithValue(error.response?.data || 'Failed to create module');
+    }
+  }
+);
+
+// Async thunk to fetch paginated modules
+export const fetchModules = createAsyncThunk(
+  'course-module',
+  async ({
+    page,
+    limit,
+    q,
+    startDate,
+    endDate,
+    business_id,
+  }: {
+    page?: number;
+    limit?: number;
+    q?: string;
+    startDate?: string;
+    endDate?: string;
+    business_id?: string;
+  }) => {
+    const params: Record<string, any> = {};
+
+    if (page !== undefined) params['pagination[page]'] = page;
+    if (limit !== undefined) params['pagination[limit]'] = limit;
+    if (q !== undefined) params.q = q;
+    if (startDate !== undefined) params.startDate = startDate;
+    if (endDate !== undefined) params.endDate = endDate;
+
+    const headers: Record<string, string> = {};
+    if (business_id) headers['Business-Id'] = business_id;
+
+    const { data } = await api.get<ModuleResponse>('/course-module', {
+      params,
+      headers,
+    });
+
+    return {
+      courses: data.data,
+      count: data.count,
+    };
+  }
+);
+
 const productSlice = createSlice({
   name: 'product',
   initialState,
@@ -313,6 +387,26 @@ const productSlice = createSlice({
       .addCase(fetchCourse.rejected, (state, action) => {
         state.courseDetailsLoading = false;
         state.error = action.error.message || 'Failed to fetch course details';
+      })
+      .addCase(createBulkModule.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(createBulkModule.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(createBulkModule.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to create bulk module';
+      })
+      .addCase(fetchModules.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchModules.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(fetchModules.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch modules';
       });
   },
 });

@@ -1,4 +1,4 @@
-import { ProductStatus } from '@/lib/utils';
+import { ProductStatus, ProductType } from '@/lib/utils';
 
 export interface BusinessInfo {
   id: string;
@@ -203,4 +203,63 @@ export interface CourseDetails {
 export interface CourseDetailsResponse {
   statusCode: number;
   data: CourseDetails;
+}
+
+export interface Module {
+  id: string;
+  title: string;
+  position: number;
+  course_id: string;
+  creator_id: string;
+  created_at: string;
+  updated_at: string;
+  creator: {
+    id: string;
+    name: string;
+    role: {
+      name: string;
+      role_id: string;
+    };
+  };
+  course: {
+    id: string;
+    business_id: string;
+    category_id: string;
+    creator_id: string;
+    title: string;
+    description: string;
+    keywords: string | null;
+    metadata: any; // Use a more specific type if known
+    type: ProductType;
+    status: ProductStatus;
+    published_at: string;
+    archived_at: string | null;
+    price: string;
+    currency: string;
+    original_price: string | null;
+    multimedia_id: string;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+  };
+  contents: ModuleContent[];
+}
+
+export interface ModuleContent {
+  id: string;
+  title: string;
+  module_id: string;
+  creator_id: string;
+  business_id: string;
+  multimedia_id: string;
+  position: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface ModuleResponse {
+  statusCode: number;
+  data: Module[];
+  count: number;
 }

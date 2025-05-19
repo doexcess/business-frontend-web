@@ -1,18 +1,18 @@
+'use client';
+
 import PageHeading from '@/components/PageHeading';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Input from '@/components/ui/Input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/Button';
-import { Separator } from '@/components/ui/separator';
 import { FiShield, FiSettings } from 'react-icons/fi';
 import GeneralSettings from '@/components/settings/GeneralSettings';
 import SecuritySettings from '@/components/settings/SecuritySettings';
 import { IoIosBusiness } from 'react-icons/io';
 import BankAccountSettings from '@/components/settings/BankAccountSettings';
+import { RootState } from '@/redux/store';
+import { useSelector } from 'react-redux';
+import { SystemRole } from '@/lib/utils';
 
 const Settings = () => {
+  const { profile } = useSelector((state: RootState) => state.auth);
   return (
     <main className='min-h-screen'>
       <header className='section-container pt-6 pb-4'>
@@ -36,13 +36,15 @@ const Settings = () => {
                   <FiSettings className='w-4 h-4' />
                   &nbsp; General
                 </TabsTrigger>
-                <TabsTrigger
-                  value='bank account'
-                  className='w-full justify-start px-4 py-3 data-[state=active]:bg-primary-main text-black-1 dark:text-white data-[state=active]:text-white'
-                >
-                  <IoIosBusiness className='w-4 h-4' />
-                  &nbsp; Bank Account
-                </TabsTrigger>
+                {profile?.role.role_id === SystemRole.BUSINESS_SUPER_ADMIN && (
+                  <TabsTrigger
+                    value='bank account'
+                    className='w-full justify-start px-4 py-3 data-[state=active]:bg-primary-main text-black-1 dark:text-white data-[state=active]:text-white'
+                  >
+                    <IoIosBusiness className='w-4 h-4' />
+                    &nbsp; Bank Account
+                  </TabsTrigger>
+                )}
                 <TabsTrigger
                   value='security'
                   className='w-full justify-start px-4 py-3 data-[state=active]:bg-primary-main text-black-1 dark:text-white data-[state=active]:text-white'
@@ -58,9 +60,11 @@ const Settings = () => {
               <TabsContent value='general'>
                 <GeneralSettings />
               </TabsContent>
-              <TabsContent value='bank account'>
-                <BankAccountSettings />
-              </TabsContent>
+              {profile?.role.role_id === SystemRole.BUSINESS_SUPER_ADMIN && (
+                <TabsContent value='bank account'>
+                  <BankAccountSettings />
+                </TabsContent>
+              )}
               <TabsContent value='security'>
                 <SecuritySettings />
               </TabsContent>

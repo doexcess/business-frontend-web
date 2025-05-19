@@ -2,19 +2,17 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import useProfile from '@/hooks/page/useProfile';
-import { cn } from '@/lib/utils';
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
 import { useRouter } from 'next/navigation';
 import { useSocket } from '@/context/SocketProvider';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
-import { userOnline } from '@/redux/slices/chatSlice';
 import Icon from '@/components/ui/Icon';
 import Link from 'next/link';
 import useOrgs from '@/hooks/page/useOrgs';
 import { IoIosAdd } from 'react-icons/io';
-import { fetchOrg, switchToOrg } from '@/redux/slices/orgSlice';
-import useOrg from '@/hooks/page/useOrg';
+import { fetchOrg } from '@/redux/slices/orgSlice';
+import { SystemRole } from '@/lib/utils';
 
 const Profile = ({
   isOpen,
@@ -135,46 +133,48 @@ const Profile = ({
             </li>
           </ul>
 
-          <div>
-            <div className='pt-3 px-4'>
-              <span className='block text-sm font-semibold text-gray-900 dark:text-white'>
-                Switch Business Account
-              </span>
-            </div>
-            <ul className='py-1 text-gray-700 dark:text-gray-300'>
-              {orgs.length > 0 &&
-                orgs.map((org) => (
-                  <li key={org.id}>
-                    <button
-                      onClick={handleSwitchOrg.bind(this, org.id)}
-                      className='flex items-center gap-2 w-full text-left py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white justify-between'
-                    >
-                      <p className='flex gap-1'>
-                        <img
-                          src={org.logo_url}
-                          alt={`${org.business_name} logo`}
-                          className='w-5 h-5 rounded-full object-contain border dark:border-gray-600 border-graay-400 '
-                        />
-                        {org.business_name}{' '}
-                      </p>
-                      {org.id === organization?.id && (
-                        <Icon url='/icons/course/selected.png' width={15} />
-                      )}
-                    </button>
-                  </li>
-                ))}
+          {profile?.role.role_id === SystemRole.BUSINESS_SUPER_ADMIN && (
+            <div>
+              <div className='pt-3 px-4'>
+                <span className='block text-sm font-semibold text-gray-900 dark:text-white'>
+                  Switch Business Account
+                </span>
+              </div>
+              <ul className='py-1 text-gray-700 dark:text-gray-300'>
+                {orgs.length > 0 &&
+                  orgs.map((org) => (
+                    <li key={org.id}>
+                      <button
+                        onClick={handleSwitchOrg.bind(this, org.id)}
+                        className='flex items-center gap-2 w-full text-left py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white justify-between'
+                      >
+                        <p className='flex gap-1'>
+                          <img
+                            src={org.logo_url}
+                            alt={`${org.business_name} logo`}
+                            className='w-5 h-5 rounded-full object-contain border dark:border-gray-600 border-graay-400 '
+                          />
+                          {org.business_name}{' '}
+                        </p>
+                        {org.id === organization?.id && (
+                          <Icon url='/icons/course/selected.png' width={15} />
+                        )}
+                      </button>
+                    </li>
+                  ))}
 
-              <li>
-                <Link
-                  href='/business/create'
-                  className='flex items-center gap-2 py-2 px-4 text-sm font-medium text-primary-main hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-primary-faded dark:hover:text-white'
-                >
-                  <IoIosAdd size={20} />
-                  Create New Business
-                </Link>
-              </li>
-            </ul>
-          </div>
+                <li>
+                  <Link
+                    href='/business/create'
+                    className='flex items-center gap-2 py-2 px-4 text-sm font-medium text-primary-main hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-primary-faded dark:hover:text-white'
+                  >
+                    <IoIosAdd size={20} />
+                    Create New Business
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          )}
         </div>
       )}
 
