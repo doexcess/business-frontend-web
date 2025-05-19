@@ -72,11 +72,41 @@ export const createModuleWithContentsSchema = Joi.object({
 export const createMultipleModulesSchema = Joi.object({
   modules: Joi.array().items(createModuleWithContentsSchema).min(1).required(),
 });
-export interface CreateModuleProps {
+export interface CreateModulesProps {
   modules: {
     title: string;
     position: number;
     course_id: string;
     contents: { title: string; position: number; multimedia_id: string }[];
+  }[];
+}
+
+export const updateModuleContentSchema = Joi.object({
+  id: Joi.string().uuid().required(),
+  title: Joi.string().required(),
+  multimedia_id: Joi.string().uuid().required(),
+  position: Joi.number().integer().min(1).required(),
+});
+export const updateModuleSchema = Joi.object({
+  id: Joi.string().uuid().required(),
+  title: Joi.string().required(),
+  position: Joi.number().integer().min(1).required(),
+  contents: Joi.array().items(updateModuleContentSchema).required(),
+});
+export const updateModulesSchema = Joi.object({
+  modules: Joi.array().items(updateModuleSchema).required(),
+});
+export interface UpdateModulesProps {
+  modules: {
+    id: string;
+    title: string;
+    position: number;
+    course_id: string;
+    contents: {
+      id: string;
+      title: string;
+      position: number;
+      multimedia_id: string;
+    }[];
   }[];
 }

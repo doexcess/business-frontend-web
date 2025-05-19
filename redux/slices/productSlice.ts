@@ -12,8 +12,9 @@ import {
 } from '@/types/product';
 import {
   CreateCourseProps,
-  CreateModuleProps,
+  CreateModulesProps,
   UpdateCourseProps,
+  UpdateModulesProps,
 } from '@/lib/schema/product.schema';
 
 interface ProductState {
@@ -242,7 +243,7 @@ export const createBulkModule = createAsyncThunk(
     {
       credentials,
       business_id,
-    }: { credentials: CreateModuleProps; business_id: string },
+    }: { credentials: CreateModulesProps; business_id: string },
     { rejectWithValue }
   ) => {
     try {
@@ -261,7 +262,9 @@ export const createBulkModule = createAsyncThunk(
       };
     } catch (error: any) {
       // console.log(error);
-      return rejectWithValue(error.response?.data || 'Failed to create module');
+      return rejectWithValue(
+        error.response?.data || 'Failed to create modules'
+      );
     }
   }
 );
@@ -304,6 +307,39 @@ export const fetchModules = createAsyncThunk(
       courses: data.data,
       count: data.count,
     };
+  }
+);
+
+// Async thunk to update bulk module with contents
+export const updateBulkModule = createAsyncThunk(
+  'course-module/bulk-update',
+  async (
+    {
+      credentials,
+      business_id,
+    }: { credentials: UpdateModulesProps; business_id: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const { data } = await api.patch<GenericResponse>(
+        '/course-module/bulk-update',
+        credentials,
+        {
+          headers: {
+            'Business-Id': business_id,
+          },
+        }
+      );
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      // console.log(error);
+      return rejectWithValue(
+        error.response?.data || 'Failed to update modules'
+      );
+    }
   }
 );
 
@@ -407,6 +443,16 @@ const productSlice = createSlice({
       .addCase(fetchModules.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to fetch modules';
+      })
+      .addCase(updateBulkModule.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updateBulkModule.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(updateBulkModule.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to update bulk module';
       });
   },
 });
