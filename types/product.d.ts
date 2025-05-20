@@ -1,4 +1,5 @@
 import { ProductStatus, ProductType } from '@/lib/utils';
+import { Media } from './multimedia';
 
 export interface BusinessInfo {
   id: string;
@@ -48,18 +49,6 @@ export interface Category {
   id: string;
   name: string;
   creator_id: string;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-}
-
-export interface Multimedia {
-  id: string;
-  url: string;
-  interface: string;
-  creator_id: string;
-  business_id: string;
-  provider: string;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -252,6 +241,7 @@ export interface ModuleContent {
   creator_id: string;
   business_id: string;
   multimedia_id: string;
+  multimedia: Media;
   position: number;
   created_at: string;
   updated_at: string;
@@ -262,4 +252,15 @@ export interface ModuleResponse {
   statusCode: number;
   data: Module[];
   count: number;
+}
+
+export interface ViewContentProps {
+  contentId: string;
+  moduleId: string;
+}
+
+export interface UpdateCourseResponse {
+  statusCode: number;
+  message: string;
+  data: Course;
 }

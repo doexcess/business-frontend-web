@@ -8,7 +8,11 @@ import {
   CourseDetailsResponse,
   CourseResponse,
   CreateCourseResponse,
+  Module,
+  ModuleContent,
   ModuleResponse,
+  UpdateCourseResponse,
+  ViewContentProps,
 } from '@/types/product';
 import {
   CreateCourseProps,
@@ -19,15 +23,19 @@ import {
 
 interface ProductState {
   courses: Course[];
-  course: CourseDetails | null;
+  course: Course | null;
   categories: CategoryWithCreator[];
+  modules: Module[];
+  content: ModuleContent | null;
   count: number;
   coursesCount: number;
   categoriesCount: number;
+  modulesCount: number;
   loading: boolean;
   categoriesLoading: boolean;
   coursesLoading: boolean;
   courseDetailsLoading: boolean;
+  modulesLoading: boolean;
   error: string | null;
   currentPage: number;
 }
@@ -38,12 +46,16 @@ const initialState: ProductState = {
   course: null,
   categories: [],
   categoriesCount: 0,
+  modules: [],
+  content: null,
   count: 0,
+  modulesCount: 0,
   loading: false,
   categoriesLoading: false,
   coursesCount: 0,
   coursesLoading: false,
   courseDetailsLoading: false,
+  modulesLoading: false,
   error: null,
   currentPage: 1,
 };
@@ -191,7 +203,7 @@ export const updateCourse = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const { data } = await api.patch<GenericResponse>(
+      const { data } = await api.patch<UpdateCourseResponse>(
         `/product-course-crud/${id}`,
         credentials,
         {
@@ -203,6 +215,7 @@ export const updateCourse = createAsyncThunk(
 
       return {
         message: data.message,
+        course: data.data,
       };
     } catch (error: any) {
       return rejectWithValue(error.response?.data || 'Failed to update course');
@@ -304,7 +317,7 @@ export const fetchModules = createAsyncThunk(
     });
 
     return {
-      courses: data.data,
+      modules: data.data,
       count: data.count,
     };
   }
@@ -353,6 +366,23 @@ const productSlice = createSlice({
     setPerPage: (state, action: PayloadAction<number>) => {
       // state.perPage = action.payload;
     },
+    viewContent: (state, action: PayloadAction<ViewContentProps>) => {
+      const { contentId, moduleId } = action.payload;
+      const matchedModule = state.modules.find(
+        (module) => module.id === moduleId
+      );
+
+      if (matchedModule) {
+        state.content = matchedModule.contents.find(
+          (content) => content.id === contentId
+        ) as ModuleContent;
+      } else {
+        state.error = 'Module not found.';
+      }
+    },
+    clearContent: (state) => {
+      state.content = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -381,9 +411,14 @@ const productSlice = createSlice({
       })
       .addCase(updateCourse.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(updateCourse.fulfilled, (state, action) => {
         state.loading = false;
+        state.course = {
+          ...state.course,
+          ...action.payload.course,
+        };
       })
       .addCase(updateCourse.rejected, (state, action) => {
         state.loading = false;
@@ -436,12 +471,15 @@ const productSlice = createSlice({
       })
       .addCase(fetchModules.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(fetchModules.fulfilled, (state, action) => {
-        state.loading = false;
+        state.modulesLoading = false;
+        state.modules = action.payload.modules;
+        state.modulesCount = action.payload.count;
       })
       .addCase(fetchModules.rejected, (state, action) => {
-        state.loading = false;
+        state.modulesLoading = false;
         state.error = action.error.message || 'Failed to fetch modules';
       })
       .addCase(updateBulkModule.pending, (state) => {
@@ -457,5 +495,6 @@ const productSlice = createSlice({
   },
 });
 
-export const { setPage, setPerPage } = productSlice.actions;
+export const { setPage, setPerPage, viewContent, clearContent } =
+  productSlice.actions;
 export default productSlice.reducer;

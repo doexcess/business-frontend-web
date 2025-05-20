@@ -60,11 +60,6 @@ const AddCourseForm = () => {
   const handleImageUpload = async (file: File) => {
     if (!file) return;
 
-    const allowedTypes = ['image/jpeg', 'image/png'];
-    if (!allowedTypes.includes(file.type)) {
-      return toast.error('Only PNG and JPEG images are allowed');
-    }
-
     if (file.size > 5 * 1024 * 1024) {
       return toast.error('Image size should be less than 5MB');
     }

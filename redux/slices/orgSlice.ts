@@ -1,15 +1,15 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import api from '@/lib/api';
 import {
-  CreateBusinessProfileProps,
-  SaveBankAccountProps,
-} from '@/lib/schema/product.schema';
-import {
   BusinessProfile,
   BusinessProfileFull,
   BusinessProfileFullReponse,
   BusinessProfileResponse,
 } from '@/types/org';
+import {
+  CreateBusinessProfileProps,
+  SaveBankAccountProps,
+} from '@/lib/schema/org.schema';
 
 interface OrgState {
   orgs: BusinessProfile[];
@@ -139,11 +139,6 @@ const orgSlice = createSlice({
       if (matchedOrg) {
         state.org = {
           ...matchedOrg,
-          // Placeholder defaults for BusinessProfileFull fields if needed
-          // address: '',
-          // contactEmail: '',
-          // bankDetails: null,
-          // ...extend with other full fields as needed
         } as BusinessProfileFull;
       } else {
         state.error = 'Organization not found in local state';

@@ -95,6 +95,7 @@ export enum MultimediaType {
   IMAGE = 'IMAGE',
   VIDEO = 'VIDEO',
   AUDIO = 'AUDIO',
+  DOCUMENT = 'DOCUMENT',
 }
 
 export enum MultimediaProvider {

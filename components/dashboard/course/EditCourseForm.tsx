@@ -161,7 +161,7 @@ const EditCourseForm = () => {
         title: course.title || '',
         description: course.description || '',
         price: +course.price,
-        multimedia_id: course.multimedia.id,
+        multimedia_id: course.multimedia?.id,
         category_id: course.category.id,
       });
       setImagePreview(course.multimedia.url);

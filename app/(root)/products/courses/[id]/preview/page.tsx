@@ -1,77 +1,143 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronRight, ChevronDown, Menu } from 'lucide-react';
 import CourseProgressIndicator from '@/components/dashboard/course/CourseProgressIndicator';
 import VideoPlayer from '@/components/VideoPlayer';
 import PageHeading from '@/components/PageHeading';
 import { Button } from '@/components/ui/Button';
 import ThemeDivBorder from '@/components/ui/ThemeDivBorder';
-import { useConfettiStore } from '@/hooks/use-confetti-store'; // adjust path as needed
-import { cn } from '@/lib/utils';
+import { useConfettiStore } from '@/hooks/use-confetti-store';
+import { cn, ProductStatus } from '@/lib/utils';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/redux/store';
+import { fetchModules, updateCourse } from '@/redux/slices/productSlice';
+import { useParams } from 'next/navigation';
+import { Module as ApiModule } from '@/types/product';
+import { MultimediaType } from '@/lib/utils';
+import toast from 'react-hot-toast';
+import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 
 type Lesson = {
+  id?: string;
   title: string;
   content: string;
   mediaPreview?: string;
+  mediaType?: MultimediaType;
+  multimedia_id?: string;
 };
 
 type Module = {
+  id?: string;
   title: string;
+  isOpen: boolean;
   lessons: Lesson[];
 };
 
-const sampleModules: Module[] = [
-  {
-    title: 'Getting Started',
-    lessons: [
-      {
-        title: 'Welcome to the course',
-        content:
-          'This is an introduction to what you will learn in this course.',
-        mediaPreview: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-      },
-      {
-        title: 'Installation Setup',
-        content: 'Let’s get your environment ready for development.',
-        mediaPreview:
-          'https://via.placeholder.com/600x400.png?text=Installation+Screenshot',
-      },
-    ],
-  },
-  {
-    title: 'Core Concepts',
-    lessons: [
-      {
-        title: 'Understanding Props and State',
-        content: 'We explain React props vs state and how to use them.',
-        mediaPreview:
-          'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-      },
-    ],
-  },
-];
-
 const CoursePreview = () => {
-  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(
-    sampleModules[0].lessons[0]
-  );
+  const { id: courseId } = useParams();
+  const dispatch = useDispatch<AppDispatch>();
+  const { org } = useSelector((state: RootState) => state.org);
+  const {
+    modules: existingModules,
+    modulesLoading: loading,
+    course: currentCourse, // Assuming this contains course status from Redux
+  } = useSelector((state: RootState) => state.product);
+
+  const [modules, setModules] = useState<Module[]>([]);
+  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const confetti = useConfettiStore();
 
-  const handlePublish = () => {
-    confetti.onOpen();
+  const isPublished = currentCourse?.status === ProductStatus.PUBLISHED;
+
+  const formatModules = (apiModules: ApiModule[]): Module[] => {
+    return apiModules.map((module, index) => ({
+      id: module.id,
+      title: module.title,
+      isOpen: index === 0,
+      lessons: module.contents.map((content) => ({
+        id: content.id,
+        title: content.title,
+        content: '',
+        mediaPreview: content.multimedia?.url,
+        mediaType: content.multimedia?.type,
+        multimedia_id: content.multimedia_id,
+      })),
+    }));
   };
 
-  const getMediaType = (url?: string) => {
-    if (!url) return 'none';
-    if (url.endsWith('.pdf')) return 'pdf';
-    if (url.match(/\.(jpeg|jpg|png|gif|webp)$/i)) return 'image';
-    if (url.endsWith('.mp4') || url.endsWith('.m3u8')) return 'video';
+  const toggleModule = (moduleId?: string) => {
+    setModules((prevModules) =>
+      prevModules.map((module) => ({
+        ...module,
+        isOpen: module.id === moduleId ? !module.isOpen : module.isOpen,
+      }))
+    );
+  };
+
+  useEffect(() => {
+    if (courseId && org?.id) {
+      dispatch(fetchModules({ business_id: org.id }));
+    }
+  }, [courseId, dispatch, org?.id]);
+
+  useEffect(() => {
+    if (existingModules.length > 0) {
+      const formatted = formatModules(existingModules);
+      setModules(formatted);
+      setSelectedLesson(formatted[0]?.lessons[0] || null);
+    }
+  }, [existingModules]);
+
+  const handlePublish = async () => {
+    if (!courseId || !org?.id) return;
+
+    const statusUpdate =
+      currentCourse?.status === ProductStatus.PUBLISHED
+        ? ProductStatus.DRAFT
+        : ProductStatus.PUBLISHED;
+    try {
+      const response: any = await dispatch(
+        updateCourse({
+          id: courseId as string,
+          credentials: {
+            status: statusUpdate,
+          },
+          business_id: org.id,
+        })
+      ).unwrap();
+
+      if (response.type === 'product-course-crud/:id/update/rejected') {
+        throw new Error(response.payload.message);
+      }
+
+      if (statusUpdate === ProductStatus.PUBLISHED) {
+        confetti.onOpen();
+      }
+
+      const msg =
+        statusUpdate === ProductStatus.PUBLISHED
+          ? 'Course published successfully!'
+          : 'Course moved to draft successfully.';
+      toast.success('Course published successfully!');
+    } catch (error) {
+      console.log(error);
+
+      console.error('Publish error:', error);
+      toast.error('Failed to publish course');
+    }
+  };
+
+  const getMediaType = (lesson?: Lesson) => {
+    if (!lesson?.mediaPreview) return 'none';
+    if (lesson.mediaType === MultimediaType.IMAGE) return 'image';
+    if (lesson.mediaType === MultimediaType.VIDEO) return 'video';
+    if (lesson.mediaType === MultimediaType.DOCUMENT) return 'pdf';
     return 'none';
   };
 
-  const mediaType = getMediaType(selectedLesson?.mediaPreview);
+  const mediaType = getMediaType(selectedLesson!);
 
   return (
     <main className='min-h-screen'>
@@ -86,17 +152,31 @@ const CoursePreview = () => {
           ctaButtons={
             <div className='flex gap-2 h-10'>
               <Button
-                variant='outline'
-                className='border border-primary-main hover:bg-primary-800 hover:text-white dark:border-gray-600 dark:hover:bg-white dark:text-white dark:hover:text-gray-900'
-              >
-                Save
-              </Button>
-              <Button
-                variant='primary'
-                className='dark:text-white hover:bg-primary-800 hover:text-white'
+                variant={`${
+                  currentCourse?.status === ProductStatus.PUBLISHED
+                    ? 'primary'
+                    : 'green'
+                }`}
+                className={cn(
+                  'dark:text-white hover:text-white',
+                  currentCourse?.status === ProductStatus.PUBLISHED &&
+                    'hover:bg-green-800',
+                  currentCourse?.status === ProductStatus.DRAFT &&
+                    'hover:bg-primary-800'
+                )}
                 onClick={handlePublish}
+                disabled={loading}
               >
-                Publish
+                {loading ? (
+                  <span className='flex items-center justify-center'>
+                    <LoadingIcon />
+                    Processing...
+                  </span>
+                ) : currentCourse?.status === ProductStatus.PUBLISHED ? (
+                  'Move to draft'
+                ) : (
+                  'Publish'
+                )}
               </Button>
             </div>
           }
@@ -106,92 +186,95 @@ const CoursePreview = () => {
           <CourseProgressIndicator step={3} />
         </section>
 
-        <div className='flex flex-col md:grid md:grid-cols-4 gap-6'>
-          {/* Main Content */}
-          <ThemeDivBorder className='order-1 md:order-none md:col-span-3 bg-white dark:bg-gray-900 dark:border-gray-600 border rounded-md p-4 md:p-6 flex flex-col'>
-            {selectedLesson && (
-              <>
-                <h2 className='text-xl md:text-2xl font-semibold mb-2'>
-                  {selectedLesson.title}
-                </h2>
-                <p className='text-sm mb-4'>{selectedLesson.content}</p>
+        {loading ? (
+          <div className='text-center py-10'>Loading course content...</div>
+        ) : (
+          <div className='flex flex-col md:grid md:grid-cols-4 gap-6'>
+            {/* Main Content */}
+            <ThemeDivBorder className='order-1 md:order-none md:col-span-3 bg-white dark:bg-gray-900 dark:border-gray-600 border rounded-md p-4 md:p-6 flex flex-col'>
+              {selectedLesson ? (
+                <>
+                  <h2 className='text-xl md:text-2xl font-semibold mb-2'>
+                    {selectedLesson.title}
+                  </h2>
+                  <p className='text-sm mb-4'>{selectedLesson.content}</p>
 
-                <div className='rounded-lg overflow-hidden'>
-                  {mediaType === 'pdf' && (
-                    <iframe
-                      src={selectedLesson.mediaPreview}
-                      title='PDF Preview'
-                      className='w-full h-[300px] md:h-[500px]'
-                    />
-                  )}
-                  {mediaType === 'image' && (
-                    <img
-                      src={selectedLesson.mediaPreview}
-                      alt='Lesson Media'
-                      className='w-full max-h-[300px] md:max-h-[500px] object-contain'
-                    />
-                  )}
-                  {mediaType === 'video' && selectedLesson.mediaPreview && (
-                    <VideoPlayer src={selectedLesson.mediaPreview} />
-                  )}
-                  {mediaType === 'none' && <p>No media preview available.</p>}
-                </div>
-              </>
-            )}
-          </ThemeDivBorder>
-
-          {/* Sidebar & Mobile Toggle */}
-          <div className='order-2 md:order-none flex flex-col'>
-            {/* Toggle Button - mobile only */}
-            <div className='md:hidden flex justify-end my-4 px-4 dark:text-white'>
-              <Button
-                variant='outline'
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className='flex items-center gap-2 w-full max-w-40 justify-center'
-              >
-                <Menu className='w-5 h-5' />
-                <span>{isSidebarOpen ? 'Hide Lessons' : 'Show Lessons'}</span>
-              </Button>
-            </div>
-
-            {/* Sidebar */}
-            <aside
-              className={cn(
-                'md:col-span-1 bg-white dark:bg-gray-900 border dark:border-gray-600 rounded-md p-4 flex-1 overflow-y-auto',
-                isSidebarOpen ? 'block' : 'hidden md:block'
+                  <div className='rounded-lg overflow-hidden'>
+                    {mediaType === 'pdf' && (
+                      <iframe
+                        src={selectedLesson.mediaPreview}
+                        title='PDF Preview'
+                        className='w-full h-[300px] md:h-[500px]'
+                      />
+                    )}
+                    {mediaType === 'image' && (
+                      <img
+                        src={selectedLesson.mediaPreview}
+                        alt='Lesson Media'
+                        className='w-full max-h-[300px] md:max-h-[500px] object-contain'
+                      />
+                    )}
+                    {mediaType === 'video' && selectedLesson.mediaPreview && (
+                      <VideoPlayer src={selectedLesson.mediaPreview} />
+                    )}
+                    {mediaType === 'none' && <p>No media preview available.</p>}
+                  </div>
+                </>
+              ) : (
+                <p>Select a lesson to preview</p>
               )}
-              style={{ maxHeight: 'calc(100vh - 100px)' }}
-            >
-              {sampleModules.map((module, mIdx) => {
-                const [isOpen, setIsOpen] = useState(true);
-                return (
-                  <div key={mIdx} className='mb-4'>
+            </ThemeDivBorder>
+
+            {/* Sidebar & Mobile Toggle */}
+            <div className='order-2 md:order-none flex flex-col'>
+              {/* Toggle Button - mobile only */}
+              <div className='md:hidden flex justify-end my-4 px-4 dark:text-white'>
+                <Button
+                  variant='outline'
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  className='flex items-center gap-2 w-full max-w-40 justify-center'
+                >
+                  <Menu className='w-5 h-5' />
+                  <span>{isSidebarOpen ? 'Hide Lessons' : 'Show Lessons'}</span>
+                </Button>
+              </div>
+
+              {/* Sidebar */}
+              <aside
+                className={cn(
+                  'md:col-span-1 bg-white dark:bg-gray-900 border dark:border-gray-600 rounded-md p-4 flex-1 overflow-y-auto',
+                  isSidebarOpen ? 'block' : 'hidden md:block'
+                )}
+                style={{ maxHeight: 'calc(100vh - 100px)' }}
+              >
+                {modules.map((module, mIdx) => (
+                  <div key={module.id || `module-${mIdx}`} className='mb-4'>
                     <div
                       className='flex items-center justify-between cursor-pointer mb-2'
-                      onClick={() => setIsOpen(!isOpen)}
+                      onClick={() => toggleModule(module.id)}
                     >
                       <h3 className='font-bold text-primary-main text-lg'>
                         Module {mIdx + 1}: {module.title}
                       </h3>
-                      {isOpen ? (
+                      {module.isOpen ? (
                         <ChevronDown className='w-4 h-4' />
                       ) : (
                         <ChevronRight className='w-4 h-4' />
                       )}
                     </div>
 
-                    {isOpen && (
+                    {module.isOpen && (
                       <ul className='space-y-1'>
                         {module.lessons.map((lesson, lIdx) => (
                           <li
-                            key={lIdx}
+                            key={lesson.id || `lesson-${lIdx}`}
                             onClick={() => {
                               setSelectedLesson(lesson);
                               setIsSidebarOpen(false);
                             }}
                             className={cn(
                               'cursor-pointer px-3 py-2 rounded hover:bg-primary-50 dark:hover:bg-gray-800 transition dark:text-white',
-                              selectedLesson?.title === lesson.title
+                              selectedLesson?.id === lesson.id
                                 ? 'bg-primary-100 dark:bg-primary-800'
                                 : ''
                             )}
@@ -207,11 +290,11 @@ const CoursePreview = () => {
                       </ul>
                     )}
                   </div>
-                );
-              })}
-            </aside>
+                ))}
+              </aside>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </main>
   );
