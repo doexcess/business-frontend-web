@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { ProductStatus } from '../utils';
+import { EventType, ProductStatus, TicketTierStatus } from '../utils';
 
 export const CreateCourseSchema = Joi.object({
   title: Joi.string().trim().min(3).max(255).required(),
@@ -110,3 +110,103 @@ export interface UpdateModulesProps {
     }[];
   }[];
 }
+
+// Ticket - Create
+export const createTicketTierSchema = Joi.object({
+  name: Joi.string().required(),
+  amount: Joi.number().required(),
+  original_amount: Joi.number().required(),
+  description: Joi.string().optional(),
+  quantity: Joi.number().optional(),
+  remaining_quantity: Joi.number().optional(),
+  max_per_purchase: Joi.number().optional(),
+  default_view: Joi.boolean().optional(),
+  status: Joi.string()
+    .valid(...Object.values(TicketTierStatus))
+    .optional(),
+});
+export const createTicketSchema = Joi.object({
+  title: Joi.string().required(),
+  description: Joi.string().optional(),
+  keywords: Joi.string().optional(),
+  metadata: Joi.any().optional(),
+  category_id: Joi.string().uuid().required(),
+  status: Joi.string()
+    .valid(...Object.values(ProductStatus))
+    .uppercase()
+    .optional(),
+  multimedia_id: Joi.string().uuid().required(),
+  event_start_date: Joi.date().required(),
+  event_end_date: Joi.date().required(),
+  event_location: Joi.string().required(),
+  event_type: Joi.string()
+    .valid(...Object.values(EventType))
+    .uppercase()
+    .required(),
+  auth_details: Joi.string().optional(),
+  ticket_tiers: Joi.array().items(createTicketTierSchema).required(),
+});
+export interface CreateTicketTierProps {
+  name: string;
+  amount: number;
+  original_amount: number;
+  description?: string;
+  quantity?: number;
+  remaining_quantity?: number;
+  max_per_purchase?: number;
+  default_view?: boolean;
+  status?: TicketTierStatus;
+}
+export interface CreateTicketProps {
+  title: string;
+  description?: string;
+  keywords?: string;
+  metadata?: any;
+  category_id: string;
+  status?: ProductStatus;
+  multimedia_id: string;
+  event_start_date: Date;
+  event_end_date: Date;
+  event_location: string;
+  event_type: EventType;
+  auth_details?: string;
+  ticket_tiers: CreateTicketTierProps[];
+}
+
+// Ticket - Update
+export const updateTicketTierSchema = Joi.object({
+  id: Joi.string().uuid().optional(),
+  name: Joi.string().max(255).optional(),
+  description: Joi.string().optional().allow(null, ''),
+  quantity: Joi.number().integer().min(0).optional(),
+  remaining_quantity: Joi.number().integer().min(0).optional(),
+  max_per_purchase: Joi.number().integer().min(0).optional(),
+  amount: Joi.number().precision(2).min(0).optional(),
+  original_amount: Joi.number().precision(2).min(0).optional(),
+  status: Joi.string()
+    .valid(...Object.values(TicketTierStatus))
+    .optional(),
+  default_view: Joi.boolean().optional(),
+  deleted: Joi.boolean().optional(),
+});
+export const updateTicketSchema = Joi.object({
+  title: Joi.string().optional(),
+  description: Joi.string().optional(),
+  keywords: Joi.string().optional(),
+  metadata: Joi.any().optional(),
+  category_id: Joi.string().uuid().optional(),
+  status: Joi.string()
+    .valid(...Object.values(ProductStatus))
+    .uppercase()
+    .optional(),
+  multimedia_id: Joi.string().uuid().optional(),
+  event_start_date: Joi.date().optional(),
+  event_end_date: Joi.date().optional(),
+  event_location: Joi.string().optional().allow(null, ''),
+  event_type: Joi.string()
+    .valid(...Object.values(EventType))
+    .optional(),
+  auth_details: Joi.string().optional().allow(null, ''),
+  ticket_tiers: Joi.array().items(updateTicketTierSchema).optional(),
+});
+export interface UpdateTicketProps extends CreateTicketProps {}

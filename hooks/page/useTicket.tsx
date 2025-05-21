@@ -1,25 +1,25 @@
 import { AppDispatch, RootState } from '@/redux/store';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCourse } from '@/redux/slices/courseSlice';
 import { useParams } from 'next/navigation';
+import { fetchTicket } from '@/redux/slices/ticketSlice';
 
-const useCourse = () => {
+const useTicket = () => {
   const dispatch = useDispatch<AppDispatch>();
   const params = useParams();
 
   const { org } = useSelector((state: RootState) => state.org);
-  const { course } = useSelector((state: RootState) => state.course);
+  const { ticket } = useSelector((state: RootState) => state.ticket);
 
   useEffect(() => {
     dispatch(
-      fetchCourse({ id: params.id as string, business_id: org?.id })
+      fetchTicket({ id: params.id as string, business_id: org?.id })
     ).unwrap();
   }, [dispatch, org]);
 
   return {
-    course,
+    ticket,
   };
 };
 
-export default useCourse;
+export default useTicket;

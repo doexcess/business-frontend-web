@@ -1,20 +1,15 @@
 import { AppDispatch, RootState } from '@/redux/store';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchModules } from '@/redux/slices/courseSlice';
 import useQueryParams from '../useQueryParams';
-import { useParams } from 'next/navigation';
+import { fetchTickets } from '@/redux/slices/ticketSlice';
 
-const useModules = () => {
+const useTickets = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const params = useParams();
 
-  const {
-    modules,
-    modulesLoading: loading,
-    error,
-    modulesCount: count,
-  } = useSelector((state: RootState) => state.course);
+  const { tickets, loading, error, count } = useSelector(
+    (state: RootState) => state.ticket
+  );
   const { org } = useSelector((state: RootState) => state.org);
 
   const {
@@ -25,30 +20,35 @@ const useModules = () => {
     endDate,
     onClickNext,
     onClickPrev,
-  } = useQueryParams(modules);
+    handleSearchSubmit,
+    handleFilterByDateSubmit,
+    handleRefresh,
+  } = useQueryParams(tickets);
 
   useEffect(() => {
     dispatch(
-      fetchModules({
+      fetchTickets({
         page: currentPage,
         limit: perPage,
         ...(q && { q }),
         ...(startDate && { startDate }),
         ...(endDate && { endDate }),
         ...(org?.id && { business_id: org.id }),
-        course_id: params.id as string,
       })
     ).unwrap();
   }, [dispatch, currentPage, perPage, q, startDate, endDate, org]);
 
   return {
-    modules,
+    tickets,
     count,
     loading,
     error,
     onClickNext,
     onClickPrev,
+    handleSearchSubmit,
+    handleFilterByDateSubmit,
+    handleRefresh,
   };
 };
 
-export default useModules;
+export default useTickets;

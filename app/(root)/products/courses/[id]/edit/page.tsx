@@ -1,13 +1,13 @@
 'use client';
 
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
-import CourseProgressIndicator from '@/components/dashboard/course/CourseProgressIndicator';
-import EditCourseForm from '@/components/dashboard/course/EditCourseForm';
+import CourseProgressIndicator from '@/components/dashboard/product/course/CourseProgressIndicator';
+import EditCourseForm from '@/components/dashboard/product/course/EditCourseForm';
 import PageHeading from '@/components/PageHeading';
 import { Button } from '@/components/ui/Button';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import useCourse from '@/hooks/page/useCourse';
-import { deleteCourse } from '@/redux/slices/productSlice';
+import { deleteCourse } from '@/redux/slices/courseSlice';
 import { AppDispatch, RootState } from '@/redux/store';
 import moment from 'moment-timezone';
 import { useRouter } from 'next/navigation';
@@ -69,6 +69,7 @@ const EditCourse = () => {
           layer2='Products'
           layer3='Courses'
           layer4='Edit Course'
+          layer3Link='/products/courses'
           enableBackButton={true}
           ctaButtons={
             <div className='flex-shrink-0 self-start'>

@@ -144,6 +144,7 @@ const EditTicket = ({ ticketId }: { ticketId: string }) => {
           layer2='Products'
           layer3='Tickets'
           layer4='Edit Ticket'
+          layer3Link='/products/tickets'
           enableBackButton={true}
         />
 

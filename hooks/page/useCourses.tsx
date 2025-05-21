@@ -1,7 +1,7 @@
 import { AppDispatch, RootState } from '@/redux/store';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCourses } from '@/redux/slices/productSlice';
+import { fetchCourses } from '@/redux/slices/courseSlice';
 import useQueryParams from '../useQueryParams';
 
 const useCourses = () => {
@@ -12,7 +12,7 @@ const useCourses = () => {
     coursesLoading: loading,
     error,
     coursesCount: count,
-  } = useSelector((state: RootState) => state.product);
+  } = useSelector((state: RootState) => state.course);
   const { org } = useSelector((state: RootState) => state.org);
 
   const {

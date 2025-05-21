@@ -86,11 +86,6 @@ export enum CartType {
   SOLD_OUT = 'SOLD_OUT',
 }
 
-export enum EventType {
-  ONLINE = 'ONLINE',
-  IN_PERSON = 'IN_PERSON',
-}
-
 export enum MultimediaType {
   IMAGE = 'IMAGE',
   VIDEO = 'VIDEO',
@@ -129,6 +124,17 @@ export enum SignupRole {
 export enum ChatReadStatus {
   READ = 'read',
   UNREAD = 'unread',
+}
+
+export enum TicketTierStatus {
+  CLOSED = 'CLOSED',
+  OPEN = 'OPEN',
+}
+
+export enum EventType {
+  ONLINE = 'ONLINE',
+  PHYSICAL = 'PHYSICAL',
+  HYBRID = 'HYBRID',
 }
 
 export const NotificationStatusTypes = [

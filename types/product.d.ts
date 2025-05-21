@@ -1,4 +1,4 @@
-import { ProductStatus, ProductType } from '@/lib/utils';
+import { ProductStatus, ProductType, TicketTierStatus } from '@/lib/utils';
 import { Media } from './multimedia';
 
 export interface BusinessInfo {
@@ -28,6 +28,11 @@ export interface Role {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+}
+
+export interface RoleBasic {
+  name: string;
+  role_id: string;
 }
 
 export interface Creator {
@@ -123,7 +128,7 @@ export interface ProductsResponse {
 export interface CreatorBasic {
   id: string;
   name: string;
-  role: Role;
+  role: RoleBasic;
 }
 
 export interface CategoryWithCreator {
@@ -141,7 +146,7 @@ export interface CategoryResponse {
   count: number;
 }
 
-export interface CreateCourseResponse {
+export interface CreateProductResponse {
   statusCode: number;
   message: string;
   data: ProductDetails;
@@ -263,4 +268,95 @@ export interface UpdateCourseResponse {
   statusCode: number;
   message: string;
   data: Course;
+}
+
+// TICKET
+export interface TicketTier {
+  id: string;
+  ticket_id: string;
+  name: string;
+  description: string | null;
+  quantity: number | null;
+  remaining_quantity: number | null;
+  max_per_purchase: number | null;
+  default_view: boolean;
+  status: TicketTierStatus;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  currency: string;
+  amount: string;
+  original_amount: string;
+}
+
+export interface Ticket {
+  id: string;
+  product_id: string;
+  event_start_date: string;
+  event_end_date: string;
+  event_location: string;
+  event_type: EventType;
+  auth_details: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  ticket_tiers: TicketTier[];
+}
+
+export interface TicketProduct {
+  id: string;
+  title: string;
+  description: string;
+  keywords: string | null;
+  metadata: any;
+  status: ProductStatus;
+  published_at: string;
+  archived_at: string | null;
+  price: string;
+  currency: string;
+  multimedia_id: string;
+  creator_id: string;
+  category_id: string;
+  created_at: string;
+  updated_at: string;
+  creator: CreatorBasic;
+  category: Category;
+  multimedia: Media;
+  ticket: Ticket;
+  business_info: BusinessInfo;
+}
+
+export interface TicketProductResponse {
+  statusCode: number;
+  data: TicketProduct[];
+  count: number;
+}
+
+export interface TicketDetailsResponse {
+  statusCode: number;
+  data: TicketProduct;
+}
+
+export interface UpdateTicketResponse {
+  statusCode: number;
+  message: string;
+  data: TicketProduct;
+}
+
+export interface DeleteTicketTierResponse {
+  statusCode: number;
+  message: string;
+  data: {
+    ticket_tier_id: string;
+    deleted: boolean;
+  };
+}
+
+export interface DeleteTicketResponse {
+  statusCode: number;
+  message: string;
+  data: {
+    id: string;
+    deleted: boolean;
+  };
 }

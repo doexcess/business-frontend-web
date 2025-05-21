@@ -1,7 +1,8 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import chatReducer from './slices/chatSlice';
-import productReducer from './slices/productSlice';
+import courseReducer from './slices/courseSlice';
+import ticketReducer from './slices/ticketSlice';
 import orgReducer from './slices/orgSlice';
 import storage from 'redux-persist/lib/storage'; // Uses localStorage
 import { persistReducer } from 'redux-persist';
@@ -17,7 +18,8 @@ const persistConfig = {
 const rootReducer = combineReducers({
   auth: persistReducer(persistConfig, authReducer),
   chat: chatReducer,
-  product: productReducer,
+  course: courseReducer,
+  ticket: ticketReducer,
   org: persistReducer(persistConfig, orgReducer),
 });
 

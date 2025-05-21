@@ -3,7 +3,7 @@
 import Input from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/textarea';
 import ThemeDiv from '@/components/ui/ThemeDiv';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, use } from 'react';
 import useProductCategory from '@/hooks/page/useProductCategory';
 import {
   Select,
@@ -13,8 +13,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  CreateCourseProps,
-  CreateCourseSchema,
+  UpdateCourseProps,
+  UpdateCourseSchema,
 } from '@/lib/schema/product.schema';
 import { cn } from '@/lib/utils';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
@@ -23,8 +23,7 @@ import { AppDispatch, RootState } from '@/redux/store';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
-import useOrg from '@/hooks/page/useOrg';
-import { createCourse } from '@/redux/slices/productSlice';
+import { updateCourse } from '@/redux/slices/courseSlice';
 
 const defaultValue = {
   title: '',
@@ -34,13 +33,15 @@ const defaultValue = {
   category_id: '',
 };
 
-const AddCourseForm = () => {
+const EditCourseForm = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+
   const { categories } = useProductCategory();
   const { org } = useSelector((state: RootState) => state.org);
+  const { course } = useSelector((state: RootState) => state.course);
 
-  const [body, setBody] = useState<CreateCourseProps>({ ...defaultValue });
+  const [body, setBody] = useState<UpdateCourseProps>({ ...defaultValue });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -59,6 +60,11 @@ const AddCourseForm = () => {
 
   const handleImageUpload = async (file: File) => {
     if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      return toast.error('Only PNG and JPEG images are allowed');
+    }
 
     if (file.size > 5 * 1024 * 1024) {
       return toast.error('Image size should be less than 5MB');
@@ -115,23 +121,24 @@ const AddCourseForm = () => {
 
     try {
       setIsSubmitting(true);
-      const { error, value } = CreateCourseSchema.validate(body);
+      const { error, value } = UpdateCourseSchema.validate(body);
       if (error) throw new Error(error.details[0].message);
 
       // Submit logic here
       const response: any = await dispatch(
-        createCourse({
+        updateCourse({
+          id: course?.id!,
           credentials: { ...body, price: +body.price! },
           business_id: org?.id!,
         })
       );
 
-      if (response.type === 'product-course-crud/create/rejected') {
+      if (response.type === 'product-course-crud/:id/update/rejected') {
         throw new Error(response.payload.message);
       }
 
-      toast.success('Course created successfully!');
-      router.push(`/products/courses/${response.payload.data.id}/contents`);
+      toast.success('Course updated successfully!');
+      router.push(`/products/courses/${course?.id}/contents`);
     } catch (error: any) {
       console.error('Submission failed:', error);
       toast.error(error.message);
@@ -146,6 +153,20 @@ const AddCourseForm = () => {
     body.category_id &&
     body.price &&
     body.multimedia_id;
+
+  // Update form state when course data is fetched
+  useEffect(() => {
+    if (course) {
+      setBody({
+        title: course.title || '',
+        description: course.description || '',
+        price: +course.price,
+        multimedia_id: course.multimedia?.id,
+        category_id: course.category.id,
+      });
+      setImagePreview(course.multimedia.url);
+    }
+  }, [course]);
 
   return (
     <ThemeDiv className='mt-6'>
@@ -282,4 +303,4 @@ const AddCourseForm = () => {
   );
 };
 
-export default AddCourseForm;
+export default EditCourseForm;

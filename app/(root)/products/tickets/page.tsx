@@ -1,11 +1,23 @@
-import CourseGridItem from '@/components/dashboard/course/CourseGridItem';
+'use client';
+
+import ProductGridItem from '@/components/dashboard/product/ProductGridItem';
 import Filter from '@/components/Filter';
 import PageHeading from '@/components/PageHeading';
 import Icon from '@/components/ui/Icon';
 import Link from 'next/link';
 import React from 'react';
+import useTickets from '@/hooks/page/useTickets'; // assuming path is correct
 
 const Tickets = () => {
+  const {
+    tickets,
+    loading,
+    error,
+    handleSearchSubmit,
+    handleRefresh,
+    handleFilterByDateSubmit,
+  } = useTickets();
+
   return (
     <main className='min-h-screen'>
       <div className='section-container pb-4'>
@@ -27,7 +39,6 @@ const Tickets = () => {
           }
         />
 
-        {/* Search and Filter - exact replication */}
         <div className='mb-2'>
           <Filter
             pageTitle='All Event Tickets'
@@ -35,40 +46,49 @@ const Tickets = () => {
             showPeriod={false}
             enableRightSearchBar={true}
             showFullSearchWidth={true}
+            handleSearchSubmit={handleSearchSubmit}
+            handleRefresh={handleRefresh}
+            handleFilterByDateSubmit={handleFilterByDateSubmit}
           />
         </div>
 
-        <div
-          className='
-          flex space-x-4 mb-6 overflow-x-auto whitespace-nowrap'
-        >
+        {/* Todo later */}
+        {/* <div className='flex space-x-4 mb-6 overflow-x-auto whitespace-nowrap'>
           {['upcoming', 'past'].map((tab, index) => (
             <button
               key={tab}
-              className={`px-4 py-2 text-sm  ${
+              className={`px-4 py-2 text-sm ${
                 index === 0
                   ? 'text-blue-600 border-b-2 border-blue-600 font-bold'
                   : 'text-gray-500 dark:text-white font-medium hover:text-gray-700 dark:hover:text-gray-400'
               }`}
-              // onClick={() => setActiveTab(tab)}
+              // You can implement tab switching logic here
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
-        </div>
+        </div> */}
 
-        {/* Course List - exact styling */}
-        <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((item) => (
-            <CourseGridItem
-              key={item}
-              id={item.toString()}
-              imageSrc='/images/course/course2.png'
-              title='Design Essentials'
-              price={4000}
-            />
-          ))}
-        </div>
+        {loading ? (
+          <p className='text-center text-gray-500'>Loading tickets...</p>
+        ) : error ? (
+          <p className='text-center text-red-500'>Failed to load tickets</p>
+        ) : tickets?.length === 0 ? (
+          <p className='text-center text-gray-500'>No tickets found</p>
+        ) : (
+          <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
+            {tickets.map((ticket) => (
+              <ProductGridItem
+                key={ticket.id}
+                id={ticket.id}
+                imageSrc={ticket.multimedia.url || '/images/course/course2.png'} // fallback image
+                title={ticket.title}
+                type='ticket'
+                data={ticket}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </main>
   );

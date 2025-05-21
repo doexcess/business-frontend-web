@@ -1,4 +1,4 @@
-import { fetchCategories } from '@/redux/slices/productSlice';
+import { fetchCategories } from '@/redux/slices/courseSlice';
 import { AppDispatch, RootState } from '@/redux/store';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,7 +12,7 @@ const useProductCategory = () => {
     categoriesLoading,
     error,
     categoriesCount: count,
-  } = useSelector((state: RootState) => state.product);
+  } = useSelector((state: RootState) => state.course);
 
   const {
     currentPage,

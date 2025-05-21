@@ -4,10 +4,9 @@ import {
   CategoryResponse,
   CategoryWithCreator,
   Course,
-  CourseDetails,
   CourseDetailsResponse,
   CourseResponse,
-  CreateCourseResponse,
+  CreateProductResponse,
   Module,
   ModuleContent,
   ModuleResponse,
@@ -21,7 +20,7 @@ import {
   UpdateModulesProps,
 } from '@/lib/schema/product.schema';
 
-interface ProductState {
+interface CourseState {
   courses: Course[];
   course: Course | null;
   categories: CategoryWithCreator[];
@@ -41,7 +40,7 @@ interface ProductState {
 }
 
 // Initial state
-const initialState: ProductState = {
+const initialState: CourseState = {
   courses: [],
   course: null,
   categories: [],
@@ -106,7 +105,7 @@ export const createCourse = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const { data } = await api.post<CreateCourseResponse>(
+      const { data } = await api.post<CreateProductResponse>(
         '/product-course-crud/create',
         credentials,
         {
@@ -284,7 +283,7 @@ export const createBulkModule = createAsyncThunk(
 
 // Async thunk to fetch paginated modules
 export const fetchModules = createAsyncThunk(
-  'course-module',
+  'course-module/:id',
   async ({
     page,
     limit,
@@ -292,6 +291,7 @@ export const fetchModules = createAsyncThunk(
     startDate,
     endDate,
     business_id,
+    course_id,
   }: {
     page?: number;
     limit?: number;
@@ -299,6 +299,7 @@ export const fetchModules = createAsyncThunk(
     startDate?: string;
     endDate?: string;
     business_id?: string;
+    course_id: string;
   }) => {
     const params: Record<string, any> = {};
 
@@ -311,10 +312,13 @@ export const fetchModules = createAsyncThunk(
     const headers: Record<string, string> = {};
     if (business_id) headers['Business-Id'] = business_id;
 
-    const { data } = await api.get<ModuleResponse>('/course-module', {
-      params,
-      headers,
-    });
+    const { data } = await api.get<ModuleResponse>(
+      `/course-module/${course_id}`,
+      {
+        params,
+        headers,
+      }
+    );
 
     return {
       modules: data.data,
@@ -356,8 +360,8 @@ export const updateBulkModule = createAsyncThunk(
   }
 );
 
-const productSlice = createSlice({
-  name: 'product',
+const courseSlice = createSlice({
+  name: 'course',
   initialState,
   reducers: {
     setPage: (state, action: PayloadAction<number>) => {
@@ -496,5 +500,5 @@ const productSlice = createSlice({
 });
 
 export const { setPage, setPerPage, viewContent, clearContent } =
-  productSlice.actions;
-export default productSlice.reducer;
+  courseSlice.actions;
+export default courseSlice.reducer;

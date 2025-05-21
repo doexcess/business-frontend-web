@@ -26,7 +26,7 @@ const CourseProgressIndicator = ({ step = 1 }: CourseProgressIndicator) => {
 
   return (
     <>
-      <div className='flex items-center justify-between mx-auto mb-2'>
+      <div className='flex items-center justify-between mx-auto mt-2 md:mt-0 mb-2'>
         <div className='flex flex-1 items-center'>
           <div className='flex flex-col'>
             <div

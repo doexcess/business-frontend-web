@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import CourseProgressIndicator from '@/components/dashboard/course/CourseProgressIndicator';
+import CourseProgressIndicator from '@/components/dashboard/product/course/CourseProgressIndicator';
 import PageHeading from '@/components/PageHeading';
 import { Button } from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -12,7 +12,7 @@ import {
   fetchModules,
   createBulkModule,
   updateBulkModule,
-} from '@/redux/slices/productSlice';
+} from '@/redux/slices/courseSlice';
 import {
   uploadImage,
   uploadDocument,
@@ -51,7 +51,7 @@ const CourseContent = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { org } = useSelector((state: RootState) => state.org);
   const { modules: existingModules, modulesLoading: loading } = useSelector(
-    (state: RootState) => state.product
+    (state: RootState) => state.course
   );
 
   const [modules, setModules] = useState<Module[]>([]);
@@ -77,7 +77,9 @@ const CourseContent = () => {
 
   useEffect(() => {
     if (courseId && org?.id) {
-      dispatch(fetchModules({ business_id: org.id }));
+      dispatch(
+        fetchModules({ business_id: org.id, course_id: courseId as string })
+      );
     }
   }, [courseId, dispatch, org?.id]);
 
@@ -258,7 +260,9 @@ const CourseContent = () => {
       const response = await dispatch(action).unwrap();
 
       toast.success(response.message || 'Modules saved successfully');
-      dispatch(fetchModules({ business_id: org.id }));
+      dispatch(
+        fetchModules({ business_id: org.id, course_id: courseId as string })
+      );
       router.push(`/products/courses/${courseId}/preview`);
     } catch (error: any) {
       toast.error(error.message || 'Failed to save modules');
@@ -310,6 +314,7 @@ const CourseContent = () => {
           layer2='Products'
           layer3='Courses'
           layer4='Contents'
+          layer3Link={'/products/courses'}
           enableBackButton={true}
           ctaButtons={
             <div className='flex gap-2 h-10'>

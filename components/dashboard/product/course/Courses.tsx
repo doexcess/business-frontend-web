@@ -3,7 +3,7 @@
 import ThemeDiv from '@/components/ui/ThemeDiv';
 import React from 'react';
 import CourseCard from './CourseCard';
-import CourseGridItem from './CourseGridItem';
+import ProductGridItem from './ProductGridItem';
 import Filter from '@/components/Filter';
 import useCourses from '@/hooks/page/useCourses';
 import { ProductStatus } from '@/lib/utils';
@@ -69,12 +69,12 @@ const RecentCourses = () => {
         {/* Course List - exact styling */}
         <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
           {courses.map((item, index) => (
-            <CourseGridItem
+            <ProductGridItem
               key={index}
               id={item.id}
               imageSrc={item.multimedia.url}
               title={item.title}
-              price={item.price}
+              type='course'
               data={item}
             />
           ))}

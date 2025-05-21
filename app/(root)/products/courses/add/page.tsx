@@ -1,5 +1,5 @@
-import AddCourseForm from '@/components/dashboard/course/AddCourseForm';
-import CourseProgressIndicator from '@/components/dashboard/course/CourseProgressIndicator';
+import AddCourseForm from '@/components/dashboard/product/course/AddCourseForm';
+import CourseProgressIndicator from '@/components/dashboard/product/course/CourseProgressIndicator';
 import PageHeading from '@/components/PageHeading';
 import React from 'react';
 

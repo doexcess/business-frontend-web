@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ChevronRight, ChevronDown, Menu } from 'lucide-react';
-import CourseProgressIndicator from '@/components/dashboard/course/CourseProgressIndicator';
+import CourseProgressIndicator from '@/components/dashboard/product/course/CourseProgressIndicator';
 import VideoPlayer from '@/components/VideoPlayer';
 import PageHeading from '@/components/PageHeading';
 import { Button } from '@/components/ui/Button';
@@ -11,7 +11,7 @@ import { useConfettiStore } from '@/hooks/use-confetti-store';
 import { cn, ProductStatus } from '@/lib/utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
-import { fetchModules, updateCourse } from '@/redux/slices/productSlice';
+import { fetchModules, updateCourse } from '@/redux/slices/courseSlice';
 import { useParams } from 'next/navigation';
 import { Module as ApiModule } from '@/types/product';
 import { MultimediaType } from '@/lib/utils';
@@ -42,7 +42,7 @@ const CoursePreview = () => {
     modules: existingModules,
     modulesLoading: loading,
     course: currentCourse, // Assuming this contains course status from Redux
-  } = useSelector((state: RootState) => state.product);
+  } = useSelector((state: RootState) => state.course);
 
   const [modules, setModules] = useState<Module[]>([]);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
@@ -78,7 +78,9 @@ const CoursePreview = () => {
 
   useEffect(() => {
     if (courseId && org?.id) {
-      dispatch(fetchModules({ business_id: org.id }));
+      dispatch(
+        fetchModules({ business_id: org.id, course_id: courseId as string })
+      );
     }
   }, [courseId, dispatch, org?.id]);
 
@@ -148,6 +150,7 @@ const CoursePreview = () => {
           layer2='Products'
           layer3='Courses'
           layer4='Preview'
+          layer3Link='/products/courses'
           enableBackButton={true}
           ctaButtons={
             <div className='flex gap-2 h-10'>

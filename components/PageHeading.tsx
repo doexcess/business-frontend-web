@@ -13,6 +13,8 @@ const PageHeading = ({
   layer2,
   layer3,
   layer4,
+  layer2Link,
+  layer3Link,
   enableBackButton,
   ctaButtons,
 }: {
@@ -23,6 +25,8 @@ const PageHeading = ({
   layer2?: string;
   layer3?: string;
   layer4?: string;
+  layer2Link?: string;
+  layer3Link?: string;
   enableBackButton?: boolean;
   ctaButtons?: JSX.Element;
 }) => {
@@ -40,7 +44,7 @@ const PageHeading = ({
             {layer1 && (
               <li className='inline-flex items-center'>
                 <Link
-                  href='/'
+                  href={`/`}
                   className='inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-main dark:text-gray-400 dark:hover:text-white'
                 >
                   <svg
@@ -81,12 +85,12 @@ const PageHeading = ({
                       d='m1 9 4-4-4-4'
                     />
                   </svg>
-                  <a
-                    href='#'
+                  <Link
+                    href={layer2Link ?? '#'}
                     className='ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white'
                   >
                     {layer2}
-                  </a>
+                  </Link>
                 </div>
               </li>
             )}
@@ -108,9 +112,14 @@ const PageHeading = ({
                       d='m1 9 4-4-4-4'
                     />
                   </svg>
-                  <span className='ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400'>
+                  {/* <span className='ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400'> */}
+                  <Link
+                    href={layer3Link ?? '#'}
+                    className='ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white'
+                  >
                     {layer3}
-                  </span>
+                  </Link>
+                  {/* </span> */}
                 </div>
               </li>
             )}

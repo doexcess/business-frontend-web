@@ -1,4 +1,4 @@
-import CoursesComp from '@/components/dashboard/course/Courses';
+import CoursesComp from '@/components/dashboard/product/course/Courses';
 import PageHeading from '@/components/PageHeading';
 
 import Icon from '@/components/ui/Icon';
