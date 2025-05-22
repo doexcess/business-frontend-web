@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import { EventType, ProductStatus, TicketTierStatus } from '../utils';
+import { TicketPurchase } from '@/types/product';
 
 export const CreateCourseSchema = Joi.object({
   title: Joi.string().trim().min(3).max(255).required(),
@@ -136,6 +137,7 @@ export const createTicketSchema = Joi.object({
     .uppercase()
     .optional(),
   multimedia_id: Joi.string().uuid().required(),
+  event_time: Joi.string().required(),
   event_start_date: Joi.date().required(),
   event_end_date: Joi.date().required(),
   event_location: Joi.string().required(),
@@ -146,16 +148,18 @@ export const createTicketSchema = Joi.object({
   auth_details: Joi.string().optional(),
   ticket_tiers: Joi.array().items(createTicketTierSchema).required(),
 });
-export interface CreateTicketTierProps {
+export interface TicketTierProps {
+  id?: string;
   name: string;
-  amount: number;
-  original_amount: number;
+  amount: number | null;
+  original_amount: number | null;
   description?: string;
   quantity?: number;
   remaining_quantity?: number;
   max_per_purchase?: number;
   default_view?: boolean;
   status?: TicketTierStatus;
+  purchased_tickets?: TicketPurchase[];
 }
 export interface CreateTicketProps {
   title: string;
@@ -163,14 +167,15 @@ export interface CreateTicketProps {
   keywords?: string;
   metadata?: any;
   category_id: string;
-  status?: ProductStatus;
+  status?: ProductStatus | null;
   multimedia_id: string;
-  event_start_date: Date;
-  event_end_date: Date;
+  event_time: string;
+  event_start_date: Date | string | null;
+  event_end_date: Date | string | null;
   event_location: string;
-  event_type: EventType;
+  event_type: EventType | null;
   auth_details?: string;
-  ticket_tiers: CreateTicketTierProps[];
+  ticket_tiers: TicketTierProps[];
 }
 
 // Ticket - Update
@@ -200,6 +205,7 @@ export const updateTicketSchema = Joi.object({
     .uppercase()
     .optional(),
   multimedia_id: Joi.string().uuid().optional(),
+  event_time: Joi.string().optional(),
   event_start_date: Joi.date().optional(),
   event_end_date: Joi.date().optional(),
   event_location: Joi.string().optional().allow(null, ''),

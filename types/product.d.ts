@@ -75,6 +75,7 @@ export interface TicketTier {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  purchased_tickets: TicketPurchase[]; // At most one fetch
 }
 
 export interface Ticket {
@@ -292,6 +293,7 @@ export interface TicketTier {
 export interface Ticket {
   id: string;
   product_id: string;
+  event_time?: string;
   event_start_date: string;
   event_end_date: string;
   event_location: string;
@@ -301,6 +303,17 @@ export interface Ticket {
   updated_at: string;
   deleted_at: string | null;
   ticket_tiers: TicketTier[];
+  purchased_tickets: TicketPurchase[]; // At most one fetch
+}
+
+export interface TicketPurchase {
+  id: string;
+  user_id: string;
+  ticket_id: string;
+  ticket_tier_id: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: null;
 }
 
 export interface TicketProduct {

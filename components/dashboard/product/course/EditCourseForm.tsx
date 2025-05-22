@@ -235,11 +235,13 @@ const EditCourseForm = () => {
                 <SelectValue placeholder='Select your category' />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((category, index) => (
-                  <SelectItem key={index} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
+                {categories.map(
+                  (category: { id: string; name: string }, index) => (
+                    <SelectItem key={index} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  )
+                )}
               </SelectContent>
             </Select>
           </div>

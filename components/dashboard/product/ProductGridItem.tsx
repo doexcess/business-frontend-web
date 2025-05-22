@@ -1,5 +1,5 @@
 import Icon from '@/components/ui/Icon';
-import { formatMoney } from '@/lib/utils';
+import { formatMoney, ProductStatus } from '@/lib/utils';
 import { Course, TicketProduct, TicketTier } from '@/types/product';
 import Link from 'next/link';
 import React from 'react';
@@ -47,11 +47,26 @@ const ProductGridItem = ({
   return (
     <div className='shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden mb-4 min-h-[320px] flex flex-col justify-between rounded-xl'>
       <Link href={href}>
-        <img
-          className='w-full h-48 object-cover rounded-t-xl'
-          src={imageSrc}
-          alt={title}
-        />
+        <div className='relative'>
+          <img
+            className='w-full h-48 object-cover rounded-t-xl'
+            src={imageSrc}
+            alt={title}
+          />
+          {data?.status && (
+            <span
+              className={`absolute top-2 right-2 px-2 py-1 text-xs font-semibold rounded bg-opacity-90 ${
+                data?.status === ProductStatus.PUBLISHED
+                  ? 'bg-green-600 text-white'
+                  : data?.status === ProductStatus.DRAFT
+                  ? 'bg-yellow-500 text-white'
+                  : 'bg-gray-500 text-white'
+              }`}
+            >
+              {data.status.charAt(0).toUpperCase() + data.status.slice(1)}
+            </span>
+          )}
+        </div>
       </Link>
       <div className='flex flex-col flex-grow justify-between px-4 py-3 space-y-2'>
         <div>

@@ -3,7 +3,7 @@
 import ThemeDiv from '@/components/ui/ThemeDiv';
 import React from 'react';
 import CourseCard from './CourseCard';
-import ProductGridItem from './ProductGridItem';
+import ProductGridItem from '../ProductGridItem';
 import Filter from '@/components/Filter';
 import useCourses from '@/hooks/page/useCourses';
 import { ProductStatus } from '@/lib/utils';
