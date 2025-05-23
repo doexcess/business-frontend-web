@@ -36,7 +36,10 @@ const ProductGridItem = ({
         tiers.find((tier) => tier.default_view) || tiers[0];
 
       if (defaultTier) {
-        formattedPrice = formatMoney(+defaultTier.amount, defaultTier.currency);
+        formattedPrice = `<s>${formatMoney(
+          +defaultTier.original_amount,
+          defaultTier.currency
+        )}+</s> ${formatMoney(+defaultTier.amount, defaultTier.currency)}+`;
       }
     } else if (type === 'course') {
       const courseData = data as Course;
@@ -75,9 +78,10 @@ const ProductGridItem = ({
               {title}
             </h3>
           </Link>
-          <p className='text-gray-600 dark:text-gray-300 text-sm min-h-[20px]'>
-            {formattedPrice}
-          </p>
+          <p
+            className='text-gray-600 dark:text-gray-300 text-sm min-h-[20px]'
+            dangerouslySetInnerHTML={{ __html: formattedPrice }}
+          />
         </div>
         <Link
           href={href}

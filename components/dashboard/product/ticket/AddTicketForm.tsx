@@ -4,7 +4,7 @@ import XIcon from '@/components/ui/icons/XIcon';
 import Input from '@/components/ui/Input';
 import { AppDispatch, RootState } from '@/redux/store';
 import { useRouter } from 'next/navigation';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { useDispatch, useSelector } from 'react-redux';
@@ -69,6 +69,20 @@ const AddTicketForm = () => {
   const [tier, setTier] = useState<TicketTierProps>();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [isOneDayEvent, setIsOneDayEvent] = useState(
+    body.event_start_date === body.event_end_date
+  );
+
+  // Sync body state when toggling
+  useEffect(() => {
+    if (isOneDayEvent && body.event_start_date) {
+      setBody((prev) => ({
+        ...prev,
+        event_end_date: prev.event_start_date,
+      }));
+    }
+  }, [isOneDayEvent, body.event_start_date]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -189,47 +203,6 @@ const AddTicketForm = () => {
     const tier = body.ticket_tiers.find((_, i) => i === index);
     setTier(tier);
     setDeleteTicketTierOpenModal(true);
-  };
-
-  // Perform the delete action after confirmation
-  const handleTierDelete = async () => {
-    if (tier?.id) {
-      try {
-        setIsSubmitting(true);
-
-        // Submit logic here
-        const response: any = await dispatch(
-          deleteTicketTier({ id: tier?.id, business_id: org?.id! })
-        );
-
-        if (
-          response.type ===
-          'product-ticket-crud/remove-tier/:ticket_tier_id/rejected'
-        ) {
-          throw new Error(response.payload.message);
-        }
-
-        const updatedTiers = body.ticket_tiers.filter(
-          (_, i) => i !== tierIndex
-        );
-        setBody((prev) => ({
-          ...prev,
-          ticket_tiers: updatedTiers,
-        }));
-      } catch (error: any) {
-        console.error('Submission failed:', error);
-        toast.error(error.message);
-      } finally {
-        setIsSubmitting(false);
-        setDeleteTicketTierOpenModal(false);
-      }
-    } else {
-      const updatedTiers = body.ticket_tiers.filter((_, i) => i !== tierIndex);
-      setBody((prev) => ({
-        ...prev,
-        ticket_tiers: updatedTiers,
-      }));
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -356,11 +329,13 @@ const AddTicketForm = () => {
             <SelectValue placeholder='Select your category' />
           </SelectTrigger>
           <SelectContent>
-            {categories.map((category: { id: string; name: string }, index) => (
-              <SelectItem key={index} value={category.id}>
-                {category.name}
-              </SelectItem>
-            ))}
+            {categories.map(
+              (category: { id: string; name: string }, index: number) => (
+                <SelectItem key={index} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              )
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -470,13 +445,8 @@ const AddTicketForm = () => {
             <input
               type='radio'
               name='one-day-event'
-              checked={body.event_end_date === body.event_start_date}
-              onChange={() =>
-                setBody((prev) => ({
-                  ...prev,
-                  event_end_date: prev.event_start_date,
-                }))
-              }
+              checked={isOneDayEvent}
+              onChange={() => setIsOneDayEvent(true)}
             />
             Yes
           </label>
@@ -484,20 +454,15 @@ const AddTicketForm = () => {
             <input
               type='radio'
               name='one-day-event'
-              checked={body.event_end_date !== body.event_start_date}
-              onChange={() =>
-                setBody((prev) => ({
-                  ...prev,
-                  event_end_date: '', // or allow user to pick another date
-                }))
-              }
+              checked={!isOneDayEvent}
+              onChange={() => setIsOneDayEvent(false)}
             />
             No
           </label>
         </div>
       </div>
 
-      {isSingleDay ? (
+      {isOneDayEvent ? (
         renderDateField(
           'Event Date',
           'event_start_date',

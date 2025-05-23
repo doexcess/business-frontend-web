@@ -7,6 +7,7 @@ import Icon from '@/components/ui/Icon';
 import Link from 'next/link';
 import React from 'react';
 import useTickets from '@/hooks/page/useTickets'; // assuming path is correct
+import ProductGridItemSkeleton from '@/components/dashboard/product/ProductGridItemSkeleton';
 
 const Tickets = () => {
   const {
@@ -70,7 +71,11 @@ const Tickets = () => {
         </div> */}
 
         {loading ? (
-          <p className='text-center text-gray-500'>Loading tickets...</p>
+          <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <ProductGridItemSkeleton key={idx} />
+            ))}
+          </div>
         ) : error ? (
           <p className='text-center text-red-500'>Failed to load tickets</p>
         ) : tickets?.length === 0 ? (

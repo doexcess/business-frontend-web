@@ -245,8 +245,6 @@ const EditTicketForm = () => {
         return tier;
       });
 
-      console.log(filtered_ticket_tiers);
-
       const { error, value } = updateTicketSchema.validate(body);
       if (error) throw new Error(error.details[0].message);
 
@@ -591,7 +589,6 @@ const EditTicketForm = () => {
           </div>
 
           {/* Status */}
-          {body.status!}
           <div>
             <label className='font-medium mb-1 block text-gray-700 dark:text-white'>
               Status <span className='text-red-500'>*</span>
