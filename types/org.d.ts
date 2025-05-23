@@ -51,3 +51,30 @@ export interface BusinessProfileFullReponse {
   message: string;
   data: BusinessProfileFull;
 }
+
+export interface ContactUser {
+  email: string;
+  id: string; // UUID format
+}
+
+export enum ContactInviteStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  PENDING = 'pending',
+}
+
+export interface ContactInvite {
+  id: string; // UUID format
+  name: string;
+  user: ContactUser;
+  token: string | null;
+  status: ContactInviteStatus; // Assuming possible status values
+  expires_at: string | null; // ISO date string or null
+  created_at: string; // ISO date string
+}
+
+export interface ContactInviteResponse {
+  statusCode: number;
+  data: ContactInvite[];
+  count: number;
+}

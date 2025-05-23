@@ -265,8 +265,6 @@ const AddTicketForm = () => {
     body.auth_details &&
     body.ticket_tiers.length > 0;
 
-  const isSingleDay = body.event_end_date === body.event_start_date;
-
   const renderDateField = (label: string, name: string, value: string) => (
     <div>
       <label className='block font-medium mb-1 text-gray-700 dark:text-white'>

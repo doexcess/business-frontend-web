@@ -5,15 +5,23 @@ import {
   BusinessProfileFull,
   BusinessProfileFullReponse,
   BusinessProfileResponse,
+  ContactInvite,
+  ContactInviteResponse,
 } from '@/types/org';
 import {
+  AcceptInviteProps,
   CreateBusinessProfileProps,
+  InviteContactProps,
   SaveBankAccountProps,
 } from '@/lib/schema/org.schema';
 
 interface OrgState {
   orgs: BusinessProfile[];
   org: BusinessProfileFull | null;
+  invites: ContactInvite[];
+  invitesCount: number;
+  invitesLoading: boolean;
+  invitesError: string | null;
   count: number;
   orgsCount: number;
   loading: boolean;
@@ -24,6 +32,10 @@ interface OrgState {
 const initialState: OrgState = {
   orgs: [],
   org: null,
+  invites: [],
+  invitesCount: 0,
+  invitesLoading: false,
+  invitesError: null,
   orgsCount: 0,
   count: 0,
   loading: false,
@@ -88,7 +100,7 @@ export const saveOrgInfo = createAsyncThunk(
   async (credentials: CreateBusinessProfileProps, { rejectWithValue }) => {
     try {
       const { data } = await api.post(
-        'onboard/save-business-info',
+        '/onboard/save-business-info',
         credentials
       );
 
@@ -107,7 +119,7 @@ export const saveWithdrawalAccount = createAsyncThunk(
   async (credentials: SaveBankAccountProps, { rejectWithValue }) => {
     try {
       const { data } = await api.post(
-        'onboard/save-withdrawal-account',
+        '/onboard/save-withdrawal-account',
         credentials
       );
 
@@ -118,6 +130,109 @@ export const saveWithdrawalAccount = createAsyncThunk(
       return rejectWithValue(
         error.response?.data || 'Failed to save withdrawal account info'
       );
+    }
+  }
+);
+
+// Async thunk to invite team member
+export const inviteMember = createAsyncThunk(
+  'contact/invite',
+  async (credentials: InviteContactProps, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post('/contact/invite', credentials);
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || 'Failed to invite team member'
+      );
+    }
+  }
+);
+
+// Async thunk to reinvite team member
+export const reinviteMember = createAsyncThunk(
+  'contact/reinvite-member/:invite_id',
+  async ({ invite_id }: { invite_id: string }, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post(`/contact/reinvite-member/${invite_id}`);
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || 'Failed to reinvite team member'
+      );
+    }
+  }
+);
+
+// Async thunk to accept invite
+export const acceptInvite = createAsyncThunk(
+  'contact/accept-invite',
+  async (credentials: AcceptInviteProps, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post('/contact/accept-invite', credentials);
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Failed to accept invite');
+    }
+  }
+);
+
+// Async thunk to fetch invites
+export const fetchInvites = createAsyncThunk(
+  'contact/invites/:business_id',
+  async (
+    {
+      page,
+      limit,
+      q,
+      startDate,
+      endDate,
+      business_id,
+    }: {
+      page?: number;
+      limit?: number;
+      q?: string;
+      startDate?: string;
+      endDate?: string;
+      business_id?: string;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const params: Record<string, any> = {};
+
+      if (page !== undefined) params['pagination[page]'] = page;
+      if (limit !== undefined) params['pagination[limit]'] = limit;
+      if (q !== undefined) params.q = q;
+      if (startDate !== undefined) params.startDate = startDate;
+      if (endDate !== undefined) params.endDate = endDate;
+
+      const headers: Record<string, string> = {};
+      if (business_id) headers['Business-Id'] = business_id;
+
+      const { data } = await api.get<ContactInviteResponse>(
+        `/contact/invites/${business_id}`,
+        {
+          params,
+          headers,
+        }
+      );
+
+      return {
+        invites: data.data,
+        count: data.count,
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Failed to fetch invites');
     }
   }
 );
@@ -198,6 +313,53 @@ const orgSlice = createSlice({
         state.loading = false;
         state.error =
           action.error.message || 'Failed to save withdrawal account info';
+      })
+      // Team management
+      .addCase(inviteMember.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(inviteMember.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(inviteMember.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to invite team member';
+      })
+      .addCase(reinviteMember.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(reinviteMember.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(reinviteMember.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to reinvite team member';
+      })
+      .addCase(acceptInvite.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(acceptInvite.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(acceptInvite.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to accept invite';
+      })
+      .addCase(fetchInvites.pending, (state) => {
+        state.invitesLoading = true;
+        state.invitesError = null;
+      })
+      .addCase(fetchInvites.fulfilled, (state, action) => {
+        state.invitesLoading = false;
+        state.invites = action.payload.invites;
+        state.count = action.payload.count;
+      })
+      .addCase(fetchInvites.rejected, (state, action) => {
+        state.invitesLoading = false;
+        state.invitesError = action.error.message || 'Failed to fetch invites';
       });
   },
 });
