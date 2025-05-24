@@ -1,3 +1,5 @@
+import { ContactInviteStatus, Gender } from '@/lib/utils';
+
 export interface BusinessProfile {
   id: string;
   user_id: string;
@@ -52,21 +54,37 @@ export interface BusinessProfileFullReponse {
   data: BusinessProfileFull;
 }
 
-export interface ContactUser {
-  email: string;
+export interface UserProfile {
   id: string; // UUID format
+  user_id: string; // UUID format
+  profile_picture: string; // URL
+  address: string;
+  bio: string;
+  date_of_birth: string; // ISO 8601 date string
+  gender: Gender;
+  created_at: string; // ISO 8601 datetime
+  updated_at: string; // ISO 8601 datetime
+  deleted_at: string | null; // ISO 8601 datetime or null
+  country: string;
+  state: string | null;
+  country_code: string; // ISO 2-letter country code
 }
 
-export enum ContactInviteStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  PENDING = 'pending',
+export interface ContactUser {
+  id: string; // UUID format
+  role: {
+    name: string;
+    role_id: string;
+  };
+  profile: UserProfile | null;
 }
 
 export interface ContactInvite {
   id: string; // UUID format
   name: string;
-  user: ContactUser;
+  email: string;
+  is_owner: boolean;
+  user: ContactUser | null;
   token: string | null;
   status: ContactInviteStatus; // Assuming possible status values
   expires_at: string | null; // ISO date string or null

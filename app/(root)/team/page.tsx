@@ -10,61 +10,95 @@ import { Modal } from '@/components/ui/Modal'; // Assuming you have one
 import Input from '@/components/ui/Input'; // Assuming you have one
 import Select from '@/components/Select'; // Assuming you have one
 import Link from 'next/link';
+import useInvites from '@/hooks/page/useInvites';
+import TeamList from '@/components/dashboard/team/TeamList';
+import Pagination from '@/components/Pagination';
+import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
+import { ContactInvite } from '@/types/org';
+import {
+  InviteContactProps,
+  inviteContactSchema,
+} from '@/lib/schema/org.schema';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/redux/store';
+import { fetchInvites, inviteMember } from '@/redux/slices/orgSlice';
+import toast from 'react-hot-toast';
+import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 
-type TeamMember = {
-  name: string;
-  email: string;
-  role: 'Admin' | 'Member';
-  status: 'Active' | 'Invited';
-  avatarUrl?: string; // Optional: fallback to generated avatar
-};
-
-const initialMembers: TeamMember[] = [
-  {
-    name: 'Jane Doe',
-    email: 'jane@example.com',
-    role: 'Admin',
-    status: 'Active',
-  },
-  {
-    name: 'John Smith',
-    email: 'john@example.com',
-    role: 'Member',
-    status: 'Invited',
-  },
-];
-
-const getAvatar = (email: string, name: string) => {
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    name
-  )}&background=random&size=32`;
+const defaultValue: InviteContactProps = {
+  email: '',
+  business_id: '',
 };
 
 const Team = () => {
-  const [members, setMembers] = useState<TeamMember[]>(initialMembers);
-  const [isInviteOpen, setInviteOpen] = useState(false);
-  const [newMember, setNewMember] = useState({
-    name: '',
-    email: '',
-    role: 'Member',
+  const dispatch = useDispatch<AppDispatch>();
+
+  const { invites, count, loading, onClickNext, onClickPrev } = useInvites();
+  const { org } = useSelector((state: RootState) => state.org);
+
+  const [body, setBody] = useState<InviteContactProps>({
+    ...defaultValue,
+    business_id: org?.id!,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAddMember = () => {
-    if (!newMember.name || !newMember.email) return;
+  const [members, setMembers] = useState<ContactInvite[]>([]);
+  const [isInviteOpen, setInviteOpen] = useState(false);
 
-    setMembers([
-      ...members,
-      {
-        ...newMember,
-        status: 'Invited',
-      } as TeamMember,
-    ]);
-    setInviteOpen(false);
-    setNewMember({ name: '', email: '', role: 'Member' });
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setBody((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleRemove = (email: string) => {
     setMembers(members.filter((m) => m.email !== email));
+  };
+
+  const isFormValid = body.email && body.business_id;
+
+  const handleAddMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!isFormValid) return;
+
+    try {
+      setIsSubmitting(true);
+
+      const { error, value } = inviteContactSchema.validate(body);
+      if (error) throw new Error(error.details[0].message);
+
+      // Submit logic here
+      const response: any = await dispatch(
+        inviteMember({
+          ...body,
+        })
+      );
+
+      if (response.type === 'contact/invite/rejected') {
+        throw new Error(response.payload.message);
+      }
+
+      toast.success(response.payload.message);
+      setInviteOpen(false);
+      setBody(defaultValue);
+
+      // Fetch
+      dispatch(
+        fetchInvites({
+          ...(org?.id && { business_id: org.id }),
+        })
+      ).unwrap();
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -77,87 +111,27 @@ const Team = () => {
           enableBreadCrumb={true}
           layer2='Team'
           ctaButtons={
-            <Button
-              className='bg-primary text-md flex p-2 px-4 gap-2'
-              onClick={() => setInviteOpen(true)}
-            >
-              <Icon url='/icons/landing/plus.svg' />
-              Invite
-            </Button>
+            <div className='flex '>
+              <Button
+                className='bg-primary text-md flex p-2 px-4 gap-2'
+                onClick={() => setInviteOpen(true)}
+              >
+                <Icon url='/icons/landing/plus.svg' />
+                Invite
+              </Button>
+            </div>
           }
         />
 
-        {/* Table */}
-        <section className='overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm'>
-          <table className='min-w-full text-sm text-left'>
-            <thead className='bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 uppercase text-xs font-semibold tracking-wide'>
-              <tr>
-                <th className='p-4'>ID</th>
-                <th className='p-4'>Name</th>
-                <th className='p-4'>Email</th>
-                <th className='p-4'>Role</th>
-                <th className='p-4'>Status</th>
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-gray-100 dark:divide-gray-700'>
-              {members.map((member, index) => (
-                <tr
-                  key={index}
-                  className='hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors'
-                >
-                  <td className='px-4 py-4 font-medium text-gray-800 dark:text-gray-100'>
-                    <Link href={`/teams/${index}`}>{index + 1}</Link>
-                  </td>
-                  <td className='px-4 py-3'>
-                    <Link
-                      href={`team/${index}`}
-                      className='flex items-center gap-3'
-                    >
-                      <img
-                        src={getAvatar(member.email, member.name)}
-                        alt={member.name}
-                        className='w-8 h-8 rounded-full object-cover'
-                      />
-                      <span className='font-medium text-gray-800 dark:text-gray-100'>
-                        {member.name}
-                      </span>
-                    </Link>
-                  </td>
-                  <td className='px-4 py-2 text-gray-600 dark:text-gray-300 truncate max-w-[200px]'>
-                    {member.email}
-                  </td>
-                  <td className='px-4 py-2'>
-                    <span className='inline-flex items-center gap-1 text-gray-700 dark:text-gray-200'>
-                      {member.role === 'Admin' && (
-                        <MdOutlineAdminPanelSettings className='text-blue-500' />
-                      )}
-                      <span
-                        className={`font-medium px-2 py-1 rounded-full ${
-                          member.role === 'Admin'
-                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-800/20 dark:text-blue-400'
-                            : 'bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300'
-                        }`}
-                      >
-                        {member.role}
-                      </span>
-                    </span>
-                  </td>
-                  <td className='px-4 py-2'>
-                    <span
-                      className={`font-medium px-2 py-1 rounded-full ${
-                        member.status === 'Active'
-                          ? 'bg-green-100 text-green-700 dark:bg-green-800/20 dark:text-green-400'
-                          : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-800/20 dark:text-yellow-400'
-                      }`}
-                    >
-                      {member.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+        {loading ? <LoadingSkeleton /> : <TeamList />}
+
+        <Pagination
+          paddingRequired={false}
+          total={count}
+          onClickNext={onClickNext}
+          onClickPrev={onClickPrev}
+          noMoreNextPage={invites.length === 0}
+        />
 
         {/* Invite Modal */}
         <Modal
@@ -165,34 +139,45 @@ const Team = () => {
           onClose={() => setInviteOpen(false)}
           title='Invite Team Member'
         >
-          <div className='space-y-4'>
+          <form className='space-y-4' onSubmit={handleAddMember}>
             <div>
               <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
                 Email Address
               </label>
               <Input
                 type='email'
+                name='email'
                 placeholder='Enter email'
-                value={newMember.email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setNewMember({ ...newMember, email: e.target.value })
-                }
+                value={body.email}
+                onChange={handleChange}
               />
             </div>
 
             <div className='flex justify-end gap-2 mt-4'>
               <Button
+                type='button'
                 variant='outline'
                 className='dark:border-gray-600 dark:text-white text-gray-600'
                 onClick={() => setInviteOpen(false)}
               >
                 Cancel
               </Button>
-              <Button variant='primary' onClick={handleAddMember}>
-                Send Invite
+              <Button
+                type='submit'
+                variant='primary'
+                disabled={!isFormValid || isSubmitting}
+              >
+                {isSubmitting ? (
+                  <span className='flex items-center justify-center'>
+                    <LoadingIcon />
+                    Processing...
+                  </span>
+                ) : (
+                  'Send Invite'
+                )}
               </Button>
             </div>
-          </div>
+          </form>
         </Modal>
       </div>
     </main>

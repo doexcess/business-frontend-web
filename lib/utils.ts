@@ -137,6 +137,12 @@ export enum EventType {
   HYBRID = 'HYBRID',
 }
 
+export enum ContactInviteStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  PENDING = 'pending',
+}
+
 export const NotificationStatusTypes = [
   { slug: 'immediate', name: 'Immediate', template: EmailTemplate.CUSTOM },
   { slug: 'scheduled', name: 'Scheduled', template: EmailTemplate.WAITLIST },
@@ -285,4 +291,12 @@ export const actualRole = (role: SignupRole): SystemRole | string => {
 export const truncate = (text: string, maxLength: number) => {
   if (!text) return '';
   return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
+};
+
+export const getAvatar = (picture: string | null, name: string) => {
+  return picture
+    ? picture
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        name
+      )}&background=random&size=32`;
 };

@@ -219,8 +219,6 @@ const AddTicketForm = () => {
         return tier;
       });
 
-      console.log(filtered_ticket_tiers);
-
       const { error, value } = createTicketSchema.validate(body);
       if (error) throw new Error(error.details[0].message);
 

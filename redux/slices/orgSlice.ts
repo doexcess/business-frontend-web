@@ -19,6 +19,7 @@ interface OrgState {
   orgs: BusinessProfile[];
   org: BusinessProfileFull | null;
   invites: ContactInvite[];
+  invite: ContactInvite | null;
   invitesCount: number;
   invitesLoading: boolean;
   invitesError: string | null;
@@ -33,6 +34,7 @@ const initialState: OrgState = {
   orgs: [],
   org: null,
   invites: [],
+  invite: null,
   invitesCount: 0,
   invitesLoading: false,
   invitesError: null,
@@ -262,6 +264,20 @@ const orgSlice = createSlice({
     clearOrg: (state) => {
       state.org = null;
     },
+    viewInvite: (state, action: PayloadAction<string>) => {
+      const inviteId = action.payload;
+      const matchedInvite = state.invites.find(
+        (invite) => invite.id === inviteId
+      );
+
+      if (matchedInvite) {
+        state.invite = {
+          ...matchedInvite,
+        } as ContactInvite;
+      } else {
+        state.error = 'Invite not found in local state';
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -355,7 +371,7 @@ const orgSlice = createSlice({
       .addCase(fetchInvites.fulfilled, (state, action) => {
         state.invitesLoading = false;
         state.invites = action.payload.invites;
-        state.count = action.payload.count;
+        state.invitesCount = action.payload.count;
       })
       .addCase(fetchInvites.rejected, (state, action) => {
         state.invitesLoading = false;
@@ -364,6 +380,7 @@ const orgSlice = createSlice({
   },
 });
 
-export const { setPage, setPerPage, switchToOrg, clearOrg } = orgSlice.actions;
+export const { setPage, setPerPage, switchToOrg, clearOrg, viewInvite } =
+  orgSlice.actions;
 
 export default orgSlice.reducer;

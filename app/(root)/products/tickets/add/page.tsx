@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
-import dynamic from 'next/dynamic';
+import React from 'react';
 import PageHeading from '@/components/PageHeading';
 
 import AddTicketForm from '@/components/dashboard/product/ticket/AddTicketForm';
