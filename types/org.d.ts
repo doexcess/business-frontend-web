@@ -85,6 +85,7 @@ export interface ContactInvite {
   email: string;
   is_owner: boolean;
   user: ContactUser | null;
+  business: BusinessProfile;
   token: string | null;
   status: ContactInviteStatus; // Assuming possible status values
   expires_at: string | null; // ISO date string or null
@@ -95,4 +96,9 @@ export interface ContactInviteResponse {
   statusCode: number;
   data: ContactInvite[];
   count: number;
+}
+
+export interface ContactInviteDetailsResponse {
+  statusCode: number;
+  data: ContactInvite;
 }

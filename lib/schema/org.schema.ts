@@ -55,10 +55,10 @@ export const acceptInviteSchema = Joi.object({
   name: Joi.string()
     .min(2) // Minimum 2 characters
     .max(100) // Maximum 100 characters
-    .required(),
+    .optional(),
   token: Joi.string() // Validates UUID v4 format
     .required(),
-  password: Joi.string().min(8).required(),
+  password: Joi.string().min(8).optional(),
 });
 export interface AcceptInviteProps {
   name: string;

@@ -6,6 +6,7 @@ import {
   BusinessProfileFullReponse,
   BusinessProfileResponse,
   ContactInvite,
+  ContactInviteDetailsResponse,
   ContactInviteResponse,
 } from '@/types/org';
 import {
@@ -14,6 +15,7 @@ import {
   InviteContactProps,
   SaveBankAccountProps,
 } from '@/lib/schema/org.schema';
+import { ContactInviteStatus } from '@/lib/utils';
 
 interface OrgState {
   orgs: BusinessProfile[];
@@ -36,11 +38,11 @@ const initialState: OrgState = {
   invites: [],
   invite: null,
   invitesCount: 0,
-  invitesLoading: false,
+  invitesLoading: true,
   invitesError: null,
   orgsCount: 0,
   count: 0,
-  loading: false,
+  loading: true,
   error: null,
   currentPage: 1,
 };
@@ -239,6 +241,78 @@ export const fetchInvites = createAsyncThunk(
   }
 );
 
+// Async thunk to view invite by token
+export const viewInviteByToken = createAsyncThunk(
+  'contact/invite/:token',
+  async ({ token }: { token: string }, { rejectWithValue }) => {
+    try {
+      const { data } = await api.get<ContactInviteDetailsResponse>(
+        `/contact/invite/${token}`
+      );
+
+      return {
+        data: data.data,
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Failed to view invite');
+    }
+  }
+);
+
+// Async thunk to remove member
+export const removeMember = createAsyncThunk(
+  'contact/remove-member/:invite_id',
+  async ({ invite_id }: { invite_id: string }, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post(`/contact/remove-member/${invite_id}`);
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Failed to remove member');
+    }
+  }
+);
+
+// Async thunk to deactivate member
+export const deactivateMember = createAsyncThunk(
+  'contact/deactivate-member/:invite_id',
+  async ({ invite_id }: { invite_id: string }, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post(
+        `/contact/deactivate-member/${invite_id}`
+      );
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || 'Failed to deactivate member'
+      );
+    }
+  }
+);
+
+// Async thunk to restore member
+export const restoreMember = createAsyncThunk(
+  'contact/restore-member/:invite_id',
+  async ({ invite_id }: { invite_id: string }, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post(`/contact/restore-member/${invite_id}`);
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || 'Failed to restore member'
+      );
+    }
+  }
+);
+
 const orgSlice = createSlice({
   name: 'org',
   initialState,
@@ -376,6 +450,59 @@ const orgSlice = createSlice({
       .addCase(fetchInvites.rejected, (state, action) => {
         state.invitesLoading = false;
         state.invitesError = action.error.message || 'Failed to fetch invites';
+      })
+      .addCase(viewInviteByToken.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(viewInviteByToken.fulfilled, (state, action) => {
+        state.loading = false;
+        state.invite = action.payload.data;
+      })
+      .addCase(viewInviteByToken.rejected, (state, action) => {
+        state.loading = false;
+        state.error = 'Failed to fetch invite';
+      })
+      .addCase(removeMember.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(removeMember.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(removeMember.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to remove member';
+      })
+      .addCase(deactivateMember.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deactivateMember.fulfilled, (state, action) => {
+        state.loading = false;
+        state.invite = {
+          ...state.invite!,
+          status: ContactInviteStatus.INACTIVE,
+        };
+      })
+      .addCase(deactivateMember.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to deactivate member';
+      })
+      .addCase(restoreMember.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(restoreMember.fulfilled, (state, action) => {
+        state.loading = false;
+        state.invite = {
+          ...state.invite!,
+          status: ContactInviteStatus.ACTIVE,
+        };
+      })
+      .addCase(restoreMember.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to restore member';
       });
   },
 });

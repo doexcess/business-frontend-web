@@ -85,7 +85,7 @@ const Team = () => {
 
       toast.success(response.payload.message);
       setInviteOpen(false);
-      setBody(defaultValue);
+      setBody({ ...body, email: '' });
 
       // Fetch
       dispatch(

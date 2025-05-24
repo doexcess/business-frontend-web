@@ -7,26 +7,41 @@ import { MdOutlineAdminPanelSettings } from 'react-icons/md';
 import { FaEnvelope, FaCalendarAlt } from 'react-icons/fa';
 import Avatar from '@/components/ui/Avatar';
 import DeactivateIcon from '@/components/ui/icons/DeactivateIcon';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
-import { reinviteMember, viewInvite } from '@/redux/slices/orgSlice';
+import {
+  deactivateMember,
+  reinviteMember,
+  removeMember,
+  restoreMember,
+  viewInvite,
+} from '@/redux/slices/orgSlice';
 import { ContactInviteStatus, getAvatar } from '@/lib/utils';
 import { capitalize } from 'lodash';
 import toast from 'react-hot-toast';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
+import ActivateIcon from '@/components/ui/icons/ActivateIcon';
 
 const TeamMember = () => {
+  const router = useRouter();
   const params = useParams();
   const dispatch = useDispatch<AppDispatch>();
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmittingResendInvite, setIsSubmittingResendInvite] =
+    useState(false);
+  const [isSubmittingRemoveMember, setIsSubmittingRemoveMember] =
+    useState(false);
+  const [isSubmittingDeactivateMember, setIsSubmittingDeactivateMember] =
+    useState(false);
+  const [isSubmittingRestoreMember, setIsSubmittingRestoreMember] =
+    useState(false);
 
   const { invite } = useSelector((state: RootState) => state.org);
 
   const handleResendInvite = async () => {
     try {
-      setIsSubmitting(true);
+      setIsSubmittingResendInvite(true);
 
       // Submit logic here
       const response: any = await dispatch(
@@ -42,13 +57,86 @@ const TeamMember = () => {
       console.error(error);
       toast.error(error.message);
     } finally {
-      setIsSubmitting(false);
+      setIsSubmittingResendInvite(false);
+    }
+  };
+
+  const handleRemoveMember = async () => {
+    try {
+      setIsSubmittingRemoveMember(true);
+
+      // Submit logic here
+      const response: any = await dispatch(
+        removeMember({ invite_id: params?.id as string })
+      );
+
+      if (response.type === 'contact/remove-member/:invite_id/rejected') {
+        throw new Error(response.payload.message);
+      }
+
+      toast.success(response.payload.message);
+      router.push('/team');
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message);
+    } finally {
+      setIsSubmittingRemoveMember(false);
+    }
+  };
+
+  const handleDeactivateMember = async () => {
+    try {
+      setIsSubmittingDeactivateMember(true);
+
+      // Submit logic here
+      const response: any = await dispatch(
+        deactivateMember({ invite_id: params?.id as string })
+      );
+
+      if (response.type === 'contact/deactivate-member/:invite_id/rejected') {
+        throw new Error(response.payload.message);
+      }
+
+      toast.success(response.payload.message);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message);
+    } finally {
+      setIsSubmittingDeactivateMember(false);
+    }
+  };
+
+  const handleRestoreMember = async () => {
+    try {
+      setIsSubmittingRestoreMember(true);
+
+      // Submit logic here
+      const response: any = await dispatch(
+        restoreMember({ invite_id: params?.id as string })
+      );
+
+      if (response.type === 'contact/restore-member/:invite_id/rejected') {
+        throw new Error(response.payload.message);
+      }
+
+      toast.success(response.payload.message);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message);
+    } finally {
+      setIsSubmittingRestoreMember(false);
     }
   };
 
   useEffect(() => {
     dispatch(viewInvite(params?.id as string));
   }, [dispatch]);
+
+  const isSubmitting =
+    isSubmittingResendInvite ||
+    isSubmittingRemoveMember ||
+    isSubmittingDeactivateMember ||
+    isSubmittingRestoreMember;
 
   return (
     <main className='min-h-screen bg-gray-50 dark:bg-gray-900 pb-12'>
@@ -63,14 +151,14 @@ const TeamMember = () => {
           enableBackButton
           ctaButtons={
             <div className='flex gap-2'>
-              {invite?.status === ContactInviteStatus.PENDING && (
+              {invite?.status === ContactInviteStatus.PENDING ? (
                 <Button
                   variant='outline'
                   className='text-md flex p-2 px-4 gap-2 dark:text-white dark:hover:bg-white dark:hover:text-gray-800'
                   onClick={handleResendInvite}
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? (
+                  {isSubmittingResendInvite ? (
                     <span className='flex items-center justify-center'>
                       <LoadingIcon />
                       Processing...
@@ -79,11 +167,47 @@ const TeamMember = () => {
                     'Resend Invite'
                   )}
                 </Button>
+              ) : invite?.status === ContactInviteStatus.ACTIVE ? (
+                <Button
+                  type='button'
+                  variant='red'
+                  className='text-md flex p-2 px-4 gap-2'
+                  onClick={handleDeactivateMember}
+                  disabled={isSubmitting}
+                >
+                  {isSubmittingDeactivateMember ? (
+                    <span className='flex items-center justify-center'>
+                      <LoadingIcon />
+                      Processing...
+                    </span>
+                  ) : (
+                    <>
+                      <DeactivateIcon />
+                      Deactivate
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  type='button'
+                  variant='green'
+                  className='text-md flex p-2 px-4 gap-2'
+                  onClick={handleRestoreMember}
+                  disabled={isSubmitting}
+                >
+                  {isSubmittingRestoreMember ? (
+                    <span className='flex items-center justify-center'>
+                      <LoadingIcon />
+                      Processing...
+                    </span>
+                  ) : (
+                    <>
+                      <ActivateIcon />
+                      Activate
+                    </>
+                  )}
+                </Button>
               )}
-              <Button variant='red' className='text-md flex p-2 px-4 gap-2'>
-                <DeactivateIcon />
-                Deactivate
-              </Button>
             </div>
           }
         />
@@ -119,7 +243,7 @@ const TeamMember = () => {
                     <MdOutlineAdminPanelSettings className='text-blue-500' />
                   )}
                   <span
-                    className={`font-medium px-2 py-1 rounded-full ${
+                    className={`font-medium py-1 rounded-full ${
                       invite?.is_owner
                         ? 'bg-blue-100 text-blue-700 dark:bg-blue-800/20 dark:text-blue-400'
                         : 'bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300'
@@ -168,7 +292,21 @@ const TeamMember = () => {
             >
               Edit Details
             </Button> */}
-            <Button variant='red'>Remove Member</Button>
+            <Button
+              type='button'
+              variant='red'
+              onClick={handleRemoveMember}
+              disabled={isSubmitting}
+            >
+              {isSubmittingRemoveMember ? (
+                <span className='flex items-center justify-center'>
+                  <LoadingIcon />
+                  Processing...
+                </span>
+              ) : (
+                'Remove Member'
+              )}
+            </Button>
           </div>
         </div>
       </div>
