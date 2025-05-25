@@ -35,8 +35,8 @@ const JoinInvitationForm = () => {
   const [loadingInvite, setLoadingInvite] = useState(true);
 
   useEffect(() => {
-    if (loading) setLoadingInvite(false);
-  }, [loading]);
+    if (invite) setLoadingInvite(false);
+  }, [invite]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setBody({ ...body, [e.target.name]: e.target.value });

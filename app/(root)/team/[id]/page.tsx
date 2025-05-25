@@ -22,11 +22,14 @@ import { capitalize } from 'lodash';
 import toast from 'react-hot-toast';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import ActivateIcon from '@/components/ui/icons/ActivateIcon';
+import ActionConfirmationModal from '@/components/ActionConfirmationModal';
 
 const TeamMember = () => {
   const router = useRouter();
   const params = useParams();
   const dispatch = useDispatch<AppDispatch>();
+
+  const { invite } = useSelector((state: RootState) => state.org);
 
   const [isSubmittingResendInvite, setIsSubmittingResendInvite] =
     useState(false);
@@ -37,7 +40,20 @@ const TeamMember = () => {
   const [isSubmittingRestoreMember, setIsSubmittingRestoreMember] =
     useState(false);
 
-  const { invite } = useSelector((state: RootState) => state.org);
+  const [removeMemberOpenModal, setRemoveMemberOpenModal] = useState(false);
+  const [allowRemoveMemberAction, setAllowRemoveMemberAction] = useState(false);
+
+  const [deactivateMemberOpenModal, setDeactivateMemberOpenModal] =
+    useState(false);
+  const [allowDeactivateMemberAction, setAllowDeactivateMemberAction] =
+    useState(false);
+
+  const [restoreMemberOpenModal, setRestoreMemberOpenModal] = useState(false);
+  const [allowRestoreMemberAction, setAllowRestoreMemberAction] =
+    useState(false);
+
+  const [resendInviteOpenModal, setResendInviteOpenModal] = useState(false);
+  const [allowResendInviteAction, setAllowResendInviteAction] = useState(false);
 
   const handleResendInvite = async () => {
     try {
@@ -132,6 +148,34 @@ const TeamMember = () => {
     dispatch(viewInvite(params?.id as string));
   }, [dispatch]);
 
+  useEffect(() => {
+    if (allowRemoveMemberAction) {
+      handleRemoveMember();
+      setAllowRemoveMemberAction(false);
+    }
+  }, [allowRemoveMemberAction]);
+
+  useEffect(() => {
+    if (allowDeactivateMemberAction) {
+      handleDeactivateMember();
+      setAllowDeactivateMemberAction(false);
+    }
+  }, [allowDeactivateMemberAction]);
+
+  useEffect(() => {
+    if (allowRestoreMemberAction) {
+      handleRestoreMember();
+      setAllowRestoreMemberAction(false);
+    }
+  }, [allowRestoreMemberAction]);
+
+  useEffect(() => {
+    if (allowResendInviteAction) {
+      handleResendInvite();
+      setAllowResendInviteAction(false);
+    }
+  }, [allowResendInviteAction]);
+
   const isSubmitting =
     isSubmittingResendInvite ||
     isSubmittingRemoveMember ||
@@ -155,7 +199,7 @@ const TeamMember = () => {
                 <Button
                   variant='outline'
                   className='text-md flex p-2 px-4 gap-2 dark:text-white dark:hover:bg-white dark:hover:text-gray-800'
-                  onClick={handleResendInvite}
+                  onClick={() => setResendInviteOpenModal(true)}
                   disabled={isSubmitting}
                 >
                   {isSubmittingResendInvite ? (
@@ -172,7 +216,7 @@ const TeamMember = () => {
                   type='button'
                   variant='red'
                   className='text-md flex p-2 px-4 gap-2'
-                  onClick={handleDeactivateMember}
+                  onClick={() => setDeactivateMemberOpenModal(true)}
                   disabled={isSubmitting}
                 >
                   {isSubmittingDeactivateMember ? (
@@ -192,7 +236,7 @@ const TeamMember = () => {
                   type='button'
                   variant='green'
                   className='text-md flex p-2 px-4 gap-2'
-                  onClick={handleRestoreMember}
+                  onClick={() => setRestoreMemberOpenModal(true)}
                   disabled={isSubmitting}
                 >
                   {isSubmittingRestoreMember ? (
@@ -295,7 +339,7 @@ const TeamMember = () => {
             <Button
               type='button'
               variant='red'
-              onClick={handleRemoveMember}
+              onClick={() => setRemoveMemberOpenModal(true)}
               disabled={isSubmitting}
             >
               {isSubmittingRemoveMember ? (
@@ -309,6 +353,38 @@ const TeamMember = () => {
             </Button>
           </div>
         </div>
+
+        <ActionConfirmationModal
+          body={`Are you sure you want to remove your team member - ${invite?.name}`}
+          openModal={removeMemberOpenModal}
+          setOpenModal={setRemoveMemberOpenModal}
+          allowAction={allowRemoveMemberAction}
+          setAllowAction={setAllowRemoveMemberAction}
+        />
+
+        <ActionConfirmationModal
+          body={`Are you sure you want to deactivate your team member - ${invite?.name}`}
+          openModal={deactivateMemberOpenModal}
+          setOpenModal={setDeactivateMemberOpenModal}
+          allowAction={allowDeactivateMemberAction}
+          setAllowAction={setAllowDeactivateMemberAction}
+        />
+
+        <ActionConfirmationModal
+          body={`Are you sure you want to restore your team member - ${invite?.name}`}
+          openModal={restoreMemberOpenModal}
+          setOpenModal={setRestoreMemberOpenModal}
+          allowAction={allowRestoreMemberAction}
+          setAllowAction={setAllowRestoreMemberAction}
+        />
+
+        <ActionConfirmationModal
+          body={`Are you sure you want to resend an invitation to this team member - ${invite?.name}`}
+          openModal={resendInviteOpenModal}
+          setOpenModal={setResendInviteOpenModal}
+          allowAction={allowResendInviteAction}
+          setAllowAction={setAllowResendInviteAction}
+        />
       </div>
     </main>
   );
