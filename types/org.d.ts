@@ -46,6 +46,22 @@ export interface BusinessProfileFull {
     previous_balance: string;
     currency: string;
   };
+  withdrawal_account: WithdrawalAccount;
+}
+
+export interface WithdrawalAccount {
+  id: string;
+  business_id: string;
+  account_number: string;
+  account_type: string; // e.g., "Savings Bank"
+  bank_name: string;
+  routing_number: string | null;
+  country: string; // e.g., "Nigeria"
+  country_code: string; // e.g., "NG"
+  currency: string; // e.g., "NGN"
+  created_at: string; // ISO 8601 timestamp
+  updated_at: string; // ISO 8601 timestamp
+  deleted_at: string | null;
 }
 
 export interface BusinessProfileFullReponse {

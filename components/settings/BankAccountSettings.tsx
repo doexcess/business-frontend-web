@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import Input from '../ui/Input';
 import { Label } from '../ui/label';
@@ -15,116 +15,240 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
 import Icon from '../ui/Icon';
-import { resolveAccount } from '@/redux/slices/orgSlice';
-import { resolveAccountFormSchema } from '@/lib/schema/org.schema';
 import useBanks from '@/hooks/page/useBanks';
-import Joi from 'joi';
+import {
+  fetchOrg,
+  resolveAccount,
+  saveWithdrawalAccount,
+} from '@/redux/slices/orgSlice';
+import toast from 'react-hot-toast';
 import LoadingIcon from '../ui/icons/LoadingIcon';
 
+const defaultValue = {
+  business_id: '',
+  account_number: '',
+  bank_code: '',
+  bank_name: '',
+};
+
 const BankAccountSettings = () => {
+  const { banks, loading } = useBanks();
   const dispatch = useDispatch<AppDispatch>();
-  const { banks, loading, error } = useBanks();
-  // const { bankLoading, account, error } = useSelector(
-  //   (state: RootState) => state.org
-  // );
+  const { org } = useSelector((state: RootState) => state.org);
 
-  const [formData, setFormData] = useState({
-    account_number: '',
-    bank_code: '',
-  });
-
-  const [formError, setFormError] = useState('');
+  const [body, setBody] = useState({ ...defaultValue, business_id: org?.id! });
   const [accountName, setAccountName] = useState('');
 
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleAccountResolve = async (
+    bank_name: string,
+    account_number: string
+  ) => {
+    if (account_number.length === 10 && bank_name) {
+      const bank = banks.find((bank) => bank.name === bank_name);
+      if (bank) {
+        try {
+          const { payload, type }: any = await dispatch(
+            resolveAccount({
+              account_number,
+              bank_code: bank.code,
+            })
+          );
+
+          if (type === 'auth/resolve-account/rejected') {
+            throw new Error(payload.message);
+          }
+
+          setBody((prev) => ({
+            ...prev,
+            bank_code: payload.details.bank_code,
+          }));
+          setAccountName(payload.details.account_name);
+        } catch (error: any) {
+          console.log(error);
+          toast.error(error.message);
+        }
+      }
+    }
+  };
+
+  const handleChange = async (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+
+    setBody((prev) => ({
       ...prev,
-      [field]: value,
+      [name]: value,
     }));
-    setFormError('');
+
+    if (name === 'account_number' && value) {
+      await handleAccountResolve(body.bank_name, value);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { error } = resolveAccountFormSchema.validate(formData);
-    if (error) {
-      setFormError(error.details[0].message);
-      return;
-    }
-
     try {
-      const result = await dispatch(resolveAccount(formData)).unwrap();
-      console.log(result);
-      // setAccountName(result.details.account_name);
-    } catch (err: any) {
-      setFormError(typeof err === 'string' ? err : 'Something went wrong');
+      setIsSubmitting(true);
+      const response: any = await dispatch(saveWithdrawalAccount(body));
+
+      if (response.type === 'onboard/save-withdrawal-account/rejected')
+        throw new Error(response.payload);
+
+      // Refetch org details
+      dispatch(fetchOrg(org?.id!));
+
+      toast.success(response?.payload?.message);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  useEffect(() => {
+    if (org && !body.bank_name) {
+      const bank = banks.find(
+        (bank) => bank.name === org.withdrawal_account?.bank_name
+      );
+      setBody({
+        ...defaultValue,
+        bank_name: org.withdrawal_account?.bank_name || '',
+        account_number: org.withdrawal_account?.account_number || '',
+        business_id: org.id,
+        bank_code: bank?.code || '',
+      });
+
+      handleAccountResolve(
+        org.withdrawal_account?.bank_name,
+        org.withdrawal_account?.account_number
+      );
+    }
+  }, [org, banks]);
+
   return (
-    <Card className='max-w-xl mx-auto'>
-      <CardHeader>
-        <CardTitle>Bank Account Settings</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className='space-y-4'>
-          <div>
-            <Label>Bank</Label>
-            <Select
-              onValueChange={(value) => handleChange('bank_code', value)}
-              value={formData.bank_code}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder='Select bank' />
-              </SelectTrigger>
-              <SelectContent>
-                {loading ? (
-                  <SelectItem value='loading'>Loading...</SelectItem>
-                ) : (
-                  banks.map((bank: any) => (
-                    <SelectItem key={bank.code} value={bank.code}>
-                      {bank.name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </div>
+    <div className='text-black-1 dark:text-white'>
+      <form onSubmit={handleSubmit} className='space-y-6'>
+        <Card className='dark:border-gray-600'>
+          <CardHeader>
+            <CardTitle>Bank Account Information</CardTitle>
+          </CardHeader>
 
-          <div>
-            <Label>Account Number</Label>
-            <Input
-              type='text'
-              maxLength={11}
-              value={formData.account_number}
-              onChange={(e) => handleChange('account_number', e.target.value)}
-            />
-          </div>
+          <CardContent className='space-y-6'>
+            <div className='w-full md:max-w-sm bg-gradient-to-br from-indigo-600 via-blue-500 to-purple-600 text-white rounded-2xl p-5 shadow-lg relative overflow-hidden'>
+              <div className='flex flex-col gap-4 mt-6'>
+                {/* Bank Name */}
+                <div>
+                  <div className='text-xs uppercase tracking-wide text-gray-200'>
+                    Bank
+                  </div>
+                  <div className='text-base font-semibold'>
+                    {body.bank_name || 'Select a bank'}
+                  </div>
+                </div>
 
-          {accountName && (
-            <div>
-              <Label>Account Name</Label>
-              <Input value={accountName} readOnly />
+                {/* Account Number */}
+                <div>
+                  <div className='text-xs uppercase tracking-wide text-gray-200'>
+                    Account Number
+                  </div>
+                  <div className='text-lg font-mono tracking-widest'>
+                    {body.account_number || '0000000000'}
+                  </div>
+                </div>
+
+                {/* Account Name */}
+                <div>
+                  <div className='text-xs uppercase tracking-wide text-gray-200'>
+                    Account Name
+                  </div>
+                  <div className='text-base font-semibold'>
+                    {accountName || 'Your Name Here'}
+                  </div>
+                </div>
+              </div>
             </div>
-          )}
 
-          {formError && <p className='text-red-500 text-sm'>{formError}</p>}
-          {error && <p className='text-red-500 text-sm'>{error}</p>}
+            {/* Bank Name */}
+            <div className='space-y-2'>
+              <Label htmlFor='bank'>Bank Name</Label>
+              <Select
+                value={body.bank_name}
+                onValueChange={(value) => {
+                  setAccountName('');
+                  setBody({ ...body, bank_name: value, account_number: '' });
+                }}
+                required
+              >
+                <SelectTrigger id='bank' className='w-full'>
+                  <SelectValue placeholder='Select your bank' />
+                </SelectTrigger>
+                <SelectContent className='bg-gray-800'>
+                  {loading
+                    ? 'Loading'
+                    : banks.map((bank, index) => (
+                        <SelectItem key={index} value={`${bank.name}`}>
+                          {bank.name}
+                        </SelectItem>
+                      ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <Button type='submit' disabled={loading}>
-            {loading ? (
-              <>
-                <LoadingIcon />
-                Resolving...
-              </>
-            ) : (
-              'Resolve Account'
-            )}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+            {/* Account Number */}
+            <div className='space-y-2'>
+              <Label htmlFor='account-number'>Account Number</Label>
+              <Input
+                id='account-number'
+                type='text'
+                inputMode='numeric'
+                maxLength={10}
+                value={body.account_number}
+                onChange={handleChange}
+                name='account_number'
+                placeholder='Enter 10-digit account number'
+                required
+              />
+            </div>
+
+            {/* Account Name */}
+            <div className='space-y-2'>
+              <Label htmlFor='account-name'>Account Name</Label>
+              <Input
+                id='account-name'
+                type='text'
+                value={accountName}
+                readOnly
+                placeholder='Enter account name'
+                required
+              />
+            </div>
+
+            {/* Submit Button */}
+            <div className='pt-4'>
+              <Button
+                type='submit'
+                variant='primary'
+                disabled={isSubmitting}
+                className='w-full md:w-auto flex gap-2 items-center'
+              >
+                {isSubmitting && (
+                  <span className='flex items-center justify-center'>
+                    <LoadingIcon />
+                    Processing...
+                  </span>
+                )}
+                Save Bank Details
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </form>
+    </div>
   );
 };
 

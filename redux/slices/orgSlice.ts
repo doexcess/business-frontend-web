@@ -349,7 +349,7 @@ export const resolveAccount = createAsyncThunk(
       );
 
       return {
-        details: data.data.data,
+        ...data.data.data,
       };
     } catch (error: any) {
       // console.log(error);
@@ -569,7 +569,6 @@ const orgSlice = createSlice({
       })
       .addCase(resolveAccount.fulfilled, (state, action) => {
         state.bankLoading = false;
-        state.account = action.payload.details;
       })
       .addCase(resolveAccount.rejected, (state, action) => {
         state.bankLoading = false;
