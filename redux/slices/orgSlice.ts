@@ -13,14 +13,26 @@ import {
   AcceptInviteProps,
   CreateBusinessProfileProps,
   InviteContactProps,
+  ResolveAccountProps,
   SaveBankAccountProps,
 } from '@/lib/schema/org.schema';
 import { ContactInviteStatus } from '@/lib/utils';
+import {
+  BanksResponse,
+  PaystackBank,
+  ResolveAccountResponse,
+  TransferRecipientData,
+} from '@/types/account';
+import { UpdatePasswordProps } from '@/lib/schema/auth.schema';
 
 interface OrgState {
   orgs: BusinessProfile[];
   org: BusinessProfileFull | null;
   invites: ContactInvite[];
+  banks: PaystackBank[];
+  account: TransferRecipientData | null;
+  banksLoading: boolean;
+  bankLoading: boolean;
   invite: ContactInvite | null;
   invitesCount: number;
   invitesLoading: boolean;
@@ -36,6 +48,10 @@ const initialState: OrgState = {
   orgs: [],
   org: null,
   invites: [],
+  banks: [],
+  account: null,
+  banksLoading: true,
+  bankLoading: true,
   invite: null,
   invitesCount: 0,
   invitesLoading: true,
@@ -313,6 +329,37 @@ export const restoreMember = createAsyncThunk(
   }
 );
 
+// Async Thunk to fetch banks
+export const fetchBanks = createAsyncThunk('auth/fetch-banks', async () => {
+  const { data } = await api.get<BanksResponse>(`/auth/fetch-banks`);
+
+  return {
+    banks: data.data.data,
+  };
+});
+
+// Async Thunk to resolve bank account
+export const resolveAccount = createAsyncThunk(
+  'auth/resolve-account',
+  async (credentials: ResolveAccountProps, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post<ResolveAccountResponse>(
+        '/auth/resolve-account',
+        credentials
+      );
+
+      return {
+        details: data.data.data,
+      };
+    } catch (error: any) {
+      // console.log(error);
+      return rejectWithValue(
+        error.response?.data || 'Failed to resolve account'
+      );
+    }
+  }
+);
+
 const orgSlice = createSlice({
   name: 'org',
   initialState,
@@ -503,6 +550,31 @@ const orgSlice = createSlice({
       .addCase(restoreMember.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to restore member';
+      })
+      .addCase(fetchBanks.pending, (state) => {
+        state.banksLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchBanks.fulfilled, (state, action) => {
+        state.banksLoading = false;
+        state.banks = action.payload.banks;
+      })
+      .addCase(fetchBanks.rejected, (state, action) => {
+        state.banksLoading = false;
+        state.error = action.error.message || 'Failed to fetch banks';
+      })
+      .addCase(resolveAccount.pending, (state) => {
+        state.bankLoading = true;
+        state.error = null;
+      })
+      .addCase(resolveAccount.fulfilled, (state, action) => {
+        state.bankLoading = false;
+        state.account = action.payload.details;
+      })
+      .addCase(resolveAccount.rejected, (state, action) => {
+        state.bankLoading = false;
+        state.error =
+          action.error.message || 'Failed to fetch bank account details';
       });
   },
 });

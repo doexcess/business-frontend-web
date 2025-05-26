@@ -12,10 +12,13 @@ import {
   FaWallet,
 } from 'react-icons/fa6';
 import { Table } from '@/components/ui/table'; // hypothetical reusable table component
-import { cn } from '@/lib/utils'; // optional utility for className handling
+import { cn, formatMoney } from '@/lib/utils'; // optional utility for className handling
 import { Modal } from '@/components/ui/Modal';
 import Link from 'next/link';
 import Input from '@/components/ui/Input';
+import useOrg from '@/hooks/page/useOrg';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
 
 const mockTransactions = [
   {
@@ -37,10 +40,18 @@ const mockTransactions = [
 ];
 
 const Wallet = () => {
-  const walletBalance = 38000;
-  const totalTransactions = 12;
-  const totalCredit = 125000;
-  const totalDebit = 87000;
+  const { org: organization } = useSelector((state: RootState) => state.org);
+
+  const walletBalance = formatMoney(
+    +organization?.business_wallet?.balance!,
+    organization?.business_wallet.currency
+  );
+  const totalTransactions = formatMoney(
+    0,
+    organization?.business_wallet.currency
+  );
+  const totalCredit = formatMoney(0, organization?.business_wallet.currency);
+  const totalDebit = formatMoney(0, organization?.business_wallet.currency);
 
   const [isWithdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
@@ -97,7 +108,7 @@ const Wallet = () => {
             <div>
               <p className=' text-gray-500 dark:text-white'>Total Credit</p>
               <h4 className='text-xl font-bold text-green-600'>
-                ₦{totalCredit.toLocaleString()}
+                {totalCredit}
               </h4>
             </div>
           </div>
@@ -109,9 +120,7 @@ const Wallet = () => {
             </div>
             <div>
               <p className=' text-gray-500 dark:text-white'>Total Debit</p>
-              <h4 className='text-xl font-bold text-red-600'>
-                ₦{totalDebit.toLocaleString()}
-              </h4>
+              <h4 className='text-xl font-bold text-red-600'>{totalDebit}</h4>
             </div>
           </div>
 
@@ -123,7 +132,7 @@ const Wallet = () => {
             <div>
               <p className=' text-gray-500 dark:text-white'>Available Funds</p>
               <h4 className='text-xl font-bold dark:text-primary-faded text-primary-main'>
-                ₦{walletBalance.toLocaleString()}
+                {walletBalance}
               </h4>
             </div>
           </div>
@@ -224,7 +233,7 @@ const Wallet = () => {
                 Available Balance
               </p>
               <p className='text-xl font-semibold text-blue-600'>
-                ₦{walletBalance.toLocaleString()}
+                {walletBalance}
               </p>
             </div>
 

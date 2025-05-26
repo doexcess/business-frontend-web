@@ -26,3 +26,72 @@ export interface ProfileResponse {
   statusCode: number;
   data: Profile;
 }
+
+// Banks
+export interface PaystackBank {
+  id: number;
+  name: string;
+  slug: string;
+  code: string;
+  longcode: string;
+  gateway: string | null;
+  pay_with_bank: boolean;
+  supports_transfer: boolean;
+  active: boolean;
+  country: string;
+  currency: string;
+  type: string;
+  is_deleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaystackBanksResponse {
+  status: boolean;
+  message: string;
+  data: PaystackBank[];
+}
+
+export interface BanksResponse {
+  statusCode: number;
+  data: PaystackBanksResponse;
+}
+
+// Resolve bank account
+export interface RecipientDetails {
+  authorization_code: string | null;
+  account_number: string;
+  account_name: string;
+  bank_code: string;
+  bank_name: string;
+}
+
+export interface TransferRecipientData {
+  active: boolean;
+  createdAt: string;
+  currency: string;
+  description: string | null;
+  domain: string;
+  email: string | null;
+  id: number;
+  integration: number;
+  metadata: any | null;
+  name: string;
+  recipient_code: string;
+  type: string;
+  updatedAt: string;
+  is_deleted: boolean;
+  isDeleted: boolean;
+  details: RecipientDetails;
+}
+
+export interface CreateTransferRecipientResponse {
+  status: boolean;
+  message: string;
+  data: TransferRecipientData;
+}
+
+export interface ResolveAccountResponse {
+  statusCode: number;
+  data: CreateTransferRecipientResponse;
+}

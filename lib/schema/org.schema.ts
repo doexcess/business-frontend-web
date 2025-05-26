@@ -65,3 +65,12 @@ export interface AcceptInviteProps {
   token: string;
   password: string;
 }
+
+export const resolveAccountFormSchema = Joi.object({
+  account_number: Joi.string().min(11).max(11).required(),
+  bank_code: Joi.string().required(),
+});
+export interface ResolveAccountProps {
+  account_number: string;
+  bank_code: string;
+}

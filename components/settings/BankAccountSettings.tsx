@@ -12,160 +12,119 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '@/redux/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/redux/store';
 import Icon from '../ui/Icon';
+import { resolveAccount } from '@/redux/slices/orgSlice';
+import { resolveAccountFormSchema } from '@/lib/schema/org.schema';
+import useBanks from '@/hooks/page/useBanks';
+import Joi from 'joi';
+import LoadingIcon from '../ui/icons/LoadingIcon';
 
 const BankAccountSettings = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const [bankName, setBankName] = useState('');
-  const [accountNumber, setAccountNumber] = useState('');
+  const { banks, loading, error } = useBanks();
+  // const { bankLoading, account, error } = useSelector(
+  //   (state: RootState) => state.org
+  // );
+
+  const [formData, setFormData] = useState({
+    account_number: '',
+    bank_code: '',
+  });
+
+  const [formError, setFormError] = useState('');
   const [accountName, setAccountName] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
+
+  const handleChange = (field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+    setFormError('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setSuccessMsg('');
+
+    const { error } = resolveAccountFormSchema.validate(formData);
+    if (error) {
+      setFormError(error.details[0].message);
+      return;
+    }
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // You can dispatch to Redux here or call an API
-      // dispatch(updateBankDetails({ bankName, accountNumber }));
-
-      setSuccessMsg('Bank details updated successfully');
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
+      const result = await dispatch(resolveAccount(formData)).unwrap();
+      console.log(result);
+      // setAccountName(result.details.account_name);
+    } catch (err: any) {
+      setFormError(typeof err === 'string' ? err : 'Something went wrong');
     }
   };
 
   return (
-    <div className='text-black-1 dark:text-white'>
-      <form onSubmit={handleSubmit} className='space-y-6'>
-        <Card className='dark:border-gray-600'>
-          <CardHeader>
-            <CardTitle>Bank Account Information</CardTitle>
-          </CardHeader>
-
-          <CardContent className='space-y-6'>
-            <div className='w-full md:max-w-sm bg-gradient-to-br from-indigo-600 via-blue-500 to-purple-600 text-white rounded-2xl p-5 shadow-lg relative overflow-hidden'>
-              <div className='flex flex-col gap-4 mt-6'>
-                {/* Bank Name */}
-                <div>
-                  <div className='text-xs uppercase tracking-wide text-gray-200'>
-                    Bank
-                  </div>
-                  <div className='text-base font-semibold'>
-                    {bankName || 'Select a bank'}
-                  </div>
-                </div>
-
-                {/* Account Number */}
-                <div>
-                  <div className='text-xs uppercase tracking-wide text-gray-200'>
-                    Account Number
-                  </div>
-                  <div className='text-lg font-mono tracking-widest'>
-                    {accountNumber || '0000000000'}
-                  </div>
-                </div>
-
-                {/* Account Name */}
-                <div>
-                  <div className='text-xs uppercase tracking-wide text-gray-200'>
-                    Account Name
-                  </div>
-                  <div className='text-base font-semibold'>
-                    {accountName || 'Your Name Here'}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bank Name */}
-            <div className='space-y-2'>
-              <Label htmlFor='bank'>Bank Name</Label>
-              <Select value={bankName} onValueChange={setBankName}>
-                <SelectTrigger id='bank' className='w-full'>
-                  <SelectValue placeholder='Select your bank' />
-                </SelectTrigger>
-                <SelectContent className='bg-gray-800'>
-                  {[
-                    'Access Bank',
-                    'GTBank',
-                    'UBA',
-                    'First Bank',
-                    'Zenith Bank',
-                    'Kuda Bank',
-                  ].map((bank, index) => (
-                    <SelectItem key={index} value={bank}>
-                      {bank}
+    <Card className='max-w-xl mx-auto'>
+      <CardHeader>
+        <CardTitle>Bank Account Settings</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className='space-y-4'>
+          <div>
+            <Label>Bank</Label>
+            <Select
+              onValueChange={(value) => handleChange('bank_code', value)}
+              value={formData.bank_code}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder='Select bank' />
+              </SelectTrigger>
+              <SelectContent>
+                {loading ? (
+                  <SelectItem value='loading'>Loading...</SelectItem>
+                ) : (
+                  banks.map((bank: any) => (
+                    <SelectItem key={bank.code} value={bank.code}>
+                      {bank.name}
                     </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Account Number */}
-            <div className='space-y-2'>
-              <Label htmlFor='account-number'>Account Number</Label>
-              <Input
-                id='account-number'
-                type='text'
-                inputMode='numeric'
-                maxLength={10}
-                value={accountNumber}
-                onChange={(e) => setAccountNumber(e.target.value)}
-                placeholder='Enter 10-digit account number'
-                required
-              />
-            </div>
-
-            {/* Account Name */}
-            <div className='space-y-2'>
-              <Label htmlFor='account-name'>Account Name</Label>
-              <Input
-                id='account-name'
-                type='text'
-                value={accountName}
-                onChange={(e) => setAccountName(e.target.value)}
-                placeholder='Enter account name'
-                required
-              />
-            </div>
-
-            {/* Submit Button */}
-            <div className='pt-4'>
-              <Button
-                type='submit'
-                variant='primary'
-                disabled={isLoading}
-                className='w-full md:w-auto flex gap-2 items-center'
-              >
-                {isLoading && (
-                  <Icon
-                    url='/icons/loader.svg'
-                    className='animate-spin w-4 h-4'
-                  />
+                  ))
                 )}
-                Save Bank Details
-              </Button>
+              </SelectContent>
+            </Select>
+          </div>
 
-              {successMsg && (
-                <p className='mt-2 text-green-600 dark:text-green-400 text-sm'>
-                  {successMsg}
-                </p>
-              )}
+          <div>
+            <Label>Account Number</Label>
+            <Input
+              type='text'
+              maxLength={11}
+              value={formData.account_number}
+              onChange={(e) => handleChange('account_number', e.target.value)}
+            />
+          </div>
+
+          {accountName && (
+            <div>
+              <Label>Account Name</Label>
+              <Input value={accountName} readOnly />
             </div>
-          </CardContent>
-        </Card>
-      </form>
-    </div>
+          )}
+
+          {formError && <p className='text-red-500 text-sm'>{formError}</p>}
+          {error && <p className='text-red-500 text-sm'>{error}</p>}
+
+          <Button type='submit' disabled={loading}>
+            {loading ? (
+              <>
+                <LoadingIcon />
+                Resolving...
+              </>
+            ) : (
+              'Resolve Account'
+            )}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
 
