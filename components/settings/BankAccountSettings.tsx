@@ -147,7 +147,7 @@ const BankAccountSettings = () => {
                     Bank
                   </div>
                   <div className='text-base font-semibold'>
-                    {body.bank_name || 'Select a bank'}
+                    {body.bank_name || '---'}
                   </div>
                 </div>
 
@@ -157,7 +157,7 @@ const BankAccountSettings = () => {
                     Account Number
                   </div>
                   <div className='text-lg font-mono tracking-widest'>
-                    {body.account_number || '0000000000'}
+                    {body.account_number || '---'}
                   </div>
                 </div>
 
@@ -167,7 +167,7 @@ const BankAccountSettings = () => {
                     Account Name
                   </div>
                   <div className='text-base font-semibold'>
-                    {accountName || 'Your Name Here'}
+                    {accountName || '---'}
                   </div>
                 </div>
               </div>
