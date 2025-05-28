@@ -1,25 +1,16 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import api from '@/lib/api';
 import {
-  CourseDetailsResponse,
   CreateProductResponse,
   DeleteTicketResponse,
   DeleteTicketTierResponse,
-  ModuleContent,
-  ModuleResponse,
   TicketDetailsResponse,
   TicketProduct,
   TicketProductResponse,
-  UpdateCourseResponse,
   UpdateTicketResponse,
-  ViewContentProps,
 } from '@/types/product';
 import {
-  CreateCourseProps,
-  CreateModulesProps,
   CreateTicketProps,
-  UpdateCourseProps,
-  UpdateModulesProps,
   UpdateTicketProps,
 } from '@/lib/schema/product.schema';
 

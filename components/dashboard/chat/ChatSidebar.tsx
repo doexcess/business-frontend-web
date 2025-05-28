@@ -83,6 +83,8 @@ const ChatSidebar = () => {
     if (!isConnected || !token) return;
 
     const handleChatRetrieved = (response: RecentChatRetrievedResponse) => {
+      console.log(response);
+
       if (response.status === 'success') {
         dispatch(recentChatRetrieved(response.data));
       }

@@ -24,6 +24,7 @@ import {
 } from 'react-icons/io';
 import { uploadImage, uploadDocument } from '@/redux/slices/multimediaSlice';
 import Image from 'next/image';
+import { cn, getAvatar } from '@/lib/utils';
 
 interface FileUploadOption {
   type: string;
@@ -163,9 +164,20 @@ const MessageSkeleton = ({ isOwnMessage }: { isOwnMessage: boolean }) => {
   );
 };
 
-export default function Chat() {
-  const { id: chatId, chatbuddyId }: { id: string; chatbuddyId: string } =
-    useParams();
+export interface ChatProps {
+  chatbuddyId: string;
+  chatId?: string;
+  height?: string;
+  enabledBackButton?: boolean;
+  rightSideComponent?: JSX.Element;
+}
+export default function Chat({
+  chatId,
+  chatbuddyId,
+  height = 'max-h-[64vh] md:max-h-[60vh] lg:max-h-[68vh]',
+  enabledBackButton = true,
+  rightSideComponent,
+}: ChatProps) {
   const { isConnected } = useSocket();
   const [input, setInput] = useState('');
   const [filePreview, setFilePreview] = useState<FilePreview | null>(null);
@@ -191,16 +203,21 @@ export default function Chat() {
     (state: RootState) => state.chat
   );
 
+  const [updatedChatId, setUpdatedChatId] = useState(chatId);
+
   // Handle message retrieval
   useEffect(() => {
     if (!isConnected || !token) return;
 
     const handleMessagesRetrieved = (response: MessagesResponse) => {
       if (response.status === 'success') {
+        setUpdatedChatId(response.data.chatId);
+
         dispatch(
           messagesRetrieved({
             messages: response.data.result,
             chatId: response.data.chatId,
+            chat: response.data.chat,
           })
         );
         setIsLoading(false);
@@ -211,6 +228,7 @@ export default function Chat() {
       `messagesRetrieved:${profile?.id}`,
       handleMessagesRetrieved
     );
+
     dispatch(retrieveMessages({ token, chatBuddy: chatbuddyId }));
 
     return () => {
@@ -219,7 +237,7 @@ export default function Chat() {
         handleMessagesRetrieved
       );
     };
-  }, [token, dispatch, profile?.id, chatbuddyId, isConnected]);
+  }, [token, dispatch, profile?.id, chatbuddyId, isConnected, updatedChatId]);
 
   // Handle sent messages
   useEffect(() => {
@@ -232,12 +250,19 @@ export default function Chat() {
       }
     };
 
-    socketService.on(`messageSent:${chatId}`, handleMessagesSent);
+    socketService.on(`messageSent:${updatedChatId}`, handleMessagesSent);
 
     return () => {
-      socketService.off(`messageSent:${chatId}`, handleMessagesSent);
+      socketService.off(`messageSent:${updatedChatId}`, handleMessagesSent);
     };
-  }, [token, dispatch, isConnected, chatId, isMessageSent, latestMessage]);
+  }, [
+    token,
+    dispatch,
+    isConnected,
+    updatedChatId,
+    isMessageSent,
+    latestMessage,
+  ]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -509,35 +534,49 @@ export default function Chat() {
   );
 
   return (
-    <div className='mx-auto flex flex-col justify-between h-full'>
+    <div className={cn('mx-auto flex flex-col justify-between h-full w-full')}>
       <div className='flex flex-col'>
         {/* Header */}
-        <div className='flex items-center gap-3 mb-2 px-2 md:px-3 py-2 border-b dark:border-black-2 bg-neutral-4 dark:bg-gray-800 rounded-xl'>
-          <div className='flex items-center'>
-            <Link
-              href='/messages'
-              className='flex md:hidden dark:invert dark:brightness-0'
-            >
-              <Icon url='/icons/clients/angle-left.svg' width={30} />
-            </Link>
-            <Icon
-              url={
-                chat?.chat_buddy?.profile?.profile_picture || '/icons/icon.png'
-              }
-              width={40}
-              height={40}
-              className='rounded-full object-cover'
-            />
+        <div className='flex items-center gap-3 mb-2 px-2 md:px-3 py-2 border-b dark:border-black-2 bg-neutral-4 dark:bg-gray-800 rounded-xl justify-between'>
+          <div className='flex gap-2 items-center'>
+            <div className='flex items-center'>
+              {enabledBackButton && (
+                <Link
+                  href='/messages'
+                  className='flex md:hidden dark:invert dark:brightness-0'
+                >
+                  <Icon url='/icons/clients/angle-left.svg' width={30} />
+                </Link>
+              )}
+
+              {(chat?.chat_buddy?.profile?.profile_picture! ||
+                chat?.chat_buddy.name) && (
+                <img
+                  src={getAvatar(
+                    chat?.chat_buddy?.profile?.profile_picture!,
+                    chat?.chat_buddy?.name!
+                  )}
+                  alt={chat?.chat_buddy.name}
+                  className='w-10 h-10 rounded-full object-cover'
+                />
+              )}
+            </div>
+            <div className='flex flex-col'>
+              <p className='font-semibold text-gray-800 dark:text-white'>
+                {chat?.chat_buddy?.name}
+              </p>
+            </div>
           </div>
-          <div className='flex flex-col'>
-            <p className='font-semibold text-gray-800 dark:text-white'>
-              {chat?.chat_buddy?.name}
-            </p>
-          </div>
+          {rightSideComponent}
         </div>
 
         {/* Messages */}
-        <div className='flex-1 overflow-y-auto p-4 space-y-6 max-h-[64vh] md:max-h-[60vh] lg:max-h-[68vh]'>
+        <div
+          className={cn(
+            'flex-1 overflow-y-auto p-4 space-y-6',
+            height && height
+          )}
+        >
           {isLoading ? (
             <>
               <MessageSkeleton isOwnMessage={false} />

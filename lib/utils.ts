@@ -300,3 +300,19 @@ export const getAvatar = (picture: string | null, name: string) => {
         name
       )}&background=random&size=32`;
 };
+
+export enum TransactionType {
+  WITHDRAWAL = 'WITHDRAWAL',
+}
+
+export enum RefundStatus {
+  PENDING = 'PENDING',
+  PROCESSED = 'PROCESSED',
+  FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum RefundType {
+  REFUND = 'REFUND',
+  CHARGEBACK = 'CHARGEBACK',
+}

@@ -22,6 +22,22 @@ export interface Profile {
   };
 }
 
+export interface UserProfile {
+  id: string;
+  user_id: string;
+  profile_picture: string;
+  address: string;
+  bio: string;
+  date_of_birth: string; // ISO 8601 date string
+  gender?: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string | null;
+  country: string;
+  state?: string | null;
+  country_code: string;
+}
+
 export interface ProfileResponse {
   statusCode: number;
   data: Profile;

@@ -68,7 +68,7 @@ const Filter = ({
         className={`flex dark:text-white ${
           showPeriod ? 'flex-col' : 'flex-col md:flex-row'
         } ${
-          !showSearch ? 'justify-end mt-5' : 'mt-3'
+          !showSearch ? 'justify-end mt-5' : 'mt-2 mb-2'
         } lg:flex-row gap-3 lg:gap-0`}
       >
         <div className={`flex items-center gap-2 flex-[4]`}>

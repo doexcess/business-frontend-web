@@ -4,54 +4,36 @@ import React, { useState } from 'react';
 import PageHeading from '@/components/PageHeading';
 import { Button } from '@/components/ui/Button';
 import { CiBank } from 'react-icons/ci';
-import {
-  FaArrowDown,
-  FaArrowUp,
-  FaListUl,
-  FaPlus,
-  FaWallet,
-} from 'react-icons/fa6';
-import { Table } from '@/components/ui/table'; // hypothetical reusable table component
-import { cn, formatMoney } from '@/lib/utils'; // optional utility for className handling
+import { FaArrowDown, FaArrowUp, FaListUl, FaWallet } from 'react-icons/fa6';
+import { formatMoney } from '@/lib/utils'; // optional utility for className handling
 import { Modal } from '@/components/ui/Modal';
-import Link from 'next/link';
 import Input from '@/components/ui/Input';
-import useOrg from '@/hooks/page/useOrg';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-
-const mockTransactions = [
-  {
-    id: 'TXN-001',
-    type: 'Credit',
-    amount: 25000,
-    method: 'Course Purchase',
-    date: 'May 14, 2025',
-    status: 'Completed',
-  },
-  {
-    id: 'TXN-002',
-    type: 'Debit',
-    amount: -10000,
-    method: 'Withdrawal',
-    date: 'May 10, 2025',
-    status: 'Pending',
-  },
-];
+import usePayments from '@/hooks/page/usePayments';
+import PaymentList from '@/components/dashboard/payment/PaymentList';
 
 const Wallet = () => {
   const { org: organization } = useSelector((state: RootState) => state.org);
+
+  const { total_credit, total_debit, total_trx } = usePayments();
 
   const walletBalance = formatMoney(
     +organization?.business_wallet?.balance!,
     organization?.business_wallet.currency
   );
   const totalTransactions = formatMoney(
-    0,
+    total_trx,
     organization?.business_wallet.currency
   );
-  const totalCredit = formatMoney(0, organization?.business_wallet.currency);
-  const totalDebit = formatMoney(0, organization?.business_wallet.currency);
+  const totalCredit = formatMoney(
+    total_credit,
+    organization?.business_wallet.currency
+  );
+  const totalDebit = formatMoney(
+    total_debit,
+    organization?.business_wallet.currency
+  );
 
   const [isWithdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
@@ -72,13 +54,16 @@ const Wallet = () => {
           enableBreadCrumb={true}
           layer2='Wallet'
           ctaButtons={
-            <Button
-              className='text-md gap-2 bg-primary px-4 py-2 rounded-lg w-48'
-              onClick={() => setWithdrawModalOpen(true)}
-            >
-              <CiBank className='text-lg' />
-              Withdraw Funds
-            </Button>
+            <div className='flex-shrink-0 self-start'>
+              <Button
+                variant='primary'
+                className='text-md gap-2 py-2 rounded-lg'
+                onClick={() => setWithdrawModalOpen(true)}
+              >
+                <CiBank className='text-lg' />
+                Withdraw Funds
+              </Button>
+            </div>
           }
         />
 
@@ -138,89 +123,8 @@ const Wallet = () => {
           </div>
         </section>
 
-        {/* Transactions */}
-        <section className='rounded-lg border bg-white dark:bg-gray-800 dark:border-gray-700 p-6 shadow-sm'>
-          <div className='flex justify-between items-center mb-4'>
-            <h3 className='text-lg font-semibold text-gray-800 dark:text-white'>
-              Recent Transactions
-            </h3>
-            <Link href='/payments' className='dark:text-white'>
-              View All
-            </Link>
-          </div>
+        <PaymentList />
 
-          {mockTransactions.length > 0 ? (
-            <div className='overflow-x-auto'>
-              <table className='w-full text-sm text-left text-gray-700 dark:text-gray-200'>
-                <thead className='text-xs uppercase bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'>
-                  <tr>
-                    <th scope='col' className='px-4 py-3'>
-                      Date
-                    </th>
-                    <th scope='col' className='px-4 py-3'>
-                      Transaction ID
-                    </th>
-                    <th scope='col' className='px-4 py-3'>
-                      Type
-                    </th>
-                    <th scope='col' className='px-4 py-3'>
-                      Method
-                    </th>
-                    <th scope='col' className='px-4 py-3'>
-                      Amount
-                    </th>
-                    <th scope='col' className='px-4 py-3'>
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {mockTransactions.map((txn, idx) => (
-                    <tr
-                      key={idx}
-                      className={cn(
-                        'border-b dark:border-gray-600',
-                        idx % 2 === 0
-                          ? 'bg-white dark:bg-gray-800'
-                          : 'bg-gray-50 dark:bg-gray-900'
-                      )}
-                    >
-                      <td className='px-4 py-3'>{txn.date}</td>
-                      <td className='px-4 py-3'>{txn.id}</td>
-                      <td className='px-4 py-3'>{txn.type}</td>
-                      <td className='px-4 py-3'>{txn.method}</td>
-                      <td className='px-4 py-3'>
-                        <span
-                          className={
-                            txn.amount < 0 ? 'text-red-500' : 'text-green-500'
-                          }
-                        >
-                          ₦{Math.abs(txn.amount).toLocaleString()}
-                        </span>
-                      </td>
-                      <td className='px-4 py-3'>
-                        <span
-                          className={cn(
-                            'px-2 py-1 rounded text-xs font-medium',
-                            txn.status === 'Completed'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-yellow-100 text-yellow-800'
-                          )}
-                        >
-                          {txn.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className='text-center text-gray-500 dark:text-gray-400 py-6'>
-              No transactions found yet.
-            </p>
-          )}
-        </section>
         {/* Withdraw Modal */}
         <Modal
           isOpen={isWithdrawModalOpen}

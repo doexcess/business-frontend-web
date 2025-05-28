@@ -70,11 +70,11 @@ const chatSlice = createSlice({
       action: PayloadAction<{
         messages: Message[];
         chatId?: string;
+        chat: Chat;
       }>
     ) => {
       state.messages = action.payload.messages;
-      state.chat =
-        state.chats.find((chat) => chat.id === action.payload.chatId) ?? null;
+      state.chat = action.payload.chat;
       state.currentChat = action.payload.chatId || null;
     },
     userOnline: (state, action: PayloadAction<string>) => {

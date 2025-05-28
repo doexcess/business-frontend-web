@@ -120,6 +120,7 @@ export interface MessagesResponse {
     result: Message[];
     count: number;
     chatId?: string;
+    chat: Chat;
   };
 }
 

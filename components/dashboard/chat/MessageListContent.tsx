@@ -1,4 +1,5 @@
 import Icon from '@/components/ui/Icon';
+import { getAvatar } from '@/lib/utils';
 import { AppDispatch } from '@/redux/store';
 import { Chat } from '@/types/chat';
 import clsx from 'clsx';
@@ -38,12 +39,23 @@ const MessageListContent = ({
       )}
       onClick={openChat}
     >
-      <Icon
+      {/* <Icon
         url={chat.chat_buddy?.profile?.profile_picture || '/icons/icon.png'}
         width={48}
         height={48}
         className='rounded-full object-cover'
-      />
+      /> */}
+      {(chat?.chat_buddy?.profile?.profile_picture! ||
+        chat?.chat_buddy.name) && (
+        <img
+          src={getAvatar(
+            chat?.chat_buddy?.profile?.profile_picture!,
+            chat?.chat_buddy?.name!
+          )}
+          alt={chat?.chat_buddy.name}
+          className='w-10 h-10 rounded-full object-cover'
+        />
+      )}
       <div className='ml-3 flex-1 min-w-0'>
         <div className='flex justify-between items-center'>
           <p

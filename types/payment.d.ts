@@ -1,3 +1,12 @@
+import {
+  PaymentMethod,
+  RefundStatus,
+  RefundType,
+  TransactionType,
+} from '@/lib/utils';
+import { Profile } from './account';
+import { UserProfile } from './org';
+
 export interface PaymentItem {
   id: string;
   name: string;
@@ -32,6 +41,7 @@ export interface User {
   suspended_by: string | null;
   suspended_at: string | null;
   suspension_reason: string | null;
+  profile: UserProfile;
 }
 
 export interface Payment {
@@ -56,10 +66,77 @@ export interface Payment {
   is_upgrade: boolean;
   metadata: any;
   purchase: Purchase;
-  transaction_type: string | null;
+  transaction_type: TransactionType | null;
   user: User;
-  subscription_plan: any; // Replace with actual type if available
-  billing_info: any; // Replace with actual type if available
-  refunds: any[]; // Replace with actual type if available
-  payment_gateway_logs: any[]; // Replace with actual type if available
+  subscription_plan: SubscriptionPlan; // Replace with actual type if available
+  billing_info: BillingInformation; // Replace with actual type if available
+  refunds: Refund[]; // Replace with actual type if available
+  payment_gateway_logs: PaymentGatewayLog[]; // Replace with actual type if available
+}
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  description: string | null;
+  cover_image: string | null;
+  business_id: string;
+  created_at: string; // ISO date string
+  updated_at: string; // ISO date string
+  deleted_at: string | null;
+  creator_id: string;
+}
+
+export interface PaymentGatewayLog {
+  id: string;
+  payment_id: string;
+  event_type: string;
+  payload: any; // Use a more specific type if you know the structure
+  metadata?: any; // Optional, can also be more specific
+  error?: string;
+  created_at: string; // ISO string if coming from the database
+  updated_at: string;
+  deleted_at?: string | null;
+}
+
+export interface Refund {
+  id: string;
+  payment_id: string;
+  amount: string; // Prisma Decimal is often serialized as a string
+  reason?: string | null;
+  status: RefundStatus;
+  type: RefundType;
+  refund_method: PaymentMethod;
+  created_at: string; // ISO 8601 format date string
+  updated_at: string;
+  deleted_at?: string | null;
+}
+
+export interface BillingInformation {
+  id: string;
+  user_id: string;
+  address: string;
+  state: string;
+  apartment?: string | null;
+  postal_code: string;
+  city: string;
+  country: string; // defaults to "Nigeria"
+  country_code: string; // defaults to "NG"
+  created_at: string; // ISO 8601 date string
+  updated_at: string;
+  deleted_at?: string | null;
+  selected?: boolean | null;
+}
+
+export interface PaymentsResponse {
+  statusCode: number;
+  data: Payment[];
+  count: number;
+  total_credit: number;
+  total_debit: number;
+  total_trx: number;
+}
+
+export interface PaymentDetailsResponse {
+  statusCode: number;
+  data: Payment;
 }

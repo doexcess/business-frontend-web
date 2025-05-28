@@ -1,8 +1,5 @@
 'use client';
 
-import { Card } from '@/components/dashboard/Card';
-import Chat from '@/components/dashboard/chat/Chat';
-import ChatSidebar from '@/components/dashboard/chat/ChatSidebar';
 import Icon from '@/components/ui/Icon';
 import Logo from '@/components/ui/Logo';
 import { useParams } from 'next/navigation';

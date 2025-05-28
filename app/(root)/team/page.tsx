@@ -111,7 +111,7 @@ const Team = () => {
           enableBreadCrumb={true}
           layer2='Team'
           ctaButtons={
-            <div className='flex '>
+            <div className='flex-shrink-0 self-start'>
               <Button
                 className='bg-primary text-md flex p-2 px-4 gap-2'
                 onClick={() => setInviteOpen(true)}

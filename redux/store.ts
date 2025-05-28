@@ -4,6 +4,7 @@ import chatReducer from './slices/chatSlice';
 import courseReducer from './slices/courseSlice';
 import ticketReducer from './slices/ticketSlice';
 import orgReducer from './slices/orgSlice';
+import paymentReducer from './slices/paymentSlice';
 import storage from 'redux-persist/lib/storage'; // Uses localStorage
 import { persistReducer } from 'redux-persist';
 
@@ -21,6 +22,7 @@ const rootReducer = combineReducers({
   course: courseReducer,
   ticket: ticketReducer,
   org: persistReducer(persistConfig, orgReducer),
+  payment: paymentReducer,
 });
 
 export const store = configureStore({
