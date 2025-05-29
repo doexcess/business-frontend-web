@@ -20,6 +20,7 @@ import useTicket from '@/hooks/page/useTicket';
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
 import { cn, ProductStatus } from '@/lib/utils';
 import { useConfettiStore } from '@/hooks/use-confetti-store';
+import { HiDocumentText, HiPaperAirplane } from 'react-icons/hi';
 
 const EditTicket = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -119,7 +120,7 @@ const EditTicket = () => {
           layer3Link='/products/tickets'
           enableBackButton={true}
           ctaButtons={
-            <div className='flex-shrink-0 self-start mb-2'>
+            <div className='flex flex-shrink-0 self-start mb-2 gap-2'>
               {ticket?.status === ProductStatus.PUBLISHED && (
                 <Button
                   variant={'primary'}
@@ -135,7 +136,10 @@ const EditTicket = () => {
                       Processing...
                     </span>
                   ) : (
-                    'Move to draft'
+                    <span className='flex gap-1 items-center'>
+                      <HiDocumentText />
+                      Move to draft
+                    </span>
                   )}
                 </Button>
               )}
@@ -152,7 +156,10 @@ const EditTicket = () => {
                       Processing...
                     </span>
                   ) : (
-                    'Publish'
+                    <span className='flex gap-1 items-center'>
+                      <HiPaperAirplane />
+                      Publish
+                    </span>
                   )}
                 </Button>
               )}

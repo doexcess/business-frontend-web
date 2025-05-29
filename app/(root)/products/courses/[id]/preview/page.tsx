@@ -17,6 +17,7 @@ import { Module as ApiModule } from '@/types/product';
 import { MultimediaType } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
+import { HiDocumentText, HiPaperAirplane } from 'react-icons/hi';
 
 type Lesson = {
   id?: string;
@@ -48,8 +49,6 @@ const CoursePreview = () => {
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const confetti = useConfettiStore();
-
-  const isPublished = currentCourse?.status === ProductStatus.PUBLISHED;
 
   const formatModules = (apiModules: ApiModule[]): Module[] => {
     return apiModules.map((module, index) => ({
@@ -177,7 +176,10 @@ const CoursePreview = () => {
                       Processing...
                     </span>
                   ) : (
-                    'Move to draft'
+                    <span className='flex gap-1 items-center'>
+                      <HiDocumentText />
+                      Move to draft
+                    </span>
                   )}
                 </Button>
               )}
@@ -195,7 +197,10 @@ const CoursePreview = () => {
                         Processing...
                       </span>
                     ) : (
-                      'Publish'
+                      <span className='flex gap-1 items-center'>
+                        <HiPaperAirplane />
+                        Publish
+                      </span>
                     )}
                   </Button>
                 )}
