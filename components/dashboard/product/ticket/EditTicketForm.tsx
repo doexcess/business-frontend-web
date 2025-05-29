@@ -67,8 +67,6 @@ const EditTicketForm = () => {
   const [tierIndex, setTierIndex] = useState<number>();
   const [tier, setTier] = useState<TicketTierProps>();
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -143,7 +141,7 @@ const EditTicketForm = () => {
 
   // Handle tier change
   const handleTierChange = (index: number, field: string, value: string) => {
-    const updatedTiers = [...body.ticket_tiers];
+    const updatedTiers = [...body?.ticket_tiers!];
     const tier = updatedTiers[index] as TicketTierProps;
     const numericFields = [
       'amount',
@@ -167,7 +165,7 @@ const EditTicketForm = () => {
     setBody((prev) => ({
       ...prev,
       ticket_tiers: [
-        ...prev.ticket_tiers,
+        ...prev?.ticket_tiers!,
         {
           name: '',
           amount: null,
@@ -185,7 +183,7 @@ const EditTicketForm = () => {
 
   const removeTier = (index: number) => {
     setTierIndex(index);
-    const tier = body.ticket_tiers.find((_, i) => i === index);
+    const tier = body?.ticket_tiers!.find((_, i) => i === index);
     setTier(tier);
     setDeleteTicketTierOpenModal(true);
   };
@@ -208,7 +206,7 @@ const EditTicketForm = () => {
           throw new Error(response.payload.message);
         }
 
-        const updatedTiers = body.ticket_tiers.filter(
+        const updatedTiers = body?.ticket_tiers!.filter(
           (_, i) => i !== tierIndex
         );
         setBody((prev) => ({
@@ -223,7 +221,9 @@ const EditTicketForm = () => {
         setDeleteTicketTierOpenModal(false);
       }
     } else {
-      const updatedTiers = body.ticket_tiers.filter((_, i) => i !== tierIndex);
+      const updatedTiers = body?.ticket_tiers!.filter(
+        (_, i) => i !== tierIndex
+      );
       setBody((prev) => ({
         ...prev,
         ticket_tiers: updatedTiers,
@@ -240,7 +240,7 @@ const EditTicketForm = () => {
       setIsSubmitting(true);
 
       // Filter purchased ticket
-      const filtered_ticket_tiers = body.ticket_tiers.map((tier) => {
+      const filtered_ticket_tiers = body?.ticket_tiers!.map((tier) => {
         delete tier.purchased_tickets;
         return tier;
       });
@@ -288,7 +288,7 @@ const EditTicketForm = () => {
     body.event_location &&
     body.event_type &&
     body.auth_details &&
-    body.ticket_tiers.length > 0;
+    body?.ticket_tiers!.length > 0;
 
   // Update form state when course data is fetched
   useEffect(() => {
@@ -599,6 +599,7 @@ const EditTicketForm = () => {
                 setBody((prev) => ({ ...prev, status: value as any }))
               }
               required
+              disabled={true}
             >
               <SelectTrigger id='status' className='w-full'>
                 <SelectValue placeholder='Select your status' />
@@ -633,7 +634,7 @@ const EditTicketForm = () => {
             Ticket Tiers
           </h3>
 
-          {body.ticket_tiers.map((tier, index) => (
+          {body?.ticket_tiers!.map((tier, index) => (
             <div key={index} className='grid md:grid-cols-4 gap-4 items-center'>
               <Input
                 type='text'

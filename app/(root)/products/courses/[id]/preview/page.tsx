@@ -122,7 +122,7 @@ const CoursePreview = () => {
         statusUpdate === ProductStatus.PUBLISHED
           ? 'Course published successfully!'
           : 'Course moved to draft successfully.';
-      toast.success('Course published successfully!');
+      toast.success(msg);
     } catch (error) {
       console.log(error);
 
@@ -153,34 +153,52 @@ const CoursePreview = () => {
           layer3Link='/products/courses'
           enableBackButton={true}
           ctaButtons={
-            <div className='flex gap-2 h-10'>
-              <Button
-                variant={`${
-                  currentCourse?.status === ProductStatus.PUBLISHED
-                    ? 'primary'
-                    : 'green'
-                }`}
-                className={cn(
-                  'dark:text-white hover:text-white',
-                  currentCourse?.status === ProductStatus.PUBLISHED &&
-                    'hover:bg-green-800',
-                  currentCourse?.status === ProductStatus.DRAFT &&
-                    'hover:bg-primary-800'
+            <div
+              className={cn(
+                'flex gap-2',
+                (currentCourse?.status === ProductStatus.PUBLISHED ||
+                  (currentCourse?.status === ProductStatus.DRAFT &&
+                    currentCourse.readiness_percent === 100)) &&
+                  'h-10'
+              )}
+            >
+              {currentCourse?.status === ProductStatus.PUBLISHED && (
+                <Button
+                  variant={'primary'}
+                  className={cn(
+                    'dark:text-white hover:text-white hover:bg-primary-800'
+                  )}
+                  onClick={handlePublish}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className='flex items-center justify-center'>
+                      <LoadingIcon />
+                      Processing...
+                    </span>
+                  ) : (
+                    'Move to draft'
+                  )}
+                </Button>
+              )}
+              {currentCourse?.status === ProductStatus.DRAFT &&
+                currentCourse.readiness_percent === 100 && (
+                  <Button
+                    variant={'green'}
+                    className={cn('hover:bg-green-800')}
+                    onClick={handlePublish}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <span className='flex items-center justify-center'>
+                        <LoadingIcon />
+                        Processing...
+                      </span>
+                    ) : (
+                      'Publish'
+                    )}
+                  </Button>
                 )}
-                onClick={handlePublish}
-                disabled={loading}
-              >
-                {loading ? (
-                  <span className='flex items-center justify-center'>
-                    <LoadingIcon />
-                    Processing...
-                  </span>
-                ) : currentCourse?.status === ProductStatus.PUBLISHED ? (
-                  'Move to draft'
-                ) : (
-                  'Publish'
-                )}
-              </Button>
             </div>
           }
         />

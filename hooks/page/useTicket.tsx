@@ -9,7 +9,7 @@ const useTicket = () => {
   const params = useParams();
 
   const { org } = useSelector((state: RootState) => state.org);
-  const { ticket } = useSelector((state: RootState) => state.ticket);
+  const { ticket, loading } = useSelector((state: RootState) => state.ticket);
 
   useEffect(() => {
     dispatch(
@@ -19,6 +19,7 @@ const useTicket = () => {
 
   return {
     ticket,
+    loading,
   };
 };
 

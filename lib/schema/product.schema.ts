@@ -215,4 +215,4 @@ export const updateTicketSchema = Joi.object({
   auth_details: Joi.string().optional().allow(null, ''),
   ticket_tiers: Joi.array().items(updateTicketTierSchema).optional(),
 });
-export interface UpdateTicketProps extends CreateTicketProps {}
+export interface UpdateTicketProps extends Partial<CreateTicketProps> {}

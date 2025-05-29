@@ -3,7 +3,7 @@
 import Input from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/textarea';
 import ThemeDiv from '@/components/ui/ThemeDiv';
-import React, { useState, useRef, useEffect, use } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import useProductCategory from '@/hooks/page/useProductCategory';
 import {
   Select,

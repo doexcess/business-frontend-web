@@ -8,17 +8,24 @@ import { Button } from '@/components/ui/Button';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
 import { useRouter } from 'next/navigation';
-import { deleteTicket } from '@/redux/slices/ticketSlice';
+import {
+  deleteTicket,
+  fetchTicket,
+  updateTicket,
+} from '@/redux/slices/ticketSlice';
 import toast from 'react-hot-toast';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import EditTicketForm from '@/components/dashboard/product/ticket/EditTicketForm';
 import useTicket from '@/hooks/page/useTicket';
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
+import { cn, ProductStatus } from '@/lib/utils';
+import { useConfettiStore } from '@/hooks/use-confetti-store';
 
 const EditTicket = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const { ticket } = useTicket();
+  const { ticket, loading } = useTicket();
+  const confetti = useConfettiStore();
 
   const { org } = useSelector((state: RootState) => state.org);
 
@@ -52,6 +59,47 @@ const EditTicket = () => {
     }
   };
 
+  const handlePublish = async () => {
+    if (!ticket?.id || !org?.id) return;
+
+    const statusUpdate =
+      ticket?.status === ProductStatus.PUBLISHED
+        ? ProductStatus.DRAFT
+        : ProductStatus.PUBLISHED;
+    try {
+      const response: any = await dispatch(
+        updateTicket({
+          id: ticket.id as string,
+          credentials: {
+            status: statusUpdate,
+          },
+          business_id: org.id,
+        })
+      ).unwrap();
+
+      if (response.type === 'product-course-crud/:id/update/rejected') {
+        throw new Error(response.payload.message);
+      }
+
+      if (statusUpdate === ProductStatus.PUBLISHED) {
+        confetti.onOpen();
+      }
+
+      dispatch(fetchTicket({ id: ticket.id, business_id: org.id }));
+
+      const msg =
+        statusUpdate === ProductStatus.PUBLISHED
+          ? 'Course published successfully!'
+          : 'Course moved to draft successfully.';
+      toast.success(msg);
+    } catch (error) {
+      console.log(error);
+
+      console.error('Publish error:', error);
+      toast.error('Failed to publish course');
+    }
+  };
+
   useEffect(() => {
     if (allowAction) {
       handleDeleteTicketNavigation();
@@ -71,8 +119,44 @@ const EditTicket = () => {
           layer3Link='/products/tickets'
           enableBackButton={true}
           ctaButtons={
-            ticket?.ticket.purchased_tickets!?.length === 0 ? (
-              <div className='flex-shrink-0 self-start mb-2'>
+            <div className='flex-shrink-0 self-start mb-2'>
+              {ticket?.status === ProductStatus.PUBLISHED && (
+                <Button
+                  variant={'primary'}
+                  className={cn(
+                    'dark:text-white hover:text-white hover:bg-primary-800'
+                  )}
+                  onClick={handlePublish}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className='flex items-center justify-center'>
+                      <LoadingIcon />
+                      Processing...
+                    </span>
+                  ) : (
+                    'Move to draft'
+                  )}
+                </Button>
+              )}
+              {ticket?.status === ProductStatus.DRAFT && (
+                <Button
+                  variant={'green'}
+                  className={cn('hover:bg-green-800')}
+                  onClick={handlePublish}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className='flex items-center justify-center'>
+                      <LoadingIcon />
+                      Processing...
+                    </span>
+                  ) : (
+                    'Publish'
+                  )}
+                </Button>
+              )}
+              {ticket?.ticket.purchased_tickets!?.length === 0 ? (
                 <Button
                   variant='red'
                   className='flex gap-1'
@@ -91,10 +175,10 @@ const EditTicket = () => {
                     </>
                   )}
                 </Button>
-              </div>
-            ) : (
-              <></>
-            )
+              ) : (
+                <></>
+              )}
+            </div>
           }
         />
 
