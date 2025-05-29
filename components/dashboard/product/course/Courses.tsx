@@ -51,7 +51,7 @@ const RecentCourses = () => {
                         title={course.title}
                         description={course.description || 'No description'}
                         imageSrc={course.multimedia?.url}
-                        progress={0}
+                        progress={course.readiness_percent}
                         data={course}
                       />
                     </div>

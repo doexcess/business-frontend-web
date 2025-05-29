@@ -162,6 +162,7 @@ export interface Course {
   keywords: string | null;
   metadata: any | null; // Define a specific shape if metadata has a known structure
   status: ProductStatus;
+  readiness_percent: number;
   published_at: string | null;
   archived_at: string | null;
   creator_id: string;

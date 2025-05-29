@@ -236,13 +236,14 @@ const BankAccountSettings = () => {
                 disabled={isSubmitting}
                 className='w-full md:w-auto flex gap-2 items-center'
               >
-                {isSubmitting && (
+                {isSubmitting ? (
                   <span className='flex items-center justify-center'>
                     <LoadingIcon />
                     Processing...
                   </span>
+                ) : (
+                  'Save Bank Details'
                 )}
-                Save Bank Details
               </Button>
             </div>
           </CardContent>

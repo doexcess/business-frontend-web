@@ -39,12 +39,6 @@ const MessageListContent = ({
       )}
       onClick={openChat}
     >
-      {/* <Icon
-        url={chat.chat_buddy?.profile?.profile_picture || '/icons/icon.png'}
-        width={48}
-        height={48}
-        className='rounded-full object-cover'
-      /> */}
       {(chat?.chat_buddy?.profile?.profile_picture! ||
         chat?.chat_buddy.name) && (
         <img

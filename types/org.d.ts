@@ -56,6 +56,7 @@ export interface WithdrawalAccount {
   account_type: string; // e.g., "Savings Bank"
   bank_name: string;
   routing_number: string | null;
+  recipient_code: string;
   country: string; // e.g., "Nigeria"
   country_code: string; // e.g., "NG"
   currency: string; // e.g., "NGN"
