@@ -5,6 +5,7 @@ import courseReducer from './slices/courseSlice';
 import ticketReducer from './slices/ticketSlice';
 import orgReducer from './slices/orgSlice';
 import paymentReducer from './slices/paymentSlice';
+import couponReducer from './slices/couponSlice';
 import storage from 'redux-persist/lib/storage'; // Uses localStorage
 import { persistReducer } from 'redux-persist';
 
@@ -23,6 +24,7 @@ const rootReducer = combineReducers({
   ticket: ticketReducer,
   org: persistReducer(persistConfig, orgReducer),
   payment: paymentReducer,
+  coupon: couponReducer, // Not persisted
 });
 
 export const store = configureStore({
