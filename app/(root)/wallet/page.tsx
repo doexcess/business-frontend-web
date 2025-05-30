@@ -51,6 +51,7 @@ const Wallet = () => {
         {/* Header */}
         <PageHeading
           title='Wallet'
+          brief='Track and access your funds effortlessly'
           enableBreadCrumb={true}
           layer2='Wallet'
           ctaButtons={

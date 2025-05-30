@@ -35,7 +35,7 @@ export enum groups {
 export const sidebarLinks = [
   {
     icon: HiHome,
-    route: '/',
+    route: '/home',
     label: 'Overview',
     group: groups.ONE,
     roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN, SystemRole.USER],

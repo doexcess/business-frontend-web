@@ -29,6 +29,7 @@ import { Textarea } from '@/components/ui/textarea';
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
 import moment from 'moment-timezone';
 import XIcon from '@/components/ui/icons/XIcon';
+import ThemeDiv from '@/components/ui/ThemeDiv';
 
 const defaultValue: UpdateTicketProps = {
   title: '',
@@ -349,11 +350,8 @@ const EditTicketForm = () => {
   );
 
   return (
-    <div>
-      <form
-        onSubmit={handleSubmit}
-        className='bg-white dark:bg-gray-800 rounded-md shadow p-6 space-y-6'
-      >
+    <ThemeDiv className='p-6'>
+      <form onSubmit={handleSubmit} className='space-y-6'>
         <div>
           <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
             Event Title
@@ -721,7 +719,7 @@ const EditTicketForm = () => {
         allowAction={allowAction}
         setAllowAction={setAllowAction}
       />
-    </div>
+    </ThemeDiv>
   );
 };
 

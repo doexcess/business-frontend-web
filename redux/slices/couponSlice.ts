@@ -1,11 +1,14 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import api from '@/lib/api';
-import Cookies from 'js-cookie';
-import { PaymentsResponse, Payment } from '@/types/payment';
 import { Coupon, CouponResponse } from '@/types/coupon';
+import {
+  CreateCouponProps,
+  UpdateCouponProps,
+} from '@/lib/schema/coupon.schema';
 
 interface CouponState {
   coupons: Coupon[];
+  coupon: Coupon | null;
   count: number;
   loading: boolean;
   error: string | null;
@@ -15,6 +18,7 @@ interface CouponState {
 // Initial state
 const initialState: CouponState = {
   coupons: [],
+  coupon: null,
   count: 0,
   loading: false,
   error: null,
@@ -23,7 +27,7 @@ const initialState: CouponState = {
 
 // Async thunk to fetch paginated coupons
 export const fetchCoupons = createAsyncThunk(
-  'coupon-management/fetch-all',
+  'coupon-management/fetch/:business',
   async ({
     page,
     limit,
@@ -46,10 +50,10 @@ export const fetchCoupons = createAsyncThunk(
     if (q !== undefined) params['q'] = q;
     if (startDate !== undefined) params['startDate'] = startDate;
     if (endDate !== undefined) params['endDate'] = endDate;
-    if (business_id !== undefined) params['business_id'] = business_id;
+    // if (business_id !== undefined) params['business_id'] = business_id;
 
     const { data } = await api.get<CouponResponse>(
-      '/coupon-management/fetch-all',
+      `/coupon-management/fetch/${business_id}`,
       {
         params,
       }
@@ -62,6 +66,77 @@ export const fetchCoupons = createAsyncThunk(
   }
 );
 
+// Async thunk to create coupon
+export const createCoupon = createAsyncThunk(
+  'coupon-management/create',
+  async (
+    { credentials }: { credentials: CreateCouponProps },
+    { rejectWithValue }
+  ) => {
+    try {
+      const { data } = await api.post<GenericResponse>(
+        '/coupon-management/create',
+        credentials
+      );
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      // console.log(error);
+      return rejectWithValue(error.response?.data || 'Failed to create coupon');
+    }
+  }
+);
+
+// Async thunk to update coupon
+export const updateCoupon = createAsyncThunk(
+  'coupon-management/:id',
+  async (
+    { id, credentials }: { id: string; credentials: UpdateCouponProps },
+    { rejectWithValue }
+  ) => {
+    try {
+      const { data } = await api.patch<GenericResponse>(
+        `/coupon-management/${id}`,
+        credentials
+      );
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Failed to update ticket');
+    }
+  }
+);
+
+// Async thunk to delete ticket
+export const deleteTicket = createAsyncThunk(
+  'coupon-management/:id/delete',
+  async (
+    { id, business_id }: { id: string; business_id: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const { data } = await api.delete<GenericResponse>(
+        `/coupon-management/${id}`,
+        {
+          headers: {
+            'Business-Id': business_id,
+          },
+        }
+      );
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Failed to delete ticket');
+    }
+  }
+);
+
 const couponSlice = createSlice({
   name: 'coupons',
   initialState,
@@ -71,6 +146,20 @@ const couponSlice = createSlice({
     },
     setPerPage: (state, action: PayloadAction<number>) => {
       // state.perPage = action.payload;
+    },
+    viewCoupon: (state, action: PayloadAction<string>) => {
+      const couponId = action.payload;
+      const matchedCoupon = state.coupons.find(
+        (coupon) => coupon.id === couponId
+      );
+
+      if (matchedCoupon) {
+        state.coupon = {
+          ...matchedCoupon,
+        } as Coupon;
+      } else {
+        state.error = 'Coupon not found in local state';
+      }
     },
   },
   extraReducers: (builder) => {
@@ -91,5 +180,5 @@ const couponSlice = createSlice({
   },
 });
 
-export const { setPage, setPerPage } = couponSlice.actions;
+export const { setPage, setPerPage, viewCoupon } = couponSlice.actions;
 export default couponSlice.reducer;

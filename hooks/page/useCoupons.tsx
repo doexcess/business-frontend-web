@@ -21,6 +21,7 @@ const useCoupons = () => {
   let { coupons, loading, count } = useSelector(
     (state: RootState) => state.coupon
   );
+  const { org } = useSelector((state: RootState) => state.org);
 
   useEffect(() => {
     dispatch(
@@ -30,7 +31,7 @@ const useCoupons = () => {
         ...(q && { q }),
         ...(startDate && { startDate }),
         ...(endDate && { endDate }),
-        ...(params?.id && { business_id: params?.id as string }),
+        ...(org?.id && { business_id: org?.id as string }),
       })
     );
   }, [dispatch, currentPage, perPage, q, startDate, endDate]);

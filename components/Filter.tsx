@@ -4,9 +4,8 @@ import { filterPeriods } from '@/constants';
 import { Modal } from 'flowbite-react';
 import React, { useState } from 'react';
 import { HiDotsVertical, HiRefresh } from 'react-icons/hi';
-import { IoIosClose, IoIosFunnel } from 'react-icons/io';
+import { IoIosFunnel } from 'react-icons/io';
 import Input from './ui/Input';
-import { useRouter } from 'next/navigation';
 import { cn, getISODateString, now, oneMonthAgo } from '@/lib/utils';
 
 const Filter = ({
@@ -65,9 +64,7 @@ const Filter = ({
   return (
     <div>
       <div
-        className={`flex dark:text-white ${
-          showPeriod ? 'flex-col' : 'flex-col md:flex-row'
-        } ${
+        className={`flex dark:text-white ${showPeriod && 'flex-col'} ${
           !showSearch ? 'justify-end mt-5' : 'mt-2 mb-2'
         } lg:flex-row gap-3 lg:gap-0`}
       >

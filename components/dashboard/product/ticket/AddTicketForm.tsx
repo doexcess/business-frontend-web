@@ -17,7 +17,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
 import { cn, EventType, ProductStatus, TicketTierStatus } from '@/lib/utils';
-import { createTicket, deleteTicketTier } from '@/redux/slices/ticketSlice';
+import { createTicket } from '@/redux/slices/ticketSlice';
 import { SelectItem } from '@/components/ui/select';
 import { SelectContent } from '@/components/ui/select';
 import { SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -58,7 +58,6 @@ const AddTicketForm = () => {
 
   const [deleteTicketTierOpenModal, setDeleteTicketTierOpenModal] =
     useState(false);
-  const [allowAction, setAllowAction] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [body, setBody] = useState<CreateTicketProps>({ ...defaultValue });
@@ -67,8 +66,6 @@ const AddTicketForm = () => {
 
   const [tierIndex, setTierIndex] = useState<number>();
   const [tier, setTier] = useState<TicketTierProps>();
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isOneDayEvent, setIsOneDayEvent] = useState(
     body.event_start_date === body.event_end_date

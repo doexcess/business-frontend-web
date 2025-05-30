@@ -9,10 +9,11 @@ import React from 'react';
 const Payments = () => {
   return (
     <main className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-      <div className='section-container space-y-6'>
+      <div className='section-container'>
         {/* Header */}
         <PageHeading
           title='Payments'
+          brief='Manage your payments seamlessly'
           enableBreadCrumb={true}
           layer2='Payments'
         />

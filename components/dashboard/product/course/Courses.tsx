@@ -24,7 +24,7 @@ const RecentCourses = () => {
   );
 
   return (
-    <ThemeDiv className='mt-3'>
+    <ThemeDiv className='mt-3 border-0 dark:bg-transparent'>
       <div className=''>
         {/* Header */}
         {loading ? (

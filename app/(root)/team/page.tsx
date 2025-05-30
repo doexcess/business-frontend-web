@@ -113,7 +113,8 @@ const Team = () => {
           ctaButtons={
             <div className='flex-shrink-0 self-start'>
               <Button
-                className='bg-primary text-md flex p-2 px-4 gap-2'
+                variant='primary'
+                className=' text-md flex p-2 px-4 gap-2'
                 onClick={() => setInviteOpen(true)}
               >
                 <Icon url='/icons/landing/plus.svg' />

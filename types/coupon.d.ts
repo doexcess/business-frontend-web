@@ -20,7 +20,7 @@ export interface Business {
 export interface Coupon {
   id: string;
   code: string;
-  type: CouponType; // Extend as needed
+  type: CouponType | null; // Extend as needed
   value: number;
   currency: string;
   start_date: string; // Consider Date if parsing

@@ -10,7 +10,10 @@ const ThemeDiv = ({
 }>) => {
   return (
     <div
-      className={cn('text-gray-700 dark:text-white', className && className)}
+      className={cn(
+        'text-gray-700 dark:text-white border dark:bg-gray-800 border-gray-200 dark:border-black-2 rounded-lg',
+        className && className
+      )}
     >
       {children}
     </div>

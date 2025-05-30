@@ -1,48 +1,35 @@
 'use client';
 
 import PageHeading from '@/components/PageHeading';
-import Filter from '@/components/Filter';
 import React from 'react';
 import CouponsList from '@/components/dashboard/coupons/CouponsList';
-import useCoupons from '@/hooks/page/useCoupons';
-import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import Icon from '@/components/ui/Icon';
 
 const Coupons = () => {
-  const {
-    coupons,
-    loading: couponsLoading,
-    count: totalCoupons,
-    currentPage: couponsCurrentPage,
-    onClickNext: couponsOnClickNext,
-    onClickPrev: couponsOnClickPrev,
-    handleSearchSubmit,
-    handleFilterByDateSubmit,
-    handleRefresh,
-  } = useCoupons();
-
   return (
-    <main>
-      <header className='section-container'>
+    <main className='min-h-screen bg-gray-50 dark:bg-gray-900'>
+      <div className='section-container'>
         {/* Page heading */}
-        <PageHeading title='Coupons' enableBreadCrumb={true} layer2='Coupons' />
-        {/* Filter */}
-        <Filter
-          searchPlaceholder='Search coupons'
-          showPeriod={false}
-          handleSearchSubmit={handleSearchSubmit}
-          handleFilterByDateSubmit={handleFilterByDateSubmit}
-          handleRefresh={handleRefresh}
+        <PageHeading
+          title='Coupons'
+          brief='Create and manage discount coupons effortlessly'
+          enableBreadCrumb={true}
+          layer2='Coupons'
+          ctaButtons={
+            <div className='flex-shrink-0 self-start'>
+              <Link
+                href='/coupons/add'
+                className='text-md flex gap-1 bg-primary p-2 px-4 rounded-lg'
+              >
+                <Icon url='/icons/landing/plus.svg' /> Add
+              </Link>
+            </div>
+          }
         />
 
-        <CouponsList
-          coupons={coupons}
-          count={totalCoupons}
-          onClickNext={couponsOnClickNext}
-          onClickPrev={couponsOnClickPrev}
-          currentPage={couponsCurrentPage}
-          loading={couponsLoading}
-        />
-      </header>
+        <CouponsList />
+      </div>
     </main>
   );
 };

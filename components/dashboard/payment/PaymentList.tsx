@@ -2,6 +2,8 @@
 
 import Filter from '@/components/Filter';
 import Pagination from '@/components/Pagination';
+import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
+import TableEndRecord from '@/components/ui/TableEndRecord';
 import usePayments from '@/hooks/page/usePayments';
 import {
   cn,
@@ -12,7 +14,9 @@ import {
 } from '@/lib/utils';
 import moment from 'moment-timezone';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import React from 'react';
+import PaymentItem from './PaymentItem';
 
 export enum RetrievalType {
   RECENT = 'recent',
@@ -22,6 +26,7 @@ interface PaymentListProps {
   retrieve?: RetrievalType;
 }
 const PaymentList = ({ retrieve = RetrievalType.RECENT }: PaymentListProps) => {
+  const searchParams = useSearchParams();
   const {
     payments,
     loading,
@@ -33,7 +38,12 @@ const PaymentList = ({ retrieve = RetrievalType.RECENT }: PaymentListProps) => {
     count,
   } = usePayments();
 
-  const shimmerRows = Array.from({ length: 5 });
+  if (loading) return <LoadingSkeleton />;
+
+  const noFoundText =
+    !searchParams.has('page') || searchParams.has('q')
+      ? 'No record found.'
+      : undefined;
 
   return (
     <>
@@ -58,146 +68,48 @@ const PaymentList = ({ retrieve = RetrievalType.RECENT }: PaymentListProps) => {
 
         {retrieve === RetrievalType.ALL && (
           <Filter
-            showSearch={true}
             searchPlaceholder='Search payments'
+            showPeriod={false}
+            showSearch={true}
             handleFilterByDateSubmit={handleFilterByDateSubmit}
             handleRefresh={handleRefresh}
             handleSearchSubmit={handleSearchSubmit}
           />
         )}
 
-        {loading ? (
-          <div className='overflow-x-auto animate-pulse'>
-            <table className='w-full text-sm text-left text-gray-700 dark:text-gray-200'>
-              <thead className='text-xs uppercase bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'>
-                <tr>
-                  <th className='px-4 py-3'>Date</th>
-                  <th className='px-4 py-3'>Transaction ID</th>
-                  <th className='px-4 py-3'>Type</th>
-                  <th className='px-4 py-3'>User</th>
-                  <th className='px-4 py-3'>Amount</th>
-                  <th className='px-4 py-3'>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {shimmerRows.map((_, idx) => (
-                  <tr
-                    key={idx}
-                    className='border-b dark:border-gray-600 bg-white dark:bg-gray-800'
-                  >
-                    {[...Array(6)].map((__, cellIdx) => (
-                      <td key={cellIdx} className='px-4 py-3'>
-                        <div className='h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4'></div>
-                      </td>
-                    ))}
-                  </tr>
+        <div className='overflow-x-auto rounded-xl shadow-md border border-gray-200 dark:border-gray-700'>
+          <table className='w-full text-sm text-left text-gray-700 dark:text-gray-200'>
+            <thead className='text-xs uppercase bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'>
+              <tr>
+                {[
+                  'Date',
+                  'Transaction ID',
+                  'Type',
+                  'User',
+                  'Amount',
+                  'Status',
+                ].map((heading) => (
+                  <th key={heading} className='px-6 py-3 whitespace-nowrap'>
+                    {heading}
+                  </th>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        ) : payments.length > 0 ? (
-          <div className='overflow-x-auto rounded-xl shadow-md border border-gray-200 dark:border-gray-700'>
-            <table className='w-full text-base text-left text-gray-700 dark:text-gray-200'>
-              <thead className='text-sm uppercase bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'>
-                <tr>
-                  {[
-                    'Date',
-                    'Transaction ID',
-                    'Type',
-                    'User',
-                    'Amount',
-                    'Status',
-                  ].map((heading) => (
-                    <th key={heading} className='px-6 py-4 whitespace-nowrap'>
-                      {heading}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
+              </tr>
+            </thead>
 
-              <tbody className='text-sm'>
-                {payments.map((txn, idx) => {
-                  const isEvenRow = idx % 2 === 0;
-                  const rowClasses = cn(
-                    'border-b dark:border-gray-700',
-                    isEvenRow
-                      ? 'bg-white dark:bg-gray-900'
-                      : 'bg-gray-50 dark:bg-gray-800'
-                  );
-
-                  const user = txn.user;
-                  const profilePic = user?.profile?.profile_picture;
-                  const displayAvatar = profilePic || user?.name;
-
-                  return (
-                    <tr key={txn.id} className={rowClasses}>
-                      {/* Date */}
-                      <td className='px-6 py-4 min-w-[140px] text-sm'>
-                        {moment(txn.created_at).format('LL')}
-                      </td>
-
-                      {/* Transaction ID */}
-                      <td className='px-6 py-4'>
-                        <Link
-                          href={`/payments/${txn.id}/details`}
-                          className='hover:underline font-medium'
-                        >
-                          {shortenId(txn.id)}
-                        </Link>
-                      </td>
-
-                      {/* Type */}
-                      <td className='px-6 py-4'>{txn.purchase_type}</td>
-
-                      {/* User */}
-                      <td className='px-6 py-4 min-w-[200px]'>
-                        <div className='flex items-center gap-3'>
-                          {displayAvatar && (
-                            <img
-                              src={getAvatar(profilePic!, user?.name)}
-                              alt={user?.name}
-                              className='w-10 h-10 rounded-full object-cover'
-                            />
-                          )}
-                          <span className='font-semibold truncate text-gray-800 dark:text-gray-100'>
-                            {user?.name || '-'}
-                          </span>
-                        </div>
-                      </td>
-
-                      {/* Amount */}
-                      <td className='px-6 py-4 font-medium'>
-                        {formatMoney(+txn.amount, txn.currency)}
-                      </td>
-
-                      {/* Status */}
-                      <td className='px-6 py-4'>
-                        <span
-                          className={cn(
-                            'inline-block px-3 py-1 rounded-full text-xs font-semibold',
-                            txn.payment_status === PaymentStatus.SUCCESS
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-yellow-100 text-yellow-800'
-                          )}
-                        >
-                          {txn.payment_status}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className='text-center text-gray-500 dark:text-gray-400 py-6'>
-            No transactions found yet.
-          </p>
-        )}
+            <tbody className='text-sm'>
+              {payments.map((txn, idx) => (
+                <PaymentItem txn={txn} idx={idx} />
+              ))}
+              {!payments.length && (
+                <TableEndRecord colspan={10} text={noFoundText} />
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {retrieve === RetrievalType.ALL && (
           <Pagination
-            noMoreNextPage={true}
+            noMoreNextPage={payments.length === 0}
             total={count}
             onClickNext={onClickNext}
             onClickPrev={onClickPrev}
