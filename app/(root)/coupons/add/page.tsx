@@ -2,10 +2,7 @@
 
 import AddCouponForm from '@/components/dashboard/coupons/AddCouponForm';
 import PageHeading from '@/components/PageHeading';
-import { Button } from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import ThemeDiv from '@/components/ui/ThemeDiv';
-import React, { useState } from 'react';
+import React from 'react';
 
 const AddCoupon = () => {
   return (

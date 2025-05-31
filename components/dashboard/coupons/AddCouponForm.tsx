@@ -14,8 +14,8 @@ import ThemeDiv from '@/components/ui/ThemeDiv';
 import {
   CreateCouponProps,
   createCouponSchema,
-  CouponType,
 } from '@/lib/schema/coupon.schema';
+import { CouponType } from '@/lib/utils';
 import { createCoupon } from '@/redux/slices/couponSlice';
 import { AppDispatch, RootState } from '@/redux/store';
 import { useRouter } from 'next/navigation';
@@ -144,7 +144,7 @@ const AddCouponForm = () => {
                 <SelectValue placeholder='Select your category' />
               </SelectTrigger>
               <SelectContent>
-                {[CouponType.PERCENTAGE, CouponType.FIXED].map(
+                {[CouponType.PERCENTAGE, CouponType.FLAT].map(
                   (coupon, index: number) => (
                     <SelectItem key={index} value={coupon}>
                       {coupon}

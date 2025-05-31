@@ -11,10 +11,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import ThemeDiv from '@/components/ui/ThemeDiv';
+import useCoupon from '@/hooks/page/useCoupon';
 import {
   CreateCouponProps,
   createCouponSchema,
   UpdateCouponProps,
+  updateCouponSchema,
 } from '@/lib/schema/coupon.schema';
 import { CouponType } from '@/lib/utils';
 import { createCoupon, updateCoupon } from '@/redux/slices/couponSlice';
@@ -44,7 +46,7 @@ const EditCouponForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { org } = useSelector((state: RootState) => state.org);
-  const { coupon } = useSelector((state: RootState) => state.coupon);
+  const { coupon } = useCoupon();
 
   const [body, setBody] = useState<UpdateCouponProps>(defaultValue);
 
@@ -66,7 +68,9 @@ const EditCouponForm = () => {
     try {
       setIsSubmitting(true);
 
-      const { error, value } = createCouponSchema.validate(body);
+      console.log(body);
+
+      const { error, value } = updateCouponSchema.validate(body);
       if (error) throw new Error(error.details[0].message);
 
       // Submit logic here
@@ -275,7 +279,7 @@ const EditCouponForm = () => {
                 Processing...
               </span>
             ) : (
-              'Create'
+              'Save'
             )}
           </Button>
         </div>

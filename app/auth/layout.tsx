@@ -18,7 +18,7 @@ const AuthLayout = ({
 
   useEffect(() => {
     if (token) {
-      return router.push('/');
+      return router.push('/home');
     }
   });
 

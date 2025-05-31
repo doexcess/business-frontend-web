@@ -21,6 +21,7 @@ import ActionConfirmationModal from '@/components/ActionConfirmationModal';
 import { cn, ProductStatus } from '@/lib/utils';
 import { useConfettiStore } from '@/hooks/use-confetti-store';
 import { HiDocumentText, HiPaperAirplane } from 'react-icons/hi';
+import { Trash2Icon } from 'lucide-react';
 
 const EditTicket = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -177,7 +178,7 @@ const EditTicket = () => {
                     </span>
                   ) : (
                     <>
-                      <IoMdTrash />
+                      <Trash2Icon size={15} />
                       Delete
                     </>
                   )}

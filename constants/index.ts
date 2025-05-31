@@ -57,6 +57,10 @@ export const sidebarLinks = [
         route: '/products/tickets',
         label: 'Event Tickets',
       },
+      {
+        route: '/products/subscriptions',
+        label: 'Subscriptions',
+      },
     ],
   },
 
@@ -75,6 +79,19 @@ export const sidebarLinks = [
     group: groups.ONE,
     roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN],
     activeIconColor: 'text-primary-main', // Add this
+  },
+  {
+    icon: HiBell,
+    route: '/notifications/email',
+    label: 'Notifications',
+    group: groups.TWO,
+    roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN],
+    items: [
+      {
+        route: '/notifications/email',
+        label: 'Email',
+      },
+    ],
   },
   {
     icon: HiChartPie,

@@ -39,3 +39,9 @@ export interface CouponResponse {
   data: Coupon[];
   count: number;
 }
+
+export interface CouponDetailsResponse {
+  statusCode: number;
+  message: string;
+  data: Coupon;
+}
