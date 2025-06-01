@@ -5,7 +5,7 @@ import React from 'react';
 const AddSubscription = () => {
   return (
     <main className='min-h-screen bg-gray-50 dark:bg-gray-900'>
-      <div className='section-container pb-4'>
+      <div className='section-container-pt-0 space-y-3 pb-2'>
         <PageHeading
           title='Add Subscription'
           enableBreadCrumb={true}
@@ -13,7 +13,7 @@ const AddSubscription = () => {
           layer3='Subscriptions'
           layer4='Add Subscription'
           layer3Link='/products/subscriptions'
-          enableBackButton={true}
+          // enableBackButton={true}
         />
 
         <section>

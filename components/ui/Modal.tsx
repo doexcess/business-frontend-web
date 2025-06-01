@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils';
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -6,9 +7,16 @@ type ModalProps = {
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
+  className?: string;
 };
 
-export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
+export const Modal = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  className,
+}: ModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,8 +42,11 @@ export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
     >
       <div
         ref={modalRef}
-        className='bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-lg p-6 max-w-md w-full relative'
-        onClick={(e) => e.stopPropagation()} // Prevents propagation inside
+        className={cn(
+          'bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto relative',
+          className
+        )}
+        onClick={(e) => e.stopPropagation()}
       >
         {title && (
           <h2 className='text-lg font-semibold mb-4 text-gray-800 dark:text-white'>

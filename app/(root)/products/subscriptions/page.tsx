@@ -1,12 +1,18 @@
-'use clent';
+'use client';
 
+import CreateSubscriptionPlanForm from '@/components/dashboard/product/subscriptions/AddSubscriptionPlanForm';
 import SubscriptionPlansList from '@/components/dashboard/product/subscriptions/SubscriptionPlansList';
 import PageHeading from '@/components/PageHeading';
+import { Button } from '@/components/ui/Button';
 import Icon from '@/components/ui/Icon';
+import Input from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
 import Link from 'next/link';
-import React from 'react';
+import React, { useState } from 'react';
 
 const Subscription = () => {
+  const [isInviteOpen, setInviteOpen] = useState(false);
+
   return (
     <main className='min-h-screen'>
       <div className='section-container pb-4'>
@@ -18,17 +24,28 @@ const Subscription = () => {
           layer3='Subscriptions'
           ctaButtons={
             <div className='flex-shrink-0 self-start'>
-              <Link
-                href='/products/subscriptions/add'
-                className='text-md flex gap-1 bg-primary p-2 px-4 rounded-lg'
+              <Button
+                variant='primary'
+                className=' text-md flex p-2 px-4 gap-2'
+                onClick={() => setInviteOpen(true)}
               >
                 <Icon url='/icons/landing/plus.svg' /> Add Plan
-              </Link>
+              </Button>
             </div>
           }
         />
 
         <SubscriptionPlansList />
+
+        {/* Invite Modal */}
+        <Modal
+          isOpen={isInviteOpen}
+          onClose={() => setInviteOpen(false)}
+          title='Create plan'
+          className='max-w-xl my-[50%] overflow-y-auto'
+        >
+          <CreateSubscriptionPlanForm />
+        </Modal>
       </div>
     </main>
   );

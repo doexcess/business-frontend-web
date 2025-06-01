@@ -66,7 +66,7 @@ const VerifySigninForm = ({ email }: VerifySigninFormProps) => {
 
       toast.success(response.payload.message);
 
-      router.push(`/`);
+      router.push(`/home`);
     } catch (error: any) {
       console.error('Signin verification failed:', error);
       toast.error(error.message);

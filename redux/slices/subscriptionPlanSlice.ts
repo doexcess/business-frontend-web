@@ -1,11 +1,13 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import api from '@/lib/api';
-import Cookies from 'js-cookie';
-import { PaymentsResponse, Payment } from '@/types/payment';
 import {
   SubscriptionPlan,
   SubscriptionPlanResponse,
 } from '@/types/subscription-plan';
+import {
+  CreateSubscriptionPlanProps,
+  UpdateSubscriptionPlanProps,
+} from '@/lib/schema/subscription.schema';
 
 interface SubscriptionPlanState {
   subscription_plans: SubscriptionPlan[];
@@ -64,6 +66,59 @@ export const fetchSubscriptionPlans = createAsyncThunk(
   }
 );
 
+// Async thunk to create subscription plan
+export const createSubscriptionPlan = createAsyncThunk(
+  'subscription-plan/bulk-create',
+  async (
+    { credentials }: { credentials: CreateSubscriptionPlanProps },
+    { rejectWithValue }
+  ) => {
+    try {
+      const { data } = await api.post<GenericResponse>(
+        '/subscription-plan/bulk-create',
+        credentials
+      );
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      // console.log(error);
+      return rejectWithValue(
+        error.response?.data || 'Failed to create subscription plan'
+      );
+    }
+  }
+);
+
+// Async thunk to update subscription plan
+export const updateSubscriptionPlan = createAsyncThunk(
+  'subscription-plan/:id/bulk-update',
+  async (
+    {
+      id,
+      credentials,
+    }: { id?: string; credentials: UpdateSubscriptionPlanProps },
+    { rejectWithValue }
+  ) => {
+    try {
+      const { data } = await api.patch<GenericResponse>(
+        `/subscription-plan/${id}/bulk-update`,
+        credentials
+      );
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      // console.log(error);
+      return rejectWithValue(
+        error.response?.data || 'Failed to update subscription plan'
+      );
+    }
+  }
+);
+
 const subscriptionPlanSlice = createSlice({
   name: 'subscriptonPlan',
   initialState,
@@ -90,6 +145,30 @@ const subscriptionPlanSlice = createSlice({
         state.loading = false;
         state.error =
           action.error.message || 'Failed to fetch subscription plans';
+      })
+      .addCase(createSubscriptionPlan.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createSubscriptionPlan.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(createSubscriptionPlan.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.error.message || 'Failed to create subscription plan';
+      })
+      .addCase(updateSubscriptionPlan.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateSubscriptionPlan.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(updateSubscriptionPlan.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.error.message || 'Failed to update subscription plan';
       });
   },
 });

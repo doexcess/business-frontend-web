@@ -4,12 +4,8 @@ import React, { useState } from 'react';
 import PageHeading from '@/components/PageHeading';
 import { Button } from '@/components/ui/Button';
 import Icon from '@/components/ui/Icon';
-import { FaTrashAlt } from 'react-icons/fa';
-import { MdOutlineAdminPanelSettings } from 'react-icons/md';
 import { Modal } from '@/components/ui/Modal'; // Assuming you have one
 import Input from '@/components/ui/Input'; // Assuming you have one
-import Select from '@/components/Select'; // Assuming you have one
-import Link from 'next/link';
 import useInvites from '@/hooks/page/useInvites';
 import TeamList from '@/components/dashboard/team/TeamList';
 import Pagination from '@/components/Pagination';
