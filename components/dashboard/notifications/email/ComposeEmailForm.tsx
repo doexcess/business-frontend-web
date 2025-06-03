@@ -233,17 +233,17 @@ const ComposeEmailFormContent = ({
             {searchParams.has('orgId') ? (
               <div>
                 <label
-                  htmlFor='organization'
+                  htmlFor='customers'
                   className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
                 >
-                  Organization
+                  Customers
                 </label>
 
                 <MultiSelect
                   options={organizationList}
                   onValueChange={setSelectedOrgUser}
                   defaultValue={selectedOrgUser}
-                  placeholder='Select organization'
+                  placeholder='Select customers'
                   variant='inverted'
                   animation={2}
                   maxCount={3}
@@ -252,17 +252,17 @@ const ComposeEmailFormContent = ({
             ) : (
               <div>
                 <label
-                  htmlFor='organization'
+                  htmlFor='customers'
                   className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
                 >
-                  Organization
+                  Customers
                 </label>
 
                 <MultiSelect
                   options={organizationList}
                   onValueChange={setSelectedOrgUser}
                   defaultValue={selectedOrgUser}
-                  placeholder='Select organization'
+                  placeholder='Select customers'
                   variant='inverted'
                   animation={2}
                   maxCount={3}
