@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import api from '@/lib/api';
 import {
+  CreateSubscriptionPlanResponse,
   SubscriptionPlan,
   SubscriptionPlanDetailsResponse,
   SubscriptionPlanResponse,
@@ -101,13 +102,14 @@ export const createSubscriptionPlan = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const { data } = await api.post<GenericResponse>(
+      const { data } = await api.post<CreateSubscriptionPlanResponse>(
         '/subscription-plan/bulk-create',
         credentials
       );
 
       return {
         message: data.message,
+        subscription_plan: data.data,
       };
     } catch (error: any) {
       // console.log(error);
@@ -232,6 +234,8 @@ const subscriptionPlanSlice = createSlice({
       })
       .addCase(createSubscriptionPlan.fulfilled, (state, action) => {
         state.loading = false;
+        state.subscription_plans.unshift(action.payload.subscription_plan);
+        state.count++;
       })
       .addCase(createSubscriptionPlan.rejected, (state, action) => {
         state.loading = false;

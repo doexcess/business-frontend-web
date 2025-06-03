@@ -362,6 +362,7 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
               e.target.files && handleImageUpload(e.target.files[0])
             }
             className='block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:rounded-md file:bg-primary-main file:text-white hover:file:bg-primary-dark'
+            required
           />
           <div className='mt-4 relative'>
             {uploadingImage ? (
@@ -488,7 +489,7 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
               Processing...
             </span>
           ) : (
-            'Update'
+            'Save'
           )}
         </Button>
         {!subscription_plan?.subscriptions.length && (

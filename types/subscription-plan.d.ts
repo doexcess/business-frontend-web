@@ -94,3 +94,9 @@ export interface SubscriptionPlanDetailsResponse {
   statusCode: number;
   data: SubscriptionPlan;
 }
+
+export interface CreateSubscriptionPlanResponse {
+  statusCode: number;
+  message: string;
+  data: SubscriptionPlan;
+}

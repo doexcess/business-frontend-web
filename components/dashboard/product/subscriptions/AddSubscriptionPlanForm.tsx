@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/Button';
 import {
   createSubscriptionPlanSchema,
   CreateSubscriptionPlanProps,
-  SubscriptionPlanPriceProps,
 } from '@/lib/schema/subscription.schema';
 import { formatMoney, SubscriptionPeriod } from '@/lib/utils';
 import {
@@ -172,8 +171,8 @@ const CreateSubscriptionPlanForm = ({
 
     if (!isFormValid) return;
 
-    setIsSubmitting(true);
     try {
+      setIsSubmitting(true);
       // Remove unwanted (subscription_plan)
       const modified_prices = body?.subscription_plan_prices?.map(
         ({ subscription_plan, ...rest }) => rest
@@ -211,7 +210,7 @@ const CreateSubscriptionPlanForm = ({
 
       toast.success(response.payload.message);
       setIsPlanModalOpen(false);
-      dispatch(fetchSubscriptionPlans({ business_id: org?.id! }));
+      // dispatch(fetchSubscriptionPlans({ business_id: org?.id! }));
     } catch (error: any) {
       console.error('Submission failed:', error);
       toast.error(error.message);
