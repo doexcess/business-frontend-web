@@ -16,9 +16,7 @@ const AddSubscription = () => {
           // enableBackButton={true}
         />
 
-        <section>
-          <AddSubscriptionPlanForm />
-        </section>
+        <section></section>
       </div>
     </main>
   );

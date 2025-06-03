@@ -9,6 +9,7 @@ export interface SubscriptionPlan {
   updated_at: string;
   deleted_at: string | null;
   business: Business;
+  subscriptions: SubscriptionPlanBasic[];
   subscription_plan_prices: SubscriptionPricing[];
   subscription_plan_roles: SubscriptionRole[];
   creator: User;
@@ -42,6 +43,11 @@ export interface SubscriptionPricing {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  subscription_plan: { subscriptions: SubscriptionPlanBasic[] };
+}
+
+export interface SubscriptionPlanBasic {
+  id: string;
 }
 
 export interface SubscriptionRole {
@@ -82,4 +88,9 @@ export interface SubscriptionPlanResponse {
   statusCode: number;
   data: SubscriptionPlan[];
   count: number;
+}
+
+export interface SubscriptionPlanDetailsResponse {
+  statusCode: number;
+  data: SubscriptionPlan;
 }

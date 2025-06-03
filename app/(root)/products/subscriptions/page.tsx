@@ -5,13 +5,11 @@ import SubscriptionPlansList from '@/components/dashboard/product/subscriptions/
 import PageHeading from '@/components/PageHeading';
 import { Button } from '@/components/ui/Button';
 import Icon from '@/components/ui/Icon';
-import Input from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
-import Link from 'next/link';
 import React, { useState } from 'react';
 
 const Subscription = () => {
-  const [isInviteOpen, setInviteOpen] = useState(false);
+  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
 
   return (
     <main className='min-h-screen'>
@@ -27,7 +25,7 @@ const Subscription = () => {
               <Button
                 variant='primary'
                 className=' text-md flex p-2 px-4 gap-2'
-                onClick={() => setInviteOpen(true)}
+                onClick={() => setIsPlanModalOpen(true)}
               >
                 <Icon url='/icons/landing/plus.svg' /> Add Plan
               </Button>
@@ -39,12 +37,12 @@ const Subscription = () => {
 
         {/* Invite Modal */}
         <Modal
-          isOpen={isInviteOpen}
-          onClose={() => setInviteOpen(false)}
+          isOpen={isPlanModalOpen}
+          onClose={() => setIsPlanModalOpen(false)}
           title='Create plan'
           className='max-w-xl my-[50%] overflow-y-auto'
         >
-          <CreateSubscriptionPlanForm />
+          <CreateSubscriptionPlanForm setIsPlanModalOpen={setIsPlanModalOpen} />
         </Modal>
       </div>
     </main>

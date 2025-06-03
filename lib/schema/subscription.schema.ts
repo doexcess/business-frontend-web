@@ -1,6 +1,7 @@
 // validators/subscriptionPlan.schema.ts
 import Joi from 'joi';
 import { SubscriptionPeriod } from '../utils';
+import { SubscriptionPlanBasic } from '@/types/subscription-plan';
 
 // Price schema
 export const subscriptionPlanPriceSchema = Joi.object({
@@ -52,9 +53,12 @@ export const updateSubscriptionPlanSchema = Joi.object({
 
 export interface SubscriptionPlanPriceProps {
   id?: string; // optional for updates
-  price: number;
+  price: string | number;
   currency: string; // e.g., 'NGN'
   period: SubscriptionPeriod;
+  subscription_plan?: {
+    subscriptions: SubscriptionPlanBasic[];
+  };
 }
 
 export interface SubscriptionPlanRoleProps {
@@ -70,6 +74,7 @@ export interface CreateSubscriptionPlanProps {
   cover_image?: string | null;
   business_id: string;
   creator_id: string;
+  subscriptions?: SubscriptionPlanBasic[];
   subscription_plan_prices: SubscriptionPlanPriceProps[];
   subscription_plan_roles: SubscriptionPlanRoleProps[];
 }

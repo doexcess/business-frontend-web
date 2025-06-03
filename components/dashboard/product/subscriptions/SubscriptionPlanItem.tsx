@@ -9,6 +9,12 @@ import { SubscriptionPlan } from '@/types/subscription-plan';
 import { capitalize } from 'lodash';
 import { useParams } from 'next/navigation';
 import { VerifiedIcon } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
+import UpdateSubscriptionPlanForm from './UpdateSubscriptionPlanForm';
+import { Button } from '@/components/ui/Button';
+import { fetchSubscriptionPlan } from '@/redux/slices/subscriptionPlanSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/redux/store';
 
 interface SubscriptionPlanItemProps {
   subscription_plan: SubscriptionPlan;
@@ -16,10 +22,15 @@ interface SubscriptionPlanItemProps {
 const SubscriptionPlanItem = ({
   subscription_plan,
 }: SubscriptionPlanItemProps) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+
+  const { org } = useSelector((state: RootState) => state.org);
+
   let pricing = subscription_plan.subscription_plan_prices.length
     ? subscription_plan.subscription_plan_prices.map((plan_price) => (
         <li>
-          {capitalize(plan_price.period)} -{' '}
+          {capitalize(plan_price.period.split('_').join(' '))} -{' '}
           {formatMoney(+plan_price.price, plan_price.currency)}
         </li>
       ))
@@ -36,6 +47,19 @@ const SubscriptionPlanItem = ({
       ))
     : 'N/A';
 
+  const handleOpenSubscription = () => {
+    console.log(subscription_plan.id);
+
+    dispatch(
+      fetchSubscriptionPlan({
+        id: subscription_plan.id,
+        ...(org?.id && { business_id: org?.id as string }),
+      })
+    );
+
+    setIsPlanModalOpen(true);
+  };
+
   return (
     <>
       <tr
@@ -46,13 +70,14 @@ const SubscriptionPlanItem = ({
           scope='row'
           className='px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white font-bold relative group'
         >
-          <Link
-            href={`/products/subscriptions/${subscription_plan.id}/edit`}
-            className='hover:text-primary-400'
+          <Button
+            variant='link'
+            onClick={handleOpenSubscription}
+            className='hover:text-primary-400 p-0'
             title={subscription_plan.id}
           >
             {shortenId(subscription_plan.id)}
-          </Link>
+          </Button>
         </td>
         <td className='px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white font-bold'>
           {subscription_plan.name}
@@ -74,6 +99,16 @@ const SubscriptionPlanItem = ({
           {moment(subscription_plan.updated_at).format('MMM D, YYYY')}
         </td>
       </tr>
+
+      {/* Update Plan Modal */}
+      <Modal
+        isOpen={isPlanModalOpen}
+        onClose={() => setIsPlanModalOpen(false)}
+        title='Update plan'
+        className='max-w-xl my-[50%] overflow-y-auto'
+      >
+        <UpdateSubscriptionPlanForm setIsPlanModalOpen={setIsPlanModalOpen} />
+      </Modal>
     </>
   );
 };

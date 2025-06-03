@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import api from '@/lib/api';
 import {
   SubscriptionPlan,
+  SubscriptionPlanDetailsResponse,
   SubscriptionPlanResponse,
 } from '@/types/subscription-plan';
 import {
@@ -11,8 +12,10 @@ import {
 
 interface SubscriptionPlanState {
   subscription_plans: SubscriptionPlan[];
+  subscription_plan: SubscriptionPlan | null;
   count: number;
   loading: boolean;
+  planLoading: boolean;
   error: string | null;
   currentPage: number;
 }
@@ -20,7 +23,9 @@ interface SubscriptionPlanState {
 // Initial state
 const initialState: SubscriptionPlanState = {
   subscription_plans: [],
+  subscription_plan: null,
   count: 0,
+  planLoading: false,
   loading: false,
   error: null,
   currentPage: 1,
@@ -62,6 +67,28 @@ export const fetchSubscriptionPlans = createAsyncThunk(
     return {
       subscription_plans: data.data,
       count: data.count,
+    };
+  }
+);
+
+// Async thunk to fetch subscription plan details
+export const fetchSubscriptionPlan = createAsyncThunk(
+  'subscription-plan/fetch-single/:id',
+  async ({ id, business_id }: { id: string; business_id?: string }) => {
+    const params: Record<string, any> = {};
+
+    const headers: Record<string, string> = {};
+    if (business_id !== undefined) headers['Business-Id'] = business_id;
+
+    const { data } = await api.get<SubscriptionPlanDetailsResponse>(
+      `/subscription-plan/fetch-single/${id}`,
+      {
+        headers,
+      }
+    );
+
+    return {
+      subscription_plan: data.data,
     };
   }
 );
@@ -119,6 +146,46 @@ export const updateSubscriptionPlan = createAsyncThunk(
   }
 );
 
+// Async thunk to delete subscription plan
+export const deleteSubscriptionPlan = createAsyncThunk(
+  'subscription-plan/:id/delete',
+  async ({ id }: { id: string }, { rejectWithValue }) => {
+    try {
+      const { data } = await api.delete<GenericResponse>(
+        `/subscription-plan/${id}`
+      );
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || 'Failed to delete subscription plan'
+      );
+    }
+  }
+);
+
+// Async thunk to delete subscription plan price
+export const deletePlanPrice = createAsyncThunk(
+  'subscription-plan-price/:id/delete',
+  async ({ id }: { id: string }, { rejectWithValue }) => {
+    try {
+      const { data } = await api.delete<GenericResponse>(
+        `/subscription-plan-price/${id}`
+      );
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || 'Failed to delete subscription plan price'
+      );
+    }
+  }
+);
+
 const subscriptionPlanSlice = createSlice({
   name: 'subscriptonPlan',
   initialState,
@@ -146,6 +213,19 @@ const subscriptionPlanSlice = createSlice({
         state.error =
           action.error.message || 'Failed to fetch subscription plans';
       })
+      .addCase(fetchSubscriptionPlan.pending, (state) => {
+        state.planLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchSubscriptionPlan.fulfilled, (state, action) => {
+        state.planLoading = false;
+        state.subscription_plan = action.payload.subscription_plan;
+      })
+      .addCase(fetchSubscriptionPlan.rejected, (state, action) => {
+        state.planLoading = false;
+        state.error =
+          action.error.message || 'Failed to fetch subscription plan details';
+      })
       .addCase(createSubscriptionPlan.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -169,6 +249,30 @@ const subscriptionPlanSlice = createSlice({
         state.loading = false;
         state.error =
           action.error.message || 'Failed to update subscription plan';
+      })
+      .addCase(deleteSubscriptionPlan.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteSubscriptionPlan.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(deleteSubscriptionPlan.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.error.message || 'Failed to delete subscription plan';
+      })
+      .addCase(deletePlanPrice.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deletePlanPrice.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(deletePlanPrice.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.error.message || 'Failed to delete subscription plan price';
       });
   },
 });
