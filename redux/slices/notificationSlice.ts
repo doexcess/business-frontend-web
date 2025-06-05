@@ -4,6 +4,8 @@ import { NotificationType } from '@/lib/utils';
 import {
   InstantNotification,
   InstantNotificationResponse,
+  NotificationDetails,
+  NotificationDetailsResponse,
   ScheduledNotification,
   ScheduledNotificationResponse,
 } from '@/types/notification';
@@ -18,6 +20,8 @@ interface EmailNotificationState {
   scheduledNotificationLoading: boolean;
   countInstantNotifications: number;
   countScheduledNotifications: number;
+  notification: NotificationDetails | null;
+  notificationLoading: boolean;
 }
 
 const initialState: EmailNotificationState = {
@@ -29,11 +33,13 @@ const initialState: EmailNotificationState = {
   scheduledNotificationLoading: false,
   countInstantNotifications: 0,
   countScheduledNotifications: 0,
+  notification: null,
+  notificationLoading: false,
 };
 
 // Async Thunk for a single email notification dispatch
 export const composeEmail = createAsyncThunk(
-  'notification-dispatch/trigger',
+  'notification-dispatch/create',
   async (
     credentials: {
       title: string;
@@ -46,7 +52,7 @@ export const composeEmail = createAsyncThunk(
   ) => {
     try {
       const response = await api.post(
-        '/notification-dispatch/trigger',
+        '/notification-dispatch/create',
         credentials
       );
       const { message } = response.data;
@@ -176,6 +182,43 @@ export const fetchScheduled = createAsyncThunk(
   }
 );
 
+// Async Thunk for fetching notification details
+export const fetchSingleNotification = createAsyncThunk(
+  'notification-track/single/:id',
+  async (
+    {
+      id,
+      business_id,
+    }: {
+      id: string;
+      business_id?: string;
+    },
+    { rejectWithValue }
+  ) => {
+    const headers: Record<string, any> = {};
+
+    if (business_id) headers['Business-Id'] = business_id;
+
+    try {
+      const { data } = await api.get<NotificationDetailsResponse>(
+        `/notification-track/single/${id}`,
+        {
+          headers,
+        }
+      );
+
+      return {
+        notification: data.data,
+      };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+          'Failed to fetch single notification details'
+      );
+    }
+  }
+);
+
 const notificationSlice = createSlice({
   name: 'notification',
   initialState,
@@ -228,6 +271,18 @@ const notificationSlice = createSlice({
       })
       .addCase(fetchScheduled.rejected, (state, action) => {
         state.scheduledNotificationLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchSingleNotification.pending, (state) => {
+        state.scheduledNotificationLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchSingleNotification.fulfilled, (state, action) => {
+        state.notificationLoading = false;
+        state.notification = action.payload.notification;
+      })
+      .addCase(fetchSingleNotification.rejected, (state, action) => {
+        state.notificationLoading = false;
         state.error = action.payload as string;
       });
   },

@@ -16,7 +16,7 @@ import {
   ResolveAccountProps,
   SaveBankAccountProps,
 } from '@/lib/schema/org.schema';
-import { ContactInviteStatus } from '@/lib/utils';
+import { ContactInviteStatus, SystemRole } from '@/lib/utils';
 import {
   BanksResponse,
   PaystackBank,
@@ -24,6 +24,7 @@ import {
   TransferRecipientData,
 } from '@/types/account';
 import { UpdatePasswordProps } from '@/lib/schema/auth.schema';
+import { Customer, CustomersResponse } from '@/types/notification';
 
 interface OrgState {
   orgs: BusinessProfile[];
@@ -31,6 +32,9 @@ interface OrgState {
   invites: ContactInvite[];
   banks: PaystackBank[];
   account: TransferRecipientData | null;
+  customers: Customer[];
+  totalCustomers: number;
+  customersLoading: boolean;
   banksLoading: boolean;
   bankLoading: boolean;
   invite: ContactInvite | null;
@@ -50,6 +54,9 @@ const initialState: OrgState = {
   invites: [],
   banks: [],
   account: null,
+  customers: [],
+  totalCustomers: 0,
+  customersLoading: true,
   banksLoading: true,
   bankLoading: true,
   invite: null,
@@ -360,6 +367,59 @@ export const resolveAccount = createAsyncThunk(
   }
 );
 
+// Async thunk to fetch paginated business customers
+export const fetchCustomers = createAsyncThunk(
+  'contact/fetch-customers',
+  async (
+    {
+      business_id,
+      page,
+      limit,
+      q,
+      role,
+      startDate,
+      endDate,
+    }: {
+      business_id?: string;
+      page?: number;
+      limit?: number;
+      q?: string;
+      role?: SystemRole;
+      startDate?: string;
+      endDate?: string;
+    },
+    { rejectWithValue }
+  ) => {
+    const params: Record<string, any> = {};
+
+    if (page !== undefined) params['pagination[page]'] = page;
+    if (limit !== undefined) params['pagination[limit]'] = limit;
+    if (q !== undefined) params['q'] = q;
+    if (role !== undefined) params['role'] = role;
+    if (business_id !== undefined) params['business_id'] = business_id;
+    if (startDate !== undefined) params['startDate'] = startDate;
+    if (endDate !== undefined) params['endDate'] = endDate;
+
+    try {
+      const { data } = await api.get<CustomersResponse>(
+        `/contact/fetch-customers`,
+        {
+          params,
+        }
+      );
+
+      return {
+        customers: data.data,
+        count: data.count,
+      };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch customers'
+      );
+    }
+  }
+);
+
 const orgSlice = createSlice({
   name: 'org',
   initialState,
@@ -574,6 +634,19 @@ const orgSlice = createSlice({
         state.bankLoading = false;
         state.error =
           action.error.message || 'Failed to fetch bank account details';
+      })
+      .addCase(fetchCustomers.pending, (state) => {
+        state.customersLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchCustomers.fulfilled, (state, action) => {
+        state.customersLoading = false;
+        state.customers = action.payload.customers;
+        state.totalCustomers = action.payload.count;
+      })
+      .addCase(fetchCustomers.rejected, (state, action) => {
+        state.customersLoading = false;
+        state.error = action.payload as string;
       });
   },
 });

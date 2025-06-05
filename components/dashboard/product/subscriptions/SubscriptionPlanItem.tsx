@@ -48,8 +48,6 @@ const SubscriptionPlanItem = ({
     : 'N/A';
 
   const handleOpenSubscription = () => {
-    console.log(subscription_plan.id);
-
     dispatch(
       fetchSubscriptionPlan({
         id: subscription_plan.id,

@@ -208,8 +208,8 @@ export const MultiSelect = React.forwardRef<
             )}
           >
             {selectedValues.length > 0 ? (
-              <div className='flex justify-between items-center bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 z-20'>
-                <div className='flex flex-wrap items-center'>
+              <div className='flex justify-between items-center bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 z-20 w-full'>
+                <div className='flex flex-wrap items-center w-full'>
                   {selectedValues.slice(0, maxCount).map((value) => {
                     const option = options.find((o) => o.value === value);
                     const IconComponent = option?.icon;
@@ -282,15 +282,15 @@ export const MultiSelect = React.forwardRef<
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className='w-auto p-0 bg-black-2'
+          className='w-full p-0 bg-black-2'
           align='start'
           onEscapeKeyDown={() => setIsPopoverOpen(false)}
         >
-          <Command className=''>
+          <Command className='w-full'>
             <CommandInput
               placeholder='Search...'
               onKeyDown={handleInputKeyDown}
-              className='my-2'
+              className='my-2 w-full'
             />
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>

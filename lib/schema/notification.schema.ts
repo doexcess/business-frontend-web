@@ -6,6 +6,7 @@ type InferType<T> = T extends Joi.ObjectSchema ? Joi.Schema<T> : never;
 export const ComposeEmailSchema = Joi.object({
   title: Joi.string().required(),
   message: Joi.string().required(),
+  business_id: Joi.string().required(),
   type: Joi.string()
     .valid(...Object.values(NotificationType))
     .required(),

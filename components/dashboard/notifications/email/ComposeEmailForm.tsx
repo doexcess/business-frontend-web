@@ -27,6 +27,8 @@ import { MultiSelect } from '@/components/ui/MultiSelect';
 import Image from 'next/image';
 import ActionConfirmation from '@/components/ActionConfirmation';
 import { Loader2 } from 'lucide-react';
+import useCustomers from '@/hooks/page/useCustomers';
+import { capitalize } from 'lodash';
 
 // Dynamically load the CKEditor component
 const CkEditor = dynamic(() => import('@/components/CkEditor'), { ssr: false });
@@ -59,12 +61,14 @@ const defaultValue: {
   title: string;
   message: string;
   type: NotificationType;
+  business_id: string;
   is_scheduled: boolean;
   recipients: string[];
 } = {
   title: '',
   message: '',
   type: NotificationType.EMAIL,
+  business_id: '',
   is_scheduled: false,
   recipients: [],
 };
@@ -84,40 +88,53 @@ const ComposeEmailFormContent = ({
     (state: RootState) => state.org
   );
 
+  const { customers, customersLoading } = useCustomers();
+
   const organizationOwners: any = [];
   const orgOwnersLoading: any = true;
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const [body, setBody] = useState(defaultValue);
+  const [body, setBody] = useState({
+    ...defaultValue,
+    business_id: organization?.id,
+  });
 
   const [editorData, setEditorData] = useState('');
 
-  const organizationList = searchParams.has('orgId')
+  const customer = customers.find(
+    (cust) => cust.id === searchParams.get('customerId')
+  );
+
+  const customersList = searchParams.has('customerId')
     ? [
         {
-          value: loading ? '' : organization?.user_id!,
-          label: loading ? '' : `${organization?.business_name!}`,
+          value: customer?.id!,
+          label: `${customer?.name!} - (${customer?.email})`,
         },
       ]
-    : organizationOwners.map((orgOwner: any) => ({
-        value: orgOwnersLoading ? '' : orgOwner?.id!,
-        label: orgOwnersLoading
-          ? ''
-          : `${orgOwner?.name!} - (${orgOwner?.email})`,
+    : customers.map((customer) => ({
+        value: customer.id,
+        label: `${customer?.name!} - (${customer?.email})`,
       }));
 
-  const [selectedOrgUser, setSelectedOrgUser] = useState<string[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<string[]>([]);
 
   const [allowAction, setAllowAction] = useState(false);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    setBody({ ...body, message: editorData, recipients: selectedOrgUser });
+    const details = {
+      ...body,
+      message: editorData,
+      recipients: selectedCustomer,
+    };
+
+    setBody(details);
 
     const { error, value } = ComposeEmailSchema.validate({
-      ...body,
+      ...details,
     });
 
     // Handle validation results
@@ -163,7 +180,7 @@ const ComposeEmailFormContent = ({
 
   return (
     <>
-      <div className='flex flex-col lg:flex-row gap-2'>
+      <div className='flex flex-col lg:flex-row gap-2 lg:items-stretch lg:max-h-screen'>
         <form className='flex-1' onSubmit={handleSubmit}>
           <div className='space-y-6 p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700'>
             <h1 className='text-xl font-bold text-gray-900 dark:text-white'>
@@ -195,17 +212,7 @@ const ComposeEmailFormContent = ({
               </label>
               <Input type='text' name='preheader' />
             </div> */}
-            {searchParams.get('type') === 'scheduled' && (
-              <div>
-                <label
-                  htmlFor='schedule'
-                  className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
-                >
-                  Schedule
-                </label>
-                <Input type='datetime-local' name='schedule' />
-              </div>
-            )}
+
             <div>
               <label
                 htmlFor='template'
@@ -224,13 +231,13 @@ const ComposeEmailFormContent = ({
                 <SelectContent>
                   {notificationTemplates.map((template) => (
                     <SelectItem key={template} value={template}>
-                      {template}
+                      {capitalize(template)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            {searchParams.has('orgId') ? (
+            {searchParams.has('customerId') ? (
               <div>
                 <label
                   htmlFor='customers'
@@ -240,9 +247,9 @@ const ComposeEmailFormContent = ({
                 </label>
 
                 <MultiSelect
-                  options={organizationList}
-                  onValueChange={setSelectedOrgUser}
-                  defaultValue={selectedOrgUser}
+                  options={customersList}
+                  onValueChange={setSelectedCustomer}
+                  defaultValue={selectedCustomer}
                   placeholder='Select customers'
                   variant='inverted'
                   animation={2}
@@ -259,9 +266,9 @@ const ComposeEmailFormContent = ({
                 </label>
 
                 <MultiSelect
-                  options={organizationList}
-                  onValueChange={setSelectedOrgUser}
-                  defaultValue={selectedOrgUser}
+                  options={customersList}
+                  onValueChange={setSelectedCustomer}
+                  defaultValue={selectedCustomer}
                   placeholder='Select customers'
                   variant='inverted'
                   animation={2}
@@ -291,7 +298,7 @@ const ComposeEmailFormContent = ({
 
             <button
               type='submit'
-              className='text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 flex gap-2'
+              className='text-white bg-primary-main hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-main dark:hover:bg-blue-800 dark:focus:ring-blue-800 flex gap-2'
             >
               {isLoading ? (
                 <>
@@ -311,8 +318,8 @@ const ComposeEmailFormContent = ({
             />
           </div>
         </form>
-        <div className='flex-1 border border-dashed rounded-lg'>
-          <div className='space-y-6 p-4 rounded-lg shadow sm:p-6 md:p-8 w-full'>
+        <div className='flex-1 border border-dashed rounded-lg overflow-y-auto'>
+          <div className='space-y-6 p-4 sm:p-6 md:p-8 w-full'>
             <div className='flex flex-col items-center justify-center pt-8 mx-auto pt:mt-0 '>
               <a
                 href='#'
@@ -336,7 +343,7 @@ const ComposeEmailFormContent = ({
                 />
               </a>
 
-              <div className='mt-3 overflow-hidden'>
+              <div className='mt-3 overflow-hidden dark:text-white text-gray-600 max-h-screen lg:h-[68vh] overflow-y-auto'>
                 <div dangerouslySetInnerHTML={{ __html: editorData }} />
               </div>
             </div>

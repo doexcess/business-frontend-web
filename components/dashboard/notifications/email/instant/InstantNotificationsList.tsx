@@ -5,24 +5,25 @@ import { useSearchParams } from 'next/navigation';
 import React from 'react';
 import { InstantNotification } from '@/types/notification';
 import InstantNotificationItem from './InstantNotificationItem';
+import Filter from '@/components/Filter';
+import useInstantNotification from '@/hooks/page/useInstantNotification';
+import Link from 'next/link';
+import { HiPlus } from 'react-icons/hi';
 
-interface InstantNotificationListProps {
-  notifications: InstantNotification[];
-  count: number;
-  onClickNext: () => Promise<void>;
-  onClickPrev: () => Promise<void>;
-  currentPage: number;
-  loading: boolean;
-}
-const InstantNotificationsList = ({
-  notifications,
-  count,
-  onClickNext,
-  onClickPrev,
-  currentPage,
-  loading,
-}: InstantNotificationListProps) => {
+const InstantNotificationsList = () => {
   const searchParams = useSearchParams();
+  const {
+    instantNotifications: notifications,
+    totalInstantNotifications: count,
+    onClickNext,
+    onClickPrev,
+    currentPage,
+    instantNotificationLoading: loading,
+    handleSearchSubmit,
+    handleFilterByDateSubmit,
+    handleRefresh,
+  } = useInstantNotification();
+
   if (loading) return <LoadingSkeleton />;
 
   const noFoundText =
@@ -31,46 +32,66 @@ const InstantNotificationsList = ({
       : undefined;
 
   return (
-    <div className='overflow-x-auto rounded-none'>
-      <div className='relative overflow-x-auto'>
-        <table className='w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400'>
-          <thead className='text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 min-w-full divide-y '>
-            <tr>
-              <th scope='col' className='px-6 py-3'>
-                Subject
-              </th>
-              <th scope='col' className='px-6 py-3'>
-                Sender
-              </th>
-              <th scope='col' className='px-6 py-3'>
-                Status
-              </th>
-              <th scope='col' className='px-6 py-3'>
-                Date Created
-              </th>
-              <th scope='col' className='px-6 py-3'></th>
-            </tr>
-          </thead>
-          <tbody>
-            {notifications.map((notification) => (
-              <InstantNotificationItem notification={notification} />
-            ))}
+    <>
+      <section>
+        {/* Filter */}
+        <Filter
+          showPeriod={false}
+          handleSearchSubmit={handleSearchSubmit}
+          handleFilterByDateSubmit={handleFilterByDateSubmit}
+          handleRefresh={handleRefresh}
+          extra={
+            <>
+              <Link
+                href={`/notifications/email/compose`}
+                className='text-white bg-primary-main hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-main dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 flex items-center gap-1'
+              >
+                {' '}
+                <HiPlus />
+                Compose
+              </Link>
+            </>
+          }
+        />
+        <div className='overflow-x-auto rounded-xl shadow-md border border-gray-200 dark:border-gray-700'>
+          <table className='w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-300'>
+            <thead className='text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300'>
+              <tr>
+                {['Subject', 'Sender', 'Status', 'Date Created', ''].map(
+                  (heading) => (
+                    <th
+                      key={heading}
+                      scope='col'
+                      className='px-6 py-3 whitespace-nowrap'
+                    >
+                      {heading}
+                    </th>
+                  )
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {notifications.map((notification) => (
+                <InstantNotificationItem notification={notification} />
+              ))}
 
-            {!notifications.length && (
-              <TableEndRecord colspan={8} text={noFoundText} />
-            )}
-          </tbody>
-        </table>
+              {!notifications.length && (
+                <TableEndRecord colspan={8} text={noFoundText} />
+              )}
+            </tbody>
+          </table>
+        </div>
         {/* Pagination */}
         <Pagination
           total={count}
+          paddingRequired={false}
           currentPage={currentPage}
           onClickNext={onClickNext}
           onClickPrev={onClickPrev}
           noMoreNextPage={notifications.length === 0}
         />
-      </div>
-    </div>
+      </section>
+    </>
   );
 };
 
