@@ -27,7 +27,9 @@ const ComposeEmail = () => {
           enableBreadCrumb={true}
           layer2='Notifications'
           layer3='Email'
-          layer4='Compose'
+          layer4='Instant'
+          layer3Link='/notifications/email'
+          layer4Link='/notifications/email/instant'
         />
       </header>
 

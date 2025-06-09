@@ -66,7 +66,7 @@ export const sidebarLinks = [
 
   {
     icon: HiUsers,
-    route: '/users',
+    route: '/customers',
     label: 'Client Management',
     group: groups.ONE,
     roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN],
@@ -90,6 +90,10 @@ export const sidebarLinks = [
       {
         route: '/notifications/email',
         label: 'Email',
+      },
+      {
+        route: '/notifications/whatsapp',
+        label: 'Whatsapp',
       },
     ],
   },

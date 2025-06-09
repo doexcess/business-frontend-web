@@ -16,6 +16,7 @@ const PageHeading = ({
   layer4,
   layer2Link,
   layer3Link,
+  layer4Link,
   enableBackButton,
   ctaButtons,
   enableBreadCrumbStyle,
@@ -29,6 +30,7 @@ const PageHeading = ({
   layer4?: string;
   layer2Link?: string;
   layer3Link?: string;
+  layer4Link?: string;
   enableBackButton?: boolean;
   ctaButtons?: JSX.Element;
   enableBreadCrumbStyle?: false;
@@ -150,9 +152,12 @@ const PageHeading = ({
                         d='m1 9 4-4-4-4'
                       />
                     </svg>
-                    <span className='ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400'>
+                    <Link
+                      href={layer4Link ?? '#'}
+                      className='ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white'
+                    >
                       {layer4}
-                    </span>
+                    </Link>
                   </div>
                 </li>
               )}

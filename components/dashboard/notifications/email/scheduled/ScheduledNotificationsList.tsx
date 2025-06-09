@@ -3,26 +3,29 @@ import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
 import TableEndRecord from '@/components/ui/TableEndRecord';
 import { useSearchParams } from 'next/navigation';
 import React from 'react';
-import { ScheduledNotification } from '@/types/notification';
 import ScheduledNotificationItem from './ScheduledNotificationItem';
+import useScheduledNotification from '@/hooks/page/useScheduledNotification';
+import Filter from '@/components/Filter';
+import Link from 'next/link';
+import { HiPlus } from 'react-icons/hi';
 
-interface ScheduledNotificationListProps {
-  notifications: ScheduledNotification[];
-  count: number;
-  onClickNext: () => Promise<void>;
-  onClickPrev: () => Promise<void>;
-  currentPage: number;
-  loading: boolean;
-}
-const ScheduledNotificationsList = ({
-  notifications,
-  count,
-  onClickNext,
-  onClickPrev,
-  currentPage,
-  loading,
-}: ScheduledNotificationListProps) => {
+const ScheduledNotificationsList = () => {
   const searchParams = useSearchParams();
+  const {
+    scheduledNotifications: notifications,
+    scheduledNotificationLoading: loading,
+    totalScheduledNotifications: count,
+    currentPage,
+    q,
+    startDate,
+    endDate,
+    onClickNext,
+    onClickPrev,
+    handleSearchSubmit,
+    handleFilterByDateSubmit,
+    handleRefresh,
+  } = useScheduledNotification();
+
   if (loading) return <LoadingSkeleton />;
 
   const noFoundText =
@@ -31,27 +34,46 @@ const ScheduledNotificationsList = ({
       : undefined;
 
   return (
-    <div className='overflow-x-auto rounded-none'>
-      <div className='relative overflow-x-auto'>
+    <>
+      {/* Filter */}
+      <Filter
+        showPeriod={false}
+        handleSearchSubmit={handleSearchSubmit}
+        handleFilterByDateSubmit={handleFilterByDateSubmit}
+        handleRefresh={handleRefresh}
+        extra={
+          <>
+            <Link
+              href={`/notifications/email/schedule`}
+              className='text-white bg-primary-main hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-main dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 flex items-center gap-1'
+            >
+              {' '}
+              <HiPlus />
+              Schedule
+            </Link>
+          </>
+        }
+      />
+      <div className='overflow-x-auto rounded-xl shadow-md border border-gray-200 dark:border-gray-700'>
         <table className='w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400'>
           <thead className='text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 min-w-full divide-y '>
             <tr>
-              <th scope='col' className='px-6 py-3'>
-                Subject
-              </th>
-              <th scope='col' className='px-6 py-3'>
-                Sender
-              </th>
-              <th scope='col' className='px-6 py-3'>
-                Schedule Date
-              </th>
-              <th scope='col' className='px-6 py-3'>
-                Status
-              </th>
-              <th scope='col' className='px-6 py-3'>
-                Date Created
-              </th>
-              <th scope='col' className='px-6 py-3'></th>
+              {[
+                'Subject',
+                'Sender',
+                'Schedule Date',
+                'Status',
+                'Date Created',
+                '',
+              ].map((heading) => (
+                <th
+                  key={heading}
+                  scope='col'
+                  className='px-6 py-3 whitespace-nowrap'
+                >
+                  {heading}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -64,16 +86,17 @@ const ScheduledNotificationsList = ({
             )}
           </tbody>
         </table>
-        {/* Pagination */}
-        <Pagination
-          total={count}
-          currentPage={currentPage}
-          onClickNext={onClickNext}
-          onClickPrev={onClickPrev}
-          noMoreNextPage={notifications.length === 0}
-        />
       </div>
-    </div>
+      {/* Pagination */}
+      <Pagination
+        total={count}
+        paddingRequired={false}
+        currentPage={currentPage}
+        onClickNext={onClickNext}
+        onClickPrev={onClickPrev}
+        noMoreNextPage={notifications.length === 0}
+      />
+    </>
   );
 };
 

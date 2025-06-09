@@ -19,6 +19,7 @@ export const ComposeEmailSchema = Joi.object({
 
 export const ScheduleEmailSchema = Joi.object({
   title: Joi.string().required(),
+  business_id: Joi.string().required(),
   message: Joi.string().required(),
   type: Joi.string()
     .valid(...Object.values(NotificationType))
@@ -40,6 +41,7 @@ export interface ScheduleEmailProps {
   type: NotificationType;
   scheduled_time: string;
   recipients: string[];
+  business_id: string;
 }
 
 export type ComposeEmailFormProps = InferType<typeof ComposeEmailSchema>;

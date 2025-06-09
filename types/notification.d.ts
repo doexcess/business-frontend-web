@@ -155,3 +155,8 @@ export interface NotificationDetailsResponse {
   statusCode: number;
   data: NotificationDetails;
 }
+
+export interface CustomerDetailsResponse {
+  statusCode: number;
+  data: Customer;
+}

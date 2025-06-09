@@ -15,7 +15,7 @@ import Image from 'next/image';
 import { Modal } from '@/components/ui/Modal';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
-import { fetchSingleNotification } from '@/redux/slices/notificationSlice';
+import { viewInstantNotification } from '@/redux/slices/notificationSlice';
 import ViewNotification from './ViewNotification';
 
 interface InstantNotificationItemProps {
@@ -25,11 +25,8 @@ const InstantNotificationItem = ({
   notification,
 }: InstantNotificationItemProps) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { org } = useSelector((state: RootState) => state.org);
 
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
-
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const sender = notification.owner
     ? `${notification.owner?.name} (${shortenId(notification.owner?.id!)})`
@@ -44,12 +41,7 @@ const InstantNotificationItem = ({
     : NOTIFICATION_STATUS.FAILED;
 
   const handleOpenNotification = () => {
-    dispatch(
-      fetchSingleNotification({
-        id: notification.id,
-        ...(org?.id && { business_id: org?.id as string }),
-      })
-    );
+    dispatch(viewInstantNotification(notification.id));
 
     setIsNotificationModalOpen(true);
   };
@@ -84,11 +76,12 @@ const InstantNotificationItem = ({
             id={notification.id}
             status={status}
             notificationType={notification.type}
+            notification={notification}
           />
         </td>
       </tr>
 
-      {/* Update Notification Modal */}
+      {/* View Notification Modal */}
       <Modal
         isOpen={isNotificationModalOpen}
         onClose={() => setIsNotificationModalOpen(false)}

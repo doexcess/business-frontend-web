@@ -27,7 +27,9 @@ const ScheduleEmail = () => {
           enableBreadCrumb={true}
           layer2='Notifications'
           layer3='Email'
-          layer4='Schedule'
+          layer4='Scheduled'
+          layer3Link='/notifications/email'
+          layer4Link='/notifications/email/scheduled'
         />
       </header>
 

@@ -23,8 +23,11 @@ import {
   ResolveAccountResponse,
   TransferRecipientData,
 } from '@/types/account';
-import { UpdatePasswordProps } from '@/lib/schema/auth.schema';
-import { Customer, CustomersResponse } from '@/types/notification';
+import {
+  Customer,
+  CustomerDetailsResponse,
+  CustomersResponse,
+} from '@/types/notification';
 
 interface OrgState {
   orgs: BusinessProfile[];
@@ -35,6 +38,8 @@ interface OrgState {
   customers: Customer[];
   totalCustomers: number;
   customersLoading: boolean;
+  customer: Customer | null;
+  customerLoading: boolean;
   banksLoading: boolean;
   bankLoading: boolean;
   invite: ContactInvite | null;
@@ -57,6 +62,8 @@ const initialState: OrgState = {
   customers: [],
   totalCustomers: 0,
   customersLoading: true,
+  customer: null,
+  customerLoading: true,
   banksLoading: true,
   bankLoading: true,
   invite: null,
@@ -420,6 +427,45 @@ export const fetchCustomers = createAsyncThunk(
   }
 );
 
+// Async thunk to fetch business customer details
+export const fetchCustomer = createAsyncThunk(
+  'contact/fetch-customer/:id',
+  async (
+    {
+      id,
+      business_id,
+    }: {
+      id?: string;
+      business_id?: string;
+    },
+    { rejectWithValue }
+  ) => {
+    const params: Record<string, any> = {};
+
+    const headers: Record<string, string> = {};
+
+    if (business_id !== undefined) headers['business_id'] = business_id;
+
+    try {
+      const { data } = await api.get<CustomerDetailsResponse>(
+        `/contact/fetch-customer/${id}`,
+        {
+          params,
+          headers,
+        }
+      );
+
+      return {
+        customer: data.data,
+      };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch customer details'
+      );
+    }
+  }
+);
+
 const orgSlice = createSlice({
   name: 'org',
   initialState,
@@ -646,6 +692,18 @@ const orgSlice = createSlice({
       })
       .addCase(fetchCustomers.rejected, (state, action) => {
         state.customersLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchCustomer.pending, (state) => {
+        state.customerLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchCustomer.fulfilled, (state, action) => {
+        state.customerLoading = false;
+        state.customer = action.payload.customer;
+      })
+      .addCase(fetchCustomer.rejected, (state, action) => {
+        state.customerLoading = false;
         state.error = action.payload as string;
       });
   },

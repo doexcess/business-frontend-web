@@ -1,13 +1,10 @@
-import { formatMoney, PaymentStatus, shortenId } from '@/lib/utils';
+import { formatMoney, shortenId } from '@/lib/utils';
 import React, { useState } from 'react';
-import { Drawer } from '@/components/ui/drawer'; // Import a drawer component
 
 import moment from 'moment'; // Import moment.js
 
-import Link from 'next/link';
 import { SubscriptionPlan } from '@/types/subscription-plan';
 import { capitalize } from 'lodash';
-import { useParams } from 'next/navigation';
 import { VerifiedIcon } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import UpdateSubscriptionPlanForm from './UpdateSubscriptionPlanForm';

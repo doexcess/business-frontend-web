@@ -24,11 +24,13 @@ import {
 } from '@/lib/schema/notification.schema';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
-import { composeEmail, scheduleEmail } from '@/redux/slices/notificationSlice';
+import { scheduleEmail } from '@/redux/slices/notificationSlice';
 import toast from 'react-hot-toast';
 import { MultiSelect } from '@/components/ui/MultiSelect';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
+import useCustomers from '@/hooks/page/useCustomers';
+import { capitalize } from 'lodash';
 
 // Dynamically load the CKEditor component
 const CkEditor = dynamic(() => import('@/components/CkEditor'), { ssr: false });
@@ -61,6 +63,7 @@ const defaultValue: ScheduleEmailProps = {
   title: '',
   message: '',
   type: NotificationType.EMAIL,
+  business_id: '',
   scheduled_time: '',
   recipients: [],
 };
@@ -70,7 +73,6 @@ const ScheduleEmailFormContent = ({
   setTemplate,
   openModal,
   setOpenModal,
-  handleScheduleForm,
 }: any) => {
   const searchParams = useSearchParams();
 
@@ -78,39 +80,49 @@ const ScheduleEmailFormContent = ({
 
   const { org: organization } = useSelector((state: RootState) => state.org);
 
-  const organizationOwners: any = [];
-  const loading = true;
+  const { customers } = useCustomers();
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const [body, setBody] = useState(defaultValue);
+  const [body, setBody] = useState({
+    ...defaultValue,
+    business_id: organization?.id!,
+  });
 
   const [editorData, setEditorData] = useState('');
 
-  const organizationList = searchParams.has('orgId')
+  const customer = customers.find(
+    (cust) => cust.id === searchParams.get('customerId')
+  );
+
+  const customersList = searchParams.has('customerId')
     ? [
         {
-          value: loading ? '' : organization?.user_id!,
-          label: loading ? '' : `${organization?.business_name!}`,
+          value: customer?.id!,
+          label: `${customer?.name!} - (${customer?.email})`,
         },
       ]
-    : organizationOwners.map((orgOwner: any) => ({
-        value: loading ? '' : orgOwner?.id!,
-        label: loading ? '' : `${orgOwner?.name!} - (${orgOwner?.email})`,
+    : customers.map((customer) => ({
+        value: customer.id,
+        label: `${customer?.name!} - (${customer?.email})`,
       }));
 
-  const [selectedOrgUser, setSelectedOrgUser] = useState<string[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<string[]>([]);
 
   const [allowAction, setAllowAction] = useState(false);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    setBody({ ...body, message: editorData, recipients: selectedOrgUser });
-
-    const { error, value } = ScheduleEmailSchema.validate({
+    const details = {
       ...body,
-    });
+      message: editorData,
+      recipients: selectedCustomer,
+    };
+
+    setBody(details);
+
+    const { error, value } = ScheduleEmailSchema.validate(details);
 
     // Handle validation results
     if (error) {
@@ -187,24 +199,24 @@ const ScheduleEmailFormContent = ({
               </label>
               <Input type='text' name='preheader' />
             </div> */}
-            {searchParams.get('type') === 'scheduled' && (
-              <div>
-                <label
-                  htmlFor='schedule_time'
-                  className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
-                >
-                  Schedule
-                </label>
-                <Input
-                  type='datetime-local'
-                  name='schedule_time'
-                  value={body.scheduled_time}
-                  onChange={(e: any) =>
-                    setBody({ ...body, scheduled_time: e.target.value! })
-                  }
-                />
-              </div>
-            )}
+
+            <div>
+              <label
+                htmlFor='schedule_time'
+                className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+              >
+                Schedule
+              </label>
+              <Input
+                type='datetime-local'
+                name='schedule_time'
+                value={body.scheduled_time}
+                onChange={(e: any) =>
+                  setBody({ ...body, scheduled_time: e.target.value! })
+                }
+              />
+            </div>
+
             <div>
               <label
                 htmlFor='template'
@@ -223,13 +235,13 @@ const ScheduleEmailFormContent = ({
                 <SelectContent>
                   {notificationTemplates.map((template) => (
                     <SelectItem key={template} value={template}>
-                      {template}
+                      {capitalize(template)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            {searchParams.has('orgId') ? (
+            {searchParams.has('customerId') ? (
               <div>
                 <label
                   htmlFor='customers'
@@ -239,9 +251,9 @@ const ScheduleEmailFormContent = ({
                 </label>
 
                 <MultiSelect
-                  options={organizationList}
-                  onValueChange={setSelectedOrgUser}
-                  defaultValue={selectedOrgUser}
+                  options={customersList}
+                  onValueChange={setSelectedCustomer}
+                  defaultValue={selectedCustomer}
                   placeholder='Select customers'
                   variant='inverted'
                   animation={2}
@@ -258,9 +270,9 @@ const ScheduleEmailFormContent = ({
                 </label>
 
                 <MultiSelect
-                  options={organizationList}
-                  onValueChange={setSelectedOrgUser}
-                  defaultValue={selectedOrgUser}
+                  options={customersList}
+                  onValueChange={setSelectedCustomer}
+                  defaultValue={selectedCustomer}
                   placeholder='Select customers'
                   variant='inverted'
                   animation={2}
@@ -290,7 +302,7 @@ const ScheduleEmailFormContent = ({
 
             <button
               type='submit'
-              className='text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 flex gap-2'
+              className='text-white bg-primary-main hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-800 dark:hover:bg-primary-main dark:focus:ring-blue-800 flex gap-2'
             >
               {isLoading ? (
                 <>
@@ -310,7 +322,7 @@ const ScheduleEmailFormContent = ({
             />
           </div>
         </form>
-        <div className='flex-1 border border-dashed rounded-lg'>
+        <div className='flex-1 border border-dashed rounded-lg overflow-y-auto'>
           <div className='space-y-6 p-4 rounded-lg shadow sm:p-6 md:p-8 w-full'>
             <div className='flex flex-col items-center justify-center pt-8 mx-auto pt:mt-0 '>
               <a
@@ -335,7 +347,7 @@ const ScheduleEmailFormContent = ({
                 />
               </a>
 
-              <div className='mt-3 overflow-hidden'>
+              <div className='mt-3 overflow-hidden dark:text-white text-gray-600 max-h-screen lg:h-[68vh] overflow-y-auto'>
                 <div dangerouslySetInnerHTML={{ __html: editorData }} />
               </div>
             </div>

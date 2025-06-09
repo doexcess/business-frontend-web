@@ -1,5 +1,9 @@
 import XIcon from '@/components/ui/icons/XIcon';
+import Badge from '@/components/ui/SystemBadge';
+import { getColor, NOTIFICATION_STATUS } from '@/lib/utils';
 import { RootState } from '@/redux/store';
+import { capitalize } from 'lodash';
+import moment from 'moment-timezone';
 import Image from 'next/image';
 import React from 'react';
 import { useSelector } from 'react-redux';
@@ -17,6 +21,14 @@ const ViewNotification = ({
   const { notification } = useSelector(
     (state: RootState) => state.notification
   );
+
+  const recipients = notification?.is_scheduled
+    ? notification.schedule_info.recipients
+    : notification?.recipients;
+
+  const status = notification?.status
+    ? NOTIFICATION_STATUS.DELIVERED
+    : NOTIFICATION_STATUS.FAILED;
 
   return (
     <div
@@ -40,20 +52,47 @@ const ViewNotification = ({
           📢 {notification?.title}
         </h2>
 
+        <div>
+          <Badge color={getColor(status)!} text={capitalize(status)} />
+        </div>
+
+        {notification?.is_scheduled && (
+          <div>
+            {/* Scheduled time */}
+            <p className='font-semibold text-gray-700 dark:text-gray-300 mb-1'>
+              Scheduled time:
+            </p>
+            <p className='mb-4 text-gray-800 dark:text-white'>
+              {moment(notification?.schedule_info.scheduled_time).format(
+                'LLLL'
+              )}
+            </p>
+          </div>
+        )}
+
         {/* Recipients */}
         <div className='mb-4'>
           <p className='font-semibold text-gray-700 dark:text-gray-300 mb-1'>
             Recipients:
           </p>
           <div className='flex flex-wrap gap-2'>
-            {notification?.recipients.map((recipient, idx) => (
-              <span
-                key={idx}
-                className='bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded dark:bg-blue-900 dark:text-blue-200'
-              >
-                {recipient.email}
-              </span>
-            ))}
+            {notification?.is_scheduled
+              ? notification?.schedule_info.recipients.map((recipient, idx) => (
+                  <span
+                    key={idx}
+                    className='bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded dark:bg-blue-900 dark:text-blue-200'
+                  >
+                    {recipient.user.email}
+                  </span>
+                ))
+              : notification?.recipients.map((recipient, idx) => (
+                  <span
+                    key={idx}
+                    className='bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded dark:bg-blue-900 dark:text-blue-200'
+                  >
+                    {recipient.email}
+                  </span>
+                ))}
           </div>
         </div>
 

@@ -23,6 +23,7 @@ import toast from 'react-hot-toast';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import ActivateIcon from '@/components/ui/icons/ActivateIcon';
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
+import useInvites from '@/hooks/page/useInvites';
 
 const TeamMember = () => {
   const router = useRouter();
@@ -30,6 +31,7 @@ const TeamMember = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const { invite } = useSelector((state: RootState) => state.org);
+  const { invites, count, loading, onClickNext, onClickPrev } = useInvites();
 
   const [isSubmittingResendInvite, setIsSubmittingResendInvite] =
     useState(false);
@@ -145,8 +147,10 @@ const TeamMember = () => {
   };
 
   useEffect(() => {
-    dispatch(viewInvite(params?.id as string));
-  }, [dispatch]);
+    if (invites) {
+      dispatch(viewInvite(params?.id as string));
+    }
+  }, [dispatch, invites]);
 
   useEffect(() => {
     if (allowRemoveMemberAction) {

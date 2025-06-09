@@ -9,7 +9,7 @@ import {
   ScheduledNotification,
   ScheduledNotificationResponse,
 } from '@/types/notification';
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 
 interface EmailNotificationState {
   loading: boolean;
@@ -65,7 +65,7 @@ export const composeEmail = createAsyncThunk(
   }
 );
 
-// Async Thunk for fetching all instant notifications
+// Async Thunk for fetching instant notifications
 export const fetchInstant = createAsyncThunk(
   'notification-track/instant/:business_id',
   async (
@@ -117,11 +117,11 @@ export const fetchInstant = createAsyncThunk(
 
 // Async Thunk for a scheduled email notification dispatch
 export const scheduleEmail = createAsyncThunk(
-  'notification-dispatch/initiate-schedule',
+  'notification-dispatch/schedule',
   async (credentials: ScheduleEmailProps, { rejectWithValue }) => {
     try {
       const response = await api.post(
-        '/notification-dispatch/initiate-schedule',
+        '/notification-dispatch/schedule',
         credentials
       );
       const { message } = response.data;
@@ -136,7 +136,7 @@ export const scheduleEmail = createAsyncThunk(
 
 // Async Thunk for fetching all scheduled notifications
 export const fetchScheduled = createAsyncThunk(
-  'notification-dispatch/fetch-scheduled',
+  'notification-dispatch/scheduled/:business_id',
   async (
     {
       page,
@@ -144,12 +144,14 @@ export const fetchScheduled = createAsyncThunk(
       q,
       startDate,
       endDate,
+      business_id,
     }: {
       page?: number;
       limit?: number;
       q?: string;
       startDate?: string;
       endDate?: string;
+      business_id?: string;
     },
     { rejectWithValue }
   ) => {
@@ -163,7 +165,7 @@ export const fetchScheduled = createAsyncThunk(
 
     try {
       const { data } = await api.get<ScheduledNotificationResponse>(
-        `/notification-track/fetch-scheduled`,
+        `/notification-track/scheduled/${business_id}`,
         {
           params,
         }
@@ -219,10 +221,75 @@ export const fetchSingleNotification = createAsyncThunk(
   }
 );
 
+// Async Thunk for deleting a notification record
+export const deleteNotification = createAsyncThunk(
+  'notification-track/:id',
+  async (
+    {
+      id,
+      business_id,
+    }: {
+      id: string;
+      business_id?: string;
+    },
+    { rejectWithValue }
+  ) => {
+    const headers: Record<string, any> = {};
+
+    if (business_id) headers['Business-Id'] = business_id;
+
+    try {
+      const { data } = await api.delete<GenericResponse>(
+        `/notification-track/${id}`,
+        {
+          headers,
+        }
+      );
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to delete notification record'
+      );
+    }
+  }
+);
+
 const notificationSlice = createSlice({
   name: 'notification',
   initialState,
-  reducers: {},
+  reducers: {
+    viewInstantNotification: (state, action: PayloadAction<string>) => {
+      const notificationId = action.payload;
+      const matchedNotification = state.instantNotifications.find(
+        (notification) => notification.id === notificationId
+      );
+
+      if (matchedNotification) {
+        state.notification = {
+          ...matchedNotification,
+        } as NotificationDetails;
+      } else {
+        state.error = 'Notification not found in local state';
+      }
+    },
+    viewScheduledNotification: (state, action: PayloadAction<string>) => {
+      const notificationId = action.payload;
+      const matchedNotification = state.scheduledNotifications.find(
+        (notification) => notification.id === notificationId
+      );
+
+      if (matchedNotification) {
+        state.notification = {
+          ...matchedNotification,
+        } as NotificationDetails;
+      } else {
+        state.error = 'Notification not found in local state';
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(composeEmail.pending, (state) => {
@@ -284,8 +351,21 @@ const notificationSlice = createSlice({
       .addCase(fetchSingleNotification.rejected, (state, action) => {
         state.notificationLoading = false;
         state.error = action.payload as string;
+      })
+      .addCase(deleteNotification.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteNotification.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(deleteNotification.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
+export const { viewInstantNotification, viewScheduledNotification } =
+  notificationSlice.actions;
 export default notificationSlice.reducer;

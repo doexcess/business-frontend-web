@@ -17,7 +17,6 @@ import {
 import dynamic from 'next/dynamic';
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import useOrg from '@/hooks/page/useOrg';
 import { ComposeEmailSchema } from '@/lib/schema/notification.schema';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
@@ -25,7 +24,6 @@ import { composeEmail } from '@/redux/slices/notificationSlice';
 import toast from 'react-hot-toast';
 import { MultiSelect } from '@/components/ui/MultiSelect';
 import Image from 'next/image';
-import ActionConfirmation from '@/components/ActionConfirmation';
 import { Loader2 } from 'lucide-react';
 import useCustomers from '@/hooks/page/useCustomers';
 import { capitalize } from 'lodash';
@@ -78,20 +76,14 @@ const ComposeEmailFormContent = ({
   setTemplate,
   openModal,
   setOpenModal,
-  handleComposeForm,
 }: any) => {
   const searchParams = useSearchParams();
 
   const dispatch = useDispatch<AppDispatch>();
 
-  const { org: organization, loading } = useSelector(
-    (state: RootState) => state.org
-  );
+  const { org: organization } = useSelector((state: RootState) => state.org);
 
-  const { customers, customersLoading } = useCustomers();
-
-  const organizationOwners: any = [];
-  const orgOwnersLoading: any = true;
+  const { customers } = useCustomers();
 
   const [isLoading, setIsLoading] = useState(false);
 

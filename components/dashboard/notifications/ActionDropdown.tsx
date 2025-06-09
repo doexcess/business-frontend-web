@@ -3,7 +3,7 @@
 import { NotificationType, NOTIFICATION_STATUS } from '@/lib/utils';
 import { Dropdown } from 'flowbite-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   HiBan,
   HiDotsVertical,
@@ -11,21 +11,39 @@ import {
   HiTrash,
 } from 'react-icons/hi';
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
+import {
+  InstantNotification,
+  ScheduledNotification,
+} from '@/types/notification';
+import {
+  deleteNotification,
+  fetchInstant,
+} from '@/redux/slices/notificationSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/redux/store';
+import toast from 'react-hot-toast';
 
 const ActionDropdown = ({
   id,
   status,
   notificationType,
   table = 'email',
+  notification,
 }: {
   id: string;
   status: NOTIFICATION_STATUS;
   notificationType: NotificationType;
   table?: string;
+  notification?: InstantNotification | ScheduledNotification;
 }) => {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const { org } = useSelector((state: RootState) => state.org);
+
   const [openCancelModal, setOpenCancelModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [allowDeleteAction, setAllowDeleteAction] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const notificationTypesForEdit = [
     NOTIFICATION_STATUS.SCHEDULED,
@@ -49,6 +67,35 @@ const ActionDropdown = ({
     }
     router.push(editLink);
   };
+
+  const handleDelete = async () => {
+    try {
+      setIsSubmitting(true);
+
+      const response: any = await dispatch(
+        deleteNotification({ id: notification?.id!, business_id: org?.id! })
+      );
+
+      if (response.type === 'notification-track/:id/rejected') {
+        throw new Error(response.payload.message);
+      }
+
+      toast.success(response.payload.message);
+      dispatch(fetchInstant({ business_id: org?.id! }));
+    } catch (error: any) {
+      console.error('Submission failed:', error);
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    if (allowDeleteAction) {
+      handleDelete();
+      setAllowDeleteAction(false);
+    }
+  }, [allowDeleteAction]);
 
   return (
     <>
@@ -93,9 +140,11 @@ const ActionDropdown = ({
         setOpenModal={setOpenCancelModal}
       />
       <ActionConfirmationModal
-        body='Are you sure you want to delete'
+        body={`Are you sure you want to delete this notification record - ${notification?.title}`}
         openModal={openDeleteModal}
         setOpenModal={setOpenDeleteModal}
+        allowAction={allowDeleteAction}
+        setAllowAction={setAllowDeleteAction}
       />
     </>
   );

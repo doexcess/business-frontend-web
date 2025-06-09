@@ -7,6 +7,7 @@ import { HiDotsVertical, HiRefresh } from 'react-icons/hi';
 import { IoIosFunnel } from 'react-icons/io';
 import Input from './ui/Input';
 import { cn, getISODateString, now, oneMonthAgo } from '@/lib/utils';
+import { Button } from './ui/Button';
 
 const Filter = ({
   pageTitle,
@@ -121,20 +122,24 @@ const Filter = ({
               />
             </form>
           )}
-          <button
+          <Button
             title='Search with date filter'
+            size='icon'
+            variant='secondary'
             className='text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-2 py-2 dark:bg-gray-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800 flex gap-1 items-center'
             onClick={() => setOpenModal(true)}
           >
             <HiDotsVertical size={20} className={'text-2xl'} />
-          </button>
-          <button
+          </Button>
+          <Button
             title='Refresh'
+            size='icon'
+            variant='primary'
             className='text-white bg-primary-main hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-2 py-2 dark:bg-primary-main dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 flex gap-1 items-center'
             onClick={handleRefreshClick}
           >
             <HiRefresh size={20} className={'text-2xl'} />
-          </button>
+          </Button>
           {showPeriod && (
             <form className='w-full'>
               <select

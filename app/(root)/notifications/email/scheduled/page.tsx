@@ -27,48 +27,22 @@ const ScheduledEmailNotification = () => {
   } = useScheduledNotification();
 
   return (
-    <main>
-      <header className='section-container'>
+    <main className='min-h-screen bg-gray-50 dark:bg-gray-900'>
+      <div className='section-container'>
         {/* Page Heading */}
         <PageHeading
           title='Scheduled Notifications'
+          brief='Track your scheduled emails'
           enableBreadCrumb={true}
           layer2='Notifications'
           layer3='Email'
           layer4='Scheduled'
+          layer3Link='/notifications/email'
           enableBackButton={true}
         />
 
-        {/* Filter */}
-        <Filter
-          showPeriod={false}
-          handleSearchSubmit={handleSearchSubmit}
-          handleFilterByDateSubmit={handleFilterByDateSubmit}
-          handleRefresh={handleRefresh}
-          extra={
-            <>
-              <Link
-                href={`/notifications/email/schedule?type=${notificationType}`}
-                className='text-white bg-primary-main hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-main dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 flex items-center gap-1'
-              >
-                {' '}
-                <HiPlus />
-                Schedule
-              </Link>
-            </>
-          }
-        />
-      </header>
-      <section className='section-container-padding-0'>
-        <ScheduledNotificationsList
-          notifications={scheduledNotifications}
-          count={totalScheduledNotifications}
-          onClickNext={onClickNext}
-          onClickPrev={onClickPrev}
-          currentPage={currentPage}
-          loading={scheduledNotificationLoading}
-        />
-      </section>
+        <ScheduledNotificationsList />
+      </div>
     </main>
   );
 };

@@ -8,7 +8,6 @@ import { useDispatch, useSelector } from 'react-redux';
 
 const useScheduledNotification = () => {
   const searchParams = useSearchParams();
-  const params = useParams();
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const queryParams = new URLSearchParams(searchParams.toString());
@@ -25,6 +24,7 @@ const useScheduledNotification = () => {
     scheduledNotifications,
     countScheduledNotifications,
   } = useSelector((state: RootState) => state.notification);
+  const { org } = useSelector((state: RootState) => state.org);
 
   useEffect(() => {
     dispatch(
@@ -34,9 +34,10 @@ const useScheduledNotification = () => {
         ...(q && { q }),
         ...(startDate && { startDate }),
         ...(endDate && { endDate }),
+        ...(org?.id && { business_id: org.id }),
       })
     );
-  }, [dispatch, currentPage, perPage, q, startDate, endDate]);
+  }, [dispatch, currentPage, perPage, q, startDate, endDate, org]);
 
   const onClickNext = async () => {
     if (scheduledNotifications.length > 0) {
