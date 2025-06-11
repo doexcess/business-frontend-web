@@ -4,7 +4,7 @@ import XIcon from '@/components/ui/icons/XIcon';
 import Input from '@/components/ui/Input';
 import { AppDispatch, RootState } from '@/redux/store';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { useDispatch, useSelector } from 'react-redux';
@@ -18,14 +18,24 @@ import { toast } from 'react-hot-toast';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
 import { cn, EventType, ProductStatus, TicketTierStatus } from '@/lib/utils';
 import { createTicket } from '@/redux/slices/ticketSlice';
-import { SelectItem } from '@/components/ui/select';
-import { SelectContent } from '@/components/ui/select';
-import { SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Select } from '@/components/ui/select';
+import {
+  SelectItem,
+  SelectContent,
+  SelectTrigger,
+  SelectValue,
+  Select,
+} from '@/components/ui/select';
 import moment from 'moment-timezone';
 import { Textarea } from '@/components/ui/textarea';
+import dynamic from 'next/dynamic';
 
-const defaultValue: CreateTicketProps = {
+// Dynamically import ReactQuill to avoid SSR issues
+const ReactQuillEditor = dynamic(() => import('react-quill'), {
+  ssr: false,
+  loading: () => <p>Loading editor...</p>,
+});
+
+const DEFAULT_FORM_VALUES: CreateTicketProps = {
   title: '',
   description: '',
   keywords: '',
@@ -49,65 +59,170 @@ const defaultValue: CreateTicketProps = {
   ],
 };
 
+interface ImageUploadProps {
+  imagePreview: string | null;
+  uploadingImage: boolean;
+  onImageUpload: (file: File) => Promise<void>;
+  onRemoveImage: () => void;
+}
+
+const ImageUpload: React.FC<ImageUploadProps> = ({
+  imagePreview,
+  uploadingImage,
+  onImageUpload,
+  onRemoveImage,
+}) => (
+  <div>
+    <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
+      Upload Event Image
+    </label>
+    <input
+      type='file'
+      accept='image/*'
+      onChange={(e) => {
+        if (e.target.files) {
+          onImageUpload(e.target.files[0]);
+        }
+      }}
+      className='block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:rounded-md file:bg-primary-main file:text-white hover:file:bg-primary-dark'
+    />
+    {imagePreview && (
+      <div className='mt-4 relative'>
+        <p className='text-sm text-gray-600 dark:text-gray-300 mb-2'>
+          Preview:
+        </p>
+        <img
+          src={imagePreview}
+          alt='Event Preview'
+          className='max-h-64 rounded-md border dark:border-gray-600'
+        />
+        <button
+          type='button'
+          onClick={onRemoveImage}
+          className='absolute top-5 left-0 bg-red-600 text-white px-2 rounded-full hover:bg-red-700'
+          aria-label='Remove Image'
+        >
+          <XIcon />
+        </button>
+      </div>
+    )}
+  </div>
+);
+
+interface TicketTierComponentProps {
+  tier: TicketTierProps;
+  index: number;
+  onTierChange: (index: number, field: string, value: string) => void;
+  onRemoveTier: (index: number) => void;
+}
+
+const TicketTier: React.FC<TicketTierComponentProps> = ({
+  tier,
+  index,
+  onTierChange,
+  onRemoveTier,
+}) => (
+  <div className='grid md:grid-cols-4 gap-4 items-center'>
+    <Input
+      type='text'
+      placeholder='Tier Name (e.g. VIP)'
+      value={tier.name}
+      onChange={(e) => onTierChange(index, 'name', e.target.value)}
+    />
+    <Input
+      type='number'
+      placeholder='Original Price'
+      value={tier.original_amount!}
+      onChange={(e) => onTierChange(index, 'original_amount', e.target.value)}
+    />
+    <Input
+      type='number'
+      placeholder='Discounted Price'
+      value={tier.amount!}
+      onChange={(e) => onTierChange(index, 'amount', e.target.value)}
+    />
+    <div className='flex gap-2'>
+      <Input
+        type='number'
+        placeholder='Quantity'
+        value={tier.quantity!}
+        onChange={(e) => onTierChange(index, 'quantity', e.target.value)}
+      />
+      <button
+        type='button'
+        onClick={() => onRemoveTier(index)}
+        className={cn(
+          'text-red-600 hover:text-red-700 font-bold px-2 rounded',
+          tier.purchased_tickets!?.length > 0 &&
+            'dark:text-red-900 dak:hover:text-red-900 text-red-200 hover:text-red-200'
+        )}
+        aria-label={`Remove tier ${tier.name || index + 1}`}
+        disabled={tier.purchased_tickets!?.length > 0}
+        title={
+          tier.purchased_tickets!?.length > 0
+            ? 'This ticket tier has once been purchased'
+            : ''
+        }
+      >
+        <XIcon />
+      </button>
+    </div>
+  </div>
+);
+
 const AddTicketForm = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-
   const { categories } = useProductCategory();
   const { org } = useSelector((state: RootState) => state.org);
 
-  const [deleteTicketTierOpenModal, setDeleteTicketTierOpenModal] =
-    useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [body, setBody] = useState<CreateTicketProps>({ ...defaultValue });
+  const [formData, setFormData] = useState<CreateTicketProps>({
+    ...DEFAULT_FORM_VALUES,
+  });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
-
-  const [tierIndex, setTierIndex] = useState<number>();
-  const [tier, setTier] = useState<TicketTierProps>();
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOneDayEvent, setIsOneDayEvent] = useState(
-    body.event_start_date === body.event_end_date
+    formData.event_start_date === formData.event_end_date
   );
 
-  // Sync body state when toggling
+  // Sync formData state when toggling one-day event
   useEffect(() => {
-    if (isOneDayEvent && body.event_start_date) {
-      setBody((prev) => ({
+    if (isOneDayEvent && formData.event_start_date) {
+      setFormData((prev) => ({
         ...prev,
         event_end_date: prev.event_start_date,
       }));
     }
-  }, [isOneDayEvent, body.event_start_date]);
+  }, [isOneDayEvent, formData.event_start_date]);
 
-  const handleChange = (
+  const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setBody((prev) => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  // Handle image upload + preview
-  const handleImageUpload = async (file: File) => {
+  const handleImageUpload = async (file: File): Promise<void> => {
     if (!file) return;
 
     const allowedTypes = ['image/jpeg', 'image/png'];
     if (!allowedTypes.includes(file.type)) {
-      return toast.error('Only PNG and JPEG images are allowed');
+      toast.error('Only PNG and JPEG images are allowed');
+      return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      return toast.error('Image size should be less than 5MB');
+      toast.error('Image size should be less than 5MB');
+      return;
     }
 
     setUploadingImage(true);
 
     try {
-      // Simulate upload
       const formData = new FormData();
       formData.append('image', file);
 
@@ -125,7 +240,7 @@ const AddTicketForm = () => {
         throw new Error(response.payload.message);
       }
 
-      setBody((prev) => ({
+      setFormData((prev) => ({
         ...prev,
         multimedia_id: response.payload.multimedia.id,
       }));
@@ -138,24 +253,16 @@ const AddTicketForm = () => {
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    handleImageUpload(file);
-  };
-
-  // Remove image preview and file
   const removeImage = () => {
-    setBody((prev) => ({
+    setFormData((prev) => ({
       ...prev,
       multimedia_id: '',
     }));
     setImagePreview(null);
   };
 
-  // Handle tier change
   const handleTierChange = (index: number, field: string, value: string) => {
-    const updatedTiers = [...body.ticket_tiers];
+    const updatedTiers = [...formData.ticket_tiers];
     const tier = updatedTiers[index] as TicketTierProps;
     const numericFields = [
       'amount',
@@ -169,14 +276,14 @@ const AddTicketForm = () => {
     } else {
       (tier as any)[field] = value;
     }
-    setBody((prev) => ({
+    setFormData((prev) => ({
       ...prev,
       ticket_tiers: updatedTiers,
     }));
   };
 
   const addTier = () => {
-    setBody((prev) => ({
+    setFormData((prev) => ({
       ...prev,
       ticket_tiers: [
         ...prev.ticket_tiers,
@@ -196,10 +303,11 @@ const AddTicketForm = () => {
   };
 
   const removeTier = (index: number) => {
-    setTierIndex(index);
-    const tier = body.ticket_tiers.find((_, i) => i === index);
-    setTier(tier);
-    setDeleteTicketTierOpenModal(true);
+    const updatedTiers = formData.ticket_tiers.filter((_, i) => i !== index);
+    setFormData((prev) => ({
+      ...prev,
+      ticket_tiers: updatedTiers,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -210,20 +318,18 @@ const AddTicketForm = () => {
     try {
       setIsSubmitting(true);
 
-      // Filter purchased ticket
-      const filtered_ticket_tiers = body.ticket_tiers.map((tier) => {
+      const filtered_ticket_tiers = formData.ticket_tiers.map((tier) => {
         delete tier.purchased_tickets;
         return tier;
       });
 
-      const { error, value } = createTicketSchema.validate(body);
+      const { error, value } = createTicketSchema.validate(formData);
       if (error) throw new Error(error.details[0].message);
 
-      // Submit logic here
       const response: any = await dispatch(
         createTicket({
           credentials: {
-            ...body,
+            ...formData,
             ticket_tiers: filtered_ticket_tiers.map((tier) => ({
               ...tier,
               amount: +tier.amount!,
@@ -249,16 +355,16 @@ const AddTicketForm = () => {
   };
 
   const isFormValid =
-    body.title &&
-    body.description &&
-    body.category_id &&
-    body.event_end_date &&
-    body.event_start_date &&
-    body.multimedia_id &&
-    body.event_location &&
-    body.event_type &&
-    body.auth_details &&
-    body.ticket_tiers.length > 0;
+    formData.title &&
+    formData.description &&
+    formData.category_id &&
+    formData.event_end_date &&
+    formData.event_start_date &&
+    formData.multimedia_id &&
+    formData.event_location &&
+    formData.event_type &&
+    formData.auth_details &&
+    formData.ticket_tiers.length > 0;
 
   const renderDateField = (label: string, name: string, value: string) => (
     <div>
@@ -269,7 +375,7 @@ const AddTicketForm = () => {
         type='date'
         name={name}
         value={value}
-        onChange={handleChange}
+        onChange={handleInputChange}
         required={name === 'event_start_date'}
       />
     </div>
@@ -287,8 +393,8 @@ const AddTicketForm = () => {
         <Input
           type='text'
           name='title'
-          value={body.title}
-          onChange={handleChange}
+          value={formData.title}
+          onChange={handleInputChange}
           required
         />
       </div>
@@ -300,21 +406,20 @@ const AddTicketForm = () => {
         <Input
           type='text'
           name='event_location'
-          value={body.event_location}
-          onChange={handleChange}
+          value={formData.event_location}
+          onChange={handleInputChange}
           required
         />
       </div>
 
-      {/* Category*/}
       <div>
         <label className='text-sm font-medium mb-1 block text-gray-700 dark:text-white'>
           Category <span className='text-red-500'>*</span>
         </label>
         <Select
-          value={body.category_id}
+          value={formData.category_id}
           onValueChange={(value) =>
-            setBody((prev) => ({ ...prev, category_id: value }))
+            setFormData((prev) => ({ ...prev, category_id: value }))
           }
           required
         >
@@ -338,10 +443,10 @@ const AddTicketForm = () => {
           Event Description
         </label>
         <div className='quill-container'>
-          <ReactQuill
-            value={body.description}
+          <ReactQuillEditor
+            value={formData.description}
             onChange={(value: string) =>
-              setBody((prev) => ({ ...prev, description: value }))
+              setFormData((prev) => ({ ...prev, description: value }))
             }
             className='dark:text-white'
             theme='snow'
@@ -354,80 +459,30 @@ const AddTicketForm = () => {
           Event Type
         </label>
         <div className='flex gap-4'>
-          <label className='flex items-center gap-2 text-gray-700 dark:text-white'>
-            <input
-              type='radio'
-              checked={body.event_type === EventType.ONLINE}
-              onChange={() =>
-                setBody((prev) => ({ ...prev, event_type: EventType.ONLINE }))
-              }
-            />
-            Online
-          </label>
-          <label className='flex items-center gap-2 text-gray-700 dark:text-white'>
-            <input
-              type='radio'
-              checked={body.event_type === EventType.PHYSICAL}
-              onChange={() =>
-                setBody((prev) => ({
-                  ...prev,
-                  event_type: EventType.PHYSICAL,
-                }))
-              }
-            />
-            Physical
-          </label>
-          <label className='flex items-center gap-2 text-gray-700 dark:text-white'>
-            <input
-              type='radio'
-              checked={body.event_type === EventType.HYBRID}
-              onChange={() =>
-                setBody((prev) => ({
-                  ...prev,
-                  event_type: EventType.HYBRID,
-                }))
-              }
-            />
-            Hybrid
-          </label>
+          {Object.values(EventType).map((type) => (
+            <label
+              key={type}
+              className='flex items-center gap-2 text-gray-700 dark:text-white'
+            >
+              <input
+                type='radio'
+                checked={formData.event_type === type}
+                onChange={() =>
+                  setFormData((prev) => ({ ...prev, event_type: type }))
+                }
+              />
+              {type}
+            </label>
+          ))}
         </div>
       </div>
 
-      <div>
-        <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
-          Upload Event Image
-        </label>
-        <input
-          type='file'
-          accept='image/*'
-          onChange={(e) => {
-            if (e.target.files) {
-              handleImageUpload(e.target.files[0]);
-            }
-          }}
-          className='block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:rounded-md file:bg-primary-main file:text-white hover:file:bg-primary-dark'
-        />
-        {imagePreview && (
-          <div className='mt-4 relative'>
-            <p className='text-sm text-gray-600 dark:text-gray-300 mb-2'>
-              Preview:
-            </p>
-            <img
-              src={imagePreview}
-              alt='Event Preview'
-              className='max-h-64 rounded-md border dark:border-gray-600'
-            />
-            <button
-              type='button'
-              onClick={removeImage}
-              className='absolute top-5 left-0 bg-red-600 text-white  px-2 rounded-full hover:bg-red-700'
-              aria-label='Remove Image'
-            >
-              <XIcon />
-            </button>
-          </div>
-        )}
-      </div>
+      <ImageUpload
+        imagePreview={imagePreview}
+        uploadingImage={uploadingImage}
+        onImageUpload={handleImageUpload}
+        onRemoveImage={removeImage}
+      />
 
       <div>
         <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
@@ -459,19 +514,19 @@ const AddTicketForm = () => {
         renderDateField(
           'Event Date',
           'event_start_date',
-          moment(body.event_start_date).format('YYYY-MM-DD')
+          moment(formData.event_start_date).format('YYYY-MM-DD')
         )
       ) : (
         <div className='grid md:grid-cols-2 gap-4'>
           {renderDateField(
             'Start Date',
             'event_start_date',
-            moment(body.event_start_date).format('YYYY-MM-DD')
+            moment(formData.event_start_date).format('YYYY-MM-DD')
           )}
           {renderDateField(
             'End Date',
             'event_end_date',
-            moment(body.event_end_date).format('YYYY-MM-DD')
+            moment(formData.event_end_date).format('YYYY-MM-DD')
           )}
         </div>
       )}
@@ -483,8 +538,8 @@ const AddTicketForm = () => {
         <Input
           type='time'
           name='event_time'
-          value={body.event_time}
-          onChange={handleChange}
+          value={formData.event_time}
+          onChange={handleInputChange}
           required
         />
       </div>
@@ -497,21 +552,20 @@ const AddTicketForm = () => {
           <Input
             type='text'
             name='keywords'
-            value={body.keywords}
-            onChange={handleChange}
+            value={formData.keywords}
+            onChange={handleInputChange}
             required
           />
         </div>
 
-        {/* Status */}
         <div>
           <label className='font-medium mb-1 block text-gray-700 dark:text-white'>
             Status <span className='text-red-500'>*</span>
           </label>
           <Select
-            value={body.status!}
+            value={formData.status!}
             onValueChange={(value) =>
-              setBody((prev) => ({ ...prev, status: value as any }))
+              setFormData((prev) => ({ ...prev, status: value as any }))
             }
             required
           >
@@ -537,8 +591,8 @@ const AddTicketForm = () => {
         </label>
         <Textarea
           name='auth_details'
-          value={body.auth_details}
-          onChange={handleChange as any}
+          value={formData.auth_details}
+          onChange={handleInputChange as any}
           required
         />
       </div>
@@ -548,61 +602,14 @@ const AddTicketForm = () => {
           Ticket Tiers
         </h3>
 
-        {body.ticket_tiers.map((tier, index) => (
-          <div key={index} className='grid md:grid-cols-4 gap-4 items-center'>
-            <Input
-              type='text'
-              placeholder='Tier Name (e.g. VIP)'
-              value={tier.name}
-              onChange={(e) => handleTierChange(index, 'name', e.target.value)}
-            />
-            <Input
-              type='number'
-              placeholder='Original Price'
-              value={tier.original_amount!}
-              onChange={(e) =>
-                handleTierChange(index, 'original_amount', e.target.value)
-              }
-            />
-            <Input
-              type='number'
-              placeholder='Discounted Price'
-              value={tier.amount!}
-              onChange={(e) =>
-                handleTierChange(index, 'amount', e.target.value)
-              }
-            />
-            <div className='flex gap-2'>
-              <Input
-                type='number'
-                placeholder='Quantity'
-                value={tier.quantity!}
-                onChange={(e) =>
-                  handleTierChange(index, 'quantity', e.target.value)
-                }
-              />
-              {/* {tier.purchased_tickets?.length === 0 && ( */}
-              <button
-                type='button'
-                onClick={() => removeTier(index)}
-                className={cn(
-                  'text-red-600 hover:text-red-700 font-bold px-2 rounded',
-                  tier.purchased_tickets!?.length > 0 &&
-                    'dark:text-red-900 dak:hover:text-red-900 text-red-200 hover:text-red-200'
-                )}
-                aria-label={`Remove tier ${tier.name || index + 1}`}
-                disabled={tier.purchased_tickets!?.length > 0}
-                title={
-                  tier.purchased_tickets!?.length > 0
-                    ? 'This ticket tier has once been purchased'
-                    : ''
-                }
-              >
-                <XIcon />
-              </button>
-              {/* )} */}
-            </div>
-          </div>
+        {formData.ticket_tiers.map((tier, index) => (
+          <TicketTier
+            key={index}
+            tier={tier}
+            index={index}
+            onTierChange={handleTierChange}
+            onRemoveTier={removeTier}
+          />
         ))}
 
         <div className='flex justify-end'>
@@ -619,9 +626,13 @@ const AddTicketForm = () => {
       <div className='mt-6'>
         <button
           type='submit'
-          className='bg-primary-main text-white px-6 py-2 rounded-md hover:bg-primary-dark transition'
+          disabled={isSubmitting || !isFormValid}
+          className={cn(
+            'bg-primary-main text-white px-6 py-2 rounded-md hover:bg-primary-dark transition',
+            (isSubmitting || !isFormValid) && 'opacity-50 cursor-not-allowed'
+          )}
         >
-          Create Ticket
+          {isSubmitting ? 'Creating...' : 'Create Ticket'}
         </button>
       </div>
     </form>

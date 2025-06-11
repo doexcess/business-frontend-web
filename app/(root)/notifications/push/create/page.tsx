@@ -1,6 +1,6 @@
 'use client';
 
-import CreatePushForm from '@/components/notifications/push/CreatePushForm';
+import CreatePushForm from '@/components/dashboard/notifications/push/CreatePushForm';
 import PageHeading from '@/components/PageHeading';
 import { useRouter } from 'next/navigation';
 import React from 'react';

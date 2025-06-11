@@ -1,6 +1,6 @@
 'use client';
 
-import EditPushForm from '@/components/notifications/push/EditPushForm';
+import EditPushForm from '@/components/dashboard/notifications/push/EditPushForm';
 import PageHeading from '@/components/PageHeading';
 import { useRouter } from 'next/navigation';
 import React from 'react';

@@ -6,6 +6,11 @@ import { IoIosArrowBack } from 'react-icons/io';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
+export interface BreadcrumbLayer {
+  title: string;
+  href?: string;
+}
+
 const PageHeading = ({
   title,
   brief,

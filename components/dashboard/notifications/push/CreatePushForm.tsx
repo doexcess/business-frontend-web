@@ -2,10 +2,10 @@
 
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
 import Input from '@/components/ui/Input';
-import Select from '@/components/ui/Select';
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { HiMinus, HiPlus } from 'react-icons/hi';
+import Select from '@/components/Select';
 
 const CreatePushForm = () => {
   const [count, setCount] = useState(1);

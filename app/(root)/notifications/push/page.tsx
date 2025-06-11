@@ -2,8 +2,6 @@
 
 import React from 'react';
 import PageHeading from '@/components/PageHeading';
-import JobsNotificationSection from '@/components/notifications/push/jobs/JobsNotificationSection';
-import SystemNotificationSection from '@/components/notifications/push/system/SystemNotificationSection';
 
 const PushNotification = () => {
   return (
@@ -17,15 +15,7 @@ const PushNotification = () => {
         />
       </header>
 
-      <div className='flex flex-col gap-6'>
-        <section>
-          <JobsNotificationSection />
-        </section>
-
-        <section>
-          <SystemNotificationSection />
-        </section>
-      </div>
+      <div className='flex flex-col gap-6'></div>
     </main>
   );
 };

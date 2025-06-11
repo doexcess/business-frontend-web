@@ -1,6 +1,6 @@
 'use client';
 
-import ComposeEmailForm from '@/components/notifications/email/ComposeEmailForm';
+import ComposeEmailForm from '@/components/dashboard/notifications/email/ComposeEmailForm';
 import PageHeading from '@/components/PageHeading';
 import { useRouter } from 'next/navigation';
 import React from 'react';

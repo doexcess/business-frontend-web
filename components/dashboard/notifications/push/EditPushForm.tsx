@@ -2,7 +2,7 @@
 
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
 import Input from '@/components/ui/Input';
-import Select from '@/components/ui/Select';
+import Select from '@/components/Select';
 import { useSearchParams } from 'next/navigation';
 import React, { useState } from 'react';
 import { HiMinus, HiPlus, HiPlusCircle } from 'react-icons/hi';
