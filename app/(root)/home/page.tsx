@@ -9,11 +9,17 @@ import Icon from '@/components/ui/Icon';
 import { PurchaseItemType, SystemRole } from '@/lib/utils';
 import { RootState } from '@/redux/store';
 import Link from 'next/link';
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
+import OnboardingModal from '@/components/dashboard/OnboardingModal';
+import { Modal } from '@/components/ui/Modal';
+import OnboardingAlert from '@/components/OnboardingAlert';
 
 const Home = () => {
   const { profile } = useSelector((state: RootState) => state.auth);
+  const { orgs } = useSelector((state: RootState) => state.org);
+  const { org } = useSelector((state: RootState) => state.org);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const performanceData = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr'],
@@ -80,31 +86,56 @@ const Home = () => {
       <div className='h-full'>
         {/* Main Content */}
         <div className='flex-1 text-black-1 dark:text-white'>
-          {/* Urgent Info Banner */}
+          {/* Profile Completion Banner */}
+          {profile?.role.role_id === SystemRole.BUSINESS_SUPER_ADMIN &&
+            (!orgs.length || org?.onboarding_status.current_step !== 3) && (
+              <>
+                <div className='mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'>
+                  <div className='flex flex-col md:flex-row gap-2 items-center justify-between'>
+                    <div className='flex items-center gap-3'>
+                      <div className='flex-shrink-0'>
+                        <svg
+                          className='h-5 w-5 text-red-400'
+                          viewBox='0 0 20 20'
+                          fill='currentColor'
+                        >
+                          <path
+                            fillRule='evenodd'
+                            d='M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z'
+                            clipRule='evenodd'
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className='text-sm font-medium text-red-800 dark:text-red-200'>
+                          Complete Your Profile
+                        </h3>
+                        <p className='mt-1 text-sm text-red-700 dark:text-red-300'>
+                          Please complete your business profile to access all
+                          features.
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant='primary'
+                      onClick={() => setShowProfileModal(true)}
+                      className='bg-red-600 hover:bg-red-700 text-white ml-auto'
+                    >
+                      Complete Profile
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
+
+          {/* Onboarding Modal */}
           {profile?.role.role_id === SystemRole.BUSINESS_SUPER_ADMIN && (
-            <div className='bg-yellow-100 border-l-4 border-yellow-500 text-yellow-900 dark:bg-yellow-900 dark:text-yellow-100 dark:border-yellow-400 p-4 rounded-md mb-6'>
-              <div className='flex justify-between items-start flex-col md:flex-row gap-2'>
-                <div className='flex-1'>
-                  <h3 className='font-semibold text-lg mb-1'>
-                    Action Required: Complete Your Profile
-                  </h3>
-                  <p className='text-sm'>
-                    To unlock full features and payouts, please complete your
-                    profile by adding your <strong>bank account details</strong>{' '}
-                    and <strong>inviting your team members</strong>.
-                  </p>
-                </div>
-                <div className='flex gap-2 mt-2 md:mt-0'>
-                  <Link
-                    href='/settings'
-                    className='bg-primary px-4 p-2 rounded-lg'
-                  >
-                    Complete Now
-                  </Link>
-                </div>
-              </div>
-            </div>
+            <OnboardingModal
+              isOpen={showProfileModal}
+              setIsOpen={setShowProfileModal}
+            />
           )}
+
           <header className='flex flex-col md:flex-row justify-between md:items-center'>
             <h2 className='text-2xl font-semibold'>
               Hello, {profile?.name} 👋🏼

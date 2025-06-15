@@ -165,7 +165,7 @@ const Profile = ({
 
                 <li>
                   <Link
-                    href='/business/create'
+                    href='/settings/business'
                     className='flex items-center gap-2 py-2 px-4 text-sm font-medium text-primary-main hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-primary-faded dark:hover:text-white'
                   >
                     <IoIosAdd size={20} />

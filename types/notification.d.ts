@@ -1,4 +1,5 @@
 import { NotificationType } from '@/lib/utils';
+import { Payment } from './payment';
 
 export interface Business {
   id: string;

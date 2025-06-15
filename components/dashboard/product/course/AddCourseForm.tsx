@@ -148,7 +148,7 @@ const AddCourseForm = () => {
     body.multimedia_id;
 
   return (
-    <ThemeDiv className='mt-6'>
+    <ThemeDiv className='mt-6 p-6'>
       <form className='space-y-6' onSubmit={handleSubmit}>
         <Input
           type='text'

@@ -1,6 +1,7 @@
 'use client';
 
 import { logout } from '@/redux/slices/authSlice';
+import { clearOrg } from '@/redux/slices/orgSlice';
 import { AppDispatch } from '@/redux/store';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
@@ -11,6 +12,7 @@ const Logout = () => {
   const router = useRouter();
 
   useEffect(() => {
+    dispatch(clearOrg());
     dispatch(logout());
     return router.push('/auth/signin'); // Redirect to login page after logout
   }, [dispatch, router]);

@@ -5,6 +5,9 @@ import { Button } from './ui/Button';
 import { IoIosArrowBack } from 'react-icons/io';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
+import OnboardingAlert from './OnboardingAlert';
 
 export interface BreadcrumbLayer {
   title: string;
@@ -41,6 +44,7 @@ const PageHeading = ({
   enableBreadCrumbStyle?: false;
 }) => {
   const router = useRouter();
+  const { org } = useSelector((state: RootState) => state.org);
 
   const goBack = () => {
     router.back();
@@ -48,6 +52,8 @@ const PageHeading = ({
 
   return (
     <>
+      {/* Onboarding Alert */}
+      {org && <OnboardingAlert org={org} />}
       <div
         className={cn(
           '',

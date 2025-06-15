@@ -440,19 +440,9 @@ export const fetchCustomer = createAsyncThunk(
     },
     { rejectWithValue }
   ) => {
-    const params: Record<string, any> = {};
-
-    const headers: Record<string, string> = {};
-
-    if (business_id !== undefined) headers['business_id'] = business_id;
-
     try {
       const { data } = await api.get<CustomerDetailsResponse>(
-        `/contact/fetch-customer/${id}`,
-        {
-          params,
-          headers,
-        }
+        `/contact/fetch-customer/${id}`
       );
 
       return {

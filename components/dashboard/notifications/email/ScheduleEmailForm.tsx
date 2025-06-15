@@ -16,7 +16,7 @@ import {
 } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import useOrg from '@/hooks/page/useOrg';
 import {
   ScheduleEmailProps,
@@ -75,6 +75,7 @@ const ScheduleEmailFormContent = ({
   setOpenModal,
 }: any) => {
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const dispatch = useDispatch<AppDispatch>();
 
@@ -150,6 +151,7 @@ const ScheduleEmailFormContent = ({
       });
 
       toast.success(response?.payload?.message);
+      router.back();
     } catch (err: any) {
       console.log(err);
       toast.error(err.message);

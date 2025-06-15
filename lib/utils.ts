@@ -208,6 +208,15 @@ export const formatMoney = (amount: number, currency = 'NGN'): string => {
   }).format(amount);
 };
 
+export const formatCurrency = (amount: string, currency = 'NGN'): string => {
+  const numericAmount = parseFloat(amount);
+  return new Intl.NumberFormat('en-NG', {
+    style: 'currency',
+    currency: currency,
+    minimumFractionDigits: 2,
+  }).format(numericAmount);
+};
+
 const algorithm = 'aes-256-cbc';
 const secret = process.env.NEXT_PUBLIC_ENCRYPTION_KEY!; // Ensure this is exactly 32 characters
 const secretKey = crypto.createHash('sha256').update(secret).digest(); // Converts it to a 32-byte key
@@ -316,3 +325,46 @@ export enum RefundType {
   REFUND = 'REFUND',
   CHARGEBACK = 'CHARGEBACK',
 }
+
+export const getPurchaseTypeLabel = (type: string) => {
+  switch (type) {
+    case 'COURSE':
+      return 'Course';
+    case 'TICKET':
+      return 'Event Ticket';
+    case 'SUBSCRIPTION':
+      return 'Subscription';
+    default:
+      return 'Purchase';
+  }
+};
+
+export const BUSINESS_INDUSTRIES = [
+  'Technology',
+  'Healthcare',
+  'Finance',
+  'Education',
+  'Retail',
+  'Manufacturing',
+  'Real Estate',
+  'Hospitality',
+  'Transportation',
+  'Construction',
+  'Media & Entertainment',
+  'Professional Services',
+  'Agriculture',
+  'Energy',
+  'Telecommunications',
+  'Food & Beverage',
+  'Automotive',
+  'Fashion & Apparel',
+  'Sports & Fitness',
+  'Arts & Crafts',
+  'Legal Services',
+  'Consulting',
+  'Marketing & Advertising',
+  'Non-Profit',
+  'Other',
+];
+
+export type BusinessIndustry = (typeof BUSINESS_INDUSTRIES)[number];
