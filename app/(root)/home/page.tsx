@@ -88,7 +88,7 @@ const Home = () => {
         <div className='flex-1 text-black-1 dark:text-white'>
           {/* Profile Completion Banner */}
           {profile?.role.role_id === SystemRole.BUSINESS_SUPER_ADMIN &&
-            (!orgs.length || org?.onboarding_status.current_step !== 3) && (
+            (!orgs.length || org?.onboarding_status?.current_step !== 3) && (
               <>
                 <div className='mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'>
                   <div className='flex flex-col md:flex-row gap-2 items-center justify-between'>
