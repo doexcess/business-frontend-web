@@ -312,9 +312,10 @@ const CourseContent = () => {
           title='Add course contents'
           enableBreadCrumb={true}
           layer2='Products'
+          layer2Link='/products'
           layer3='Courses'
+          layer3Link='/products/courses'
           layer4='Contents'
-          layer3Link={'/products/courses'}
           enableBackButton={true}
           ctaButtons={
             <div className='flex gap-2 h-10'>

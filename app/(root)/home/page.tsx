@@ -9,17 +9,55 @@ import Icon from '@/components/ui/Icon';
 import { PurchaseItemType, SystemRole } from '@/lib/utils';
 import { RootState } from '@/redux/store';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import OnboardingModal from '@/components/dashboard/OnboardingModal';
 import { Modal } from '@/components/ui/Modal';
 import OnboardingAlert from '@/components/OnboardingAlert';
+import SelectOrgModal from '@/components/dashboard/SelectOrgModal';
+import { useRouter } from 'next/navigation';
 
 const Home = () => {
+  const router = useRouter();
   const { profile } = useSelector((state: RootState) => state.auth);
-  const { orgs } = useSelector((state: RootState) => state.org);
-  const { org } = useSelector((state: RootState) => state.org);
+  const { orgs, org } = useSelector((state: RootState) => state.org);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showOrgModal, setShowOrgModal] = useState(false);
+
+  const navigateToBusinessPage = () => {
+    router.push('/settings?tab=business-account');
+  };
+
+  useEffect(() => {
+    // Show org selection modal if no org is selected
+    if (!org && orgs.length > 0) {
+      setShowOrgModal(true);
+    }
+  }, [org, orgs]);
+
+  // If no org is selected and there are orgs available, show only the org selection modal
+  if (!org && orgs.length > 0) {
+    return <SelectOrgModal isOpen={true} organizations={orgs} />;
+  }
+
+  // If no orgs exist at all, show a message to create one
+  if (!org && orgs.length === 0) {
+    return (
+      <div className='section-container flex items-center justify-center min-h-screen'>
+        <div className='text-center'>
+          <h2 className='text-2xl font-semibold mb-4 dark:text-gray-400'>
+            No Business Account found
+          </h2>
+          <p className='text-gray-600 dark:text-gray-300 mb-6'>
+            You need to create a business account before proceeding.
+          </p>
+          <Button variant='primary' onClick={navigateToBusinessPage}>
+            Create a business account
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const performanceData = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr'],
@@ -88,7 +126,7 @@ const Home = () => {
         <div className='flex-1 text-black-1 dark:text-white'>
           {/* Profile Completion Banner */}
           {profile?.role.role_id === SystemRole.BUSINESS_SUPER_ADMIN &&
-            (!orgs.length || org?.onboarding_status?.current_step !== 3) && (
+            (!orgs.length || org?.onboarding_status?.current_step !== 4) && (
               <>
                 <div className='mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'>
                   <div className='flex flex-col md:flex-row gap-2 items-center justify-between'>

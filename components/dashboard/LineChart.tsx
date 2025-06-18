@@ -37,8 +37,6 @@ interface LineChartProps {
 export function LineChart({ data }: LineChartProps) {
   const { theme } = useTheme();
 
-  console.log(theme);
-
   // Base colors that work in both themes
   const baseOptions: ChartOptions<'line'> = {
     responsive: true,

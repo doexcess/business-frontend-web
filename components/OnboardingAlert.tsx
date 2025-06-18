@@ -4,11 +4,9 @@ import React from 'react';
 import { FiArrowRight, FiCreditCard, FiPackage, FiUsers } from 'react-icons/fi';
 
 const OnboardingAlert = ({ org }: { org: BusinessProfileFull }) => {
-  console.log(org);
-
   const getOnboardingStep = () => {
     switch (org?.onboarding_status?.current_step) {
-      case 0:
+      case 1:
         return {
           title: 'Add Withdrawal Account',
           description:
@@ -17,16 +15,16 @@ const OnboardingAlert = ({ org }: { org: BusinessProfileFull }) => {
           link: '/settings/payout',
           linkText: 'Add Withdrawal Account',
         };
-      case 1:
+      case 2:
         return {
           title: 'Invite Team Members',
           description:
             'Collaborate with your team by inviting them to manage your business.',
           icon: <FiUsers className='w-5 h-5' />,
-          link: '/settings/team',
+          link: '/team',
           linkText: 'Invite Team Members',
         };
-      case 2:
+      case 3:
         return {
           title: 'Create Your First Product',
           description: 'Start selling by creating your first product listing.',

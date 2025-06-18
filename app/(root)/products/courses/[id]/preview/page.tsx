@@ -147,9 +147,10 @@ const CoursePreview = () => {
           title='Preview your course'
           enableBreadCrumb={true}
           layer2='Products'
+          layer2Link='/products'
           layer3='Courses'
-          layer4='Preview'
           layer3Link='/products/courses'
+          layer4='Preview'
           enableBackButton={true}
           ctaButtons={
             <div

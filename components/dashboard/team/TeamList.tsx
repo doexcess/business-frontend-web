@@ -1,6 +1,5 @@
 'use client';
 
-import Pagination from '@/components/Pagination';
 import TableEndRecord from '@/components/ui/TableEndRecord';
 import { cn, ContactInviteStatus, getAvatar } from '@/lib/utils';
 import { RootState } from '@/redux/store';

@@ -116,9 +116,10 @@ const EditTicket = () => {
           title='Edit Ticket'
           enableBreadCrumb={true}
           layer2='Products'
+          layer2Link='/products'
           layer3='Tickets'
-          layer4='Edit Ticket'
           layer3Link='/products/tickets'
+          layer4='Edit Ticket'
           enableBackButton={true}
           ctaButtons={
             <div className='flex flex-shrink-0 self-start mb-2 gap-2'>

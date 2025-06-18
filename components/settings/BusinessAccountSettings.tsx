@@ -3,17 +3,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import { BusinessProfile, BusinessProfileFull } from '@/types/org';
-import {
-  FiPlus,
-  FiEdit2,
-  FiTrash2,
-  FiBriefcase,
-  FiArrowRight,
-  FiCreditCard,
-  FiUsers,
-  FiPackage,
-} from 'react-icons/fi';
+import { BusinessProfile } from '@/types/org';
+import { FiPlus, FiEdit2, FiTrash2, FiBriefcase } from 'react-icons/fi';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import Input from '../ui/Input';
 import Select from '../Select';
@@ -134,8 +125,6 @@ const BusinessAccountSettings = () => {
       // Fetch updated organizations
       const orgs = await dispatch(fetchOrgs({})).unwrap();
 
-      console.log(orgs.organizations);
-
       // Select org
       dispatch(switchToOrg(orgs.organizations[0].id));
 
@@ -199,9 +188,6 @@ const BusinessAccountSettings = () => {
           </div>
         ) : (
           <>
-            {/* Onboarding Alert */}
-            {org && <OnboardingAlert org={org} />}
-
             {/* Business Accounts List */}
             <div className='grid gap-4'>
               {orgs.map((org) => (
@@ -249,7 +235,7 @@ const BusinessAccountSettings = () => {
                         className='flex items-center gap-1'
                       >
                         <FiEdit2 className='w-4 h-4' />
-                        <span className='hidden sm:inline'>Edit</span>
+                        {/* <span className='hidden sm:inline'>Edit</span> */}
                       </Button>
                       <Button
                         variant='outline'
@@ -257,7 +243,7 @@ const BusinessAccountSettings = () => {
                         className='flex items-center gap-1 text-red-600 hover:text-red-700'
                       >
                         <FiTrash2 className='w-4 h-4' />
-                        <span className='hidden sm:inline'>Delete</span>
+                        {/* <span className='hidden sm:inline'>Delete</span> */}
                       </Button>
                     </div>
                   </div>

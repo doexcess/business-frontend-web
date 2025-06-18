@@ -27,6 +27,7 @@ const Tickets = () => {
           brief='Create and manage your event tickets with ease'
           enableBreadCrumb={true}
           layer2='Products'
+          layer2Link='/products'
           layer3='Event Tickets'
           ctaButtons={
             <div className='flex-shrink-0 self-start'>

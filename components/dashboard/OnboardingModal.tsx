@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React from 'react';
+import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-import { saveOrgInfo, saveWithdrawalAccount } from '@/redux/slices/orgSlice';
 import {
   FaBuilding,
   FaCreditCard,
@@ -12,7 +11,6 @@ import {
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/progress';
-import { Profile } from '@/types/account';
 import { Modal } from '@/components/ui/Modal';
 
 interface OnboardingStep {
@@ -30,11 +28,7 @@ interface OnboardingModalProps {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 const OnboardingModal = ({ isOpen, setIsOpen }: OnboardingModalProps) => {
-  // const [isOpen, setIsOpen] = useState(true);
-  const [currentStep, setCurrentStep] = useState(1);
-  const dispatch = useDispatch();
   const router = useRouter();
-  const { profile } = useSelector((state: RootState) => state.auth);
   const { orgs, org } = useSelector((state: RootState) => state.org);
 
   const steps: OnboardingStep[] = [
@@ -45,7 +39,7 @@ const OnboardingModal = ({ isOpen, setIsOpen }: OnboardingModalProps) => {
       icon: <FaBuilding className='w-6 h-6 text-blue-500' />,
       action: 'Complete Profile',
       path: '/settings?tab=business-account',
-      isCompleted: Boolean(orgs.length),
+      isCompleted: org?.onboarding_status?.current_step! >= 1,
     },
     {
       id: 2,
@@ -54,7 +48,7 @@ const OnboardingModal = ({ isOpen, setIsOpen }: OnboardingModalProps) => {
       icon: <FaCreditCard className='w-6 h-6 text-green-500' />,
       action: 'Add Account',
       path: '/settings?tab=bank-account',
-      isCompleted: Boolean(org?.withdrawal_account!),
+      isCompleted: org?.onboarding_status?.current_step! >= 2,
     },
     {
       id: 3,
@@ -63,7 +57,7 @@ const OnboardingModal = ({ isOpen, setIsOpen }: OnboardingModalProps) => {
       icon: <FaUsers className='w-6 h-6 text-purple-500' />,
       action: 'Invite Team',
       path: '/team',
-      isCompleted: Boolean(),
+      isCompleted: org?.onboarding_status?.current_step! >= 3,
     },
     {
       id: 4,
