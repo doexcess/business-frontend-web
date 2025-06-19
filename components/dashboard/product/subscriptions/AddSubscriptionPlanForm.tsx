@@ -26,6 +26,7 @@ import {
   fetchSubscriptionPlans,
 } from '@/redux/slices/subscriptionPlanSlice';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
+import { setOnboardingStep } from '@/redux/slices/orgSlice';
 
 const defaultValue: CreateSubscriptionPlanProps = {
   name: '',
@@ -204,6 +205,11 @@ const CreateSubscriptionPlanForm = ({
 
       if (response.type === 'subscription-plan/bulk-create/rejected') {
         throw new Error(response.payload.message);
+      }
+
+      if (org?.onboarding_status?.current_step! < 4) {
+        // Update the onboarding current step
+        dispatch(setOnboardingStep(4));
       }
 
       setBody(defaultValue);

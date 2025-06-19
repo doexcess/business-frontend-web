@@ -495,6 +495,11 @@ const orgSlice = createSlice({
         state.error = 'Invite not found in local state';
       }
     },
+    setOnboardingStep: (state, action: PayloadAction<number>) => {
+      if (state.org?.onboarding_status) {
+        state.org.onboarding_status.current_step = action.payload;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -699,7 +704,13 @@ const orgSlice = createSlice({
   },
 });
 
-export const { setPage, setPerPage, switchToOrg, clearOrg, viewInvite } =
-  orgSlice.actions;
+export const {
+  setPage,
+  setPerPage,
+  switchToOrg,
+  clearOrg,
+  viewInvite,
+  setOnboardingStep,
+} = orgSlice.actions;
 
 export default orgSlice.reducer;

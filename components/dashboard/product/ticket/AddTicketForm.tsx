@@ -28,6 +28,7 @@ import {
 import moment from 'moment-timezone';
 import { Textarea } from '@/components/ui/textarea';
 import dynamic from 'next/dynamic';
+import { setOnboardingStep } from '@/redux/slices/orgSlice';
 
 // Dynamically import ReactQuill to avoid SSR issues
 const ReactQuillEditor = dynamic(() => import('react-quill'), {
@@ -342,6 +343,11 @@ const AddTicketForm = () => {
 
       if (response.type === 'product-ticket-crud/rejected') {
         throw new Error(response.payload.message);
+      }
+
+      if (org?.onboarding_status?.current_step! < 4) {
+        // Update the onboarding current step
+        dispatch(setOnboardingStep(4));
       }
 
       toast.success('Ticket created successfully!');

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
 import { Button } from '@/components/ui/Button';
@@ -11,9 +11,13 @@ import Select from '../Select';
 import { BUSINESS_INDUSTRIES, cn, getAvatar } from '@/lib/utils';
 import Joi from 'joi';
 import { toast } from 'react-hot-toast';
-import { saveOrgInfo, switchToOrg } from '@/redux/slices/orgSlice';
+import {
+  saveOrgInfo,
+  setOnboardingStep,
+  switchToOrg,
+  fetchOrgs,
+} from '@/redux/slices/orgSlice';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
-import { fetchOrgs } from '@/redux/slices/orgSlice';
 import LoadingIcon from '../ui/icons/LoadingIcon';
 import Avatar from '../ui/Avatar';
 import Link from 'next/link';
@@ -55,11 +59,51 @@ const BusinessAccountSettings = () => {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
+  // Check if all required fields are filled
+  const isFormValid = () => {
+    return (
+      formData.business_name.trim() !== '' &&
+      formData.industry.trim() !== '' &&
+      formData.business_size.trim() !== '' &&
+      formData.location.trim() !== '' &&
+      formData.state.trim() !== '' &&
+      formData.country.trim() !== ''
+      // &&
+      // formData.logo_url !== ''
+    );
+  };
+
+  // Update form data when selectedOrg changes
+  useEffect(() => {
+    if (selectedOrg) {
+      setFormData({
+        business_name: selectedOrg.business_name || '',
+        industry: selectedOrg.industry || '',
+        business_size: selectedOrg.business_size || '',
+        location: selectedOrg.location || '',
+        state: selectedOrg.state || '',
+        country: selectedOrg.country || '',
+        logo_url: selectedOrg.logo_url || '',
+      });
+      setLogoPreview(selectedOrg.logo_url || null);
+    } else {
+      setFormData({
+        business_name: '',
+        industry: BUSINESS_INDUSTRIES[0],
+        business_size: BUSINESS_SIZES[0].toLowerCase(),
+        location: '',
+        state: '',
+        country: '',
+        logo_url: '',
+      });
+      setLogoPreview(null);
+    }
+  }, [selectedOrg]);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -89,6 +133,11 @@ const BusinessAccountSettings = () => {
     setLogoFile(null);
   };
 
+  const handleEditOrg = (org: BusinessProfile) => {
+    setSelectedOrg(org);
+    setShowAddModal(true);
+  };
+
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
@@ -110,7 +159,10 @@ const BusinessAccountSettings = () => {
         ...formData,
         logo_url: logoUrl,
         business_size: formData.business_size.toLowerCase(),
+        industry: formData.industry,
       };
+
+      console.log(businessData);
 
       // Validate form data
       const { error } = businessSchema.validate(businessData);
@@ -122,13 +174,32 @@ const BusinessAccountSettings = () => {
       // Save business info
       await dispatch(saveOrgInfo(businessData)).unwrap();
 
+      if (!selectedOrg && org?.onboarding_status?.current_step! < 1) {
+        // Update the onboarding current step only for new businesses
+        dispatch(setOnboardingStep(1));
+      }
+
       // Fetch updated organizations
-      const orgs = await dispatch(fetchOrgs({})).unwrap();
+      await dispatch(fetchOrgs({}));
 
-      // Select org
-      dispatch(switchToOrg(orgs.organizations[0].id));
+      // If editing, switch to the edited org, otherwise select the first org
+      if (selectedOrg) {
+        // For editing, we need to find the updated org in the list
+        const updatedOrgs = await dispatch(fetchOrgs({})).unwrap();
+        const updatedOrg = updatedOrgs.organizations.find(
+          (o) => o.business_name === businessData.business_name
+        );
+        if (updatedOrg) {
+          dispatch(switchToOrg(updatedOrg.id));
+        }
+        toast.success('Business account updated successfully');
+      } else {
+        // For new business, select the first org
+        const orgs = await dispatch(fetchOrgs({})).unwrap();
+        dispatch(switchToOrg(orgs.organizations[0].id));
+        toast.success('Business account created successfully');
+      }
 
-      toast.success('Business account created successfully');
       setShowAddModal(false);
       setSelectedOrg(null);
       setFormData({
@@ -142,8 +213,12 @@ const BusinessAccountSettings = () => {
       });
       setLogoFile(null);
     } catch (error) {
-      toast.error('Failed to create business account');
-      console.error('Error creating business account:', error);
+      toast.error(
+        selectedOrg
+          ? 'Failed to update business account'
+          : 'Failed to create business account'
+      );
+      console.error('Error saving business account:', error);
     } finally {
       setIsLoading(false);
     }
@@ -190,39 +265,53 @@ const BusinessAccountSettings = () => {
           <>
             {/* Business Accounts List */}
             <div className='grid gap-4'>
-              {orgs.map((org) => (
+              {orgs.map((orgItem) => (
                 <div
-                  key={org.id}
-                  className='p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+                  key={orgItem.id}
+                  className={`p-4 rounded-lg border ${
+                    orgItem.id === org?.id
+                      ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+                  }`}
                 >
                   <div className='flex flex-col sm:flex-row sm:items-start justify-between gap-4'>
                     <div className='flex items-start gap-4'>
-                      {org.logo_url ? (
+                      {orgItem.logo_url ? (
                         <Avatar
-                          src={org.logo_url}
-                          alt={org.business_name}
+                          src={orgItem.logo_url}
+                          alt={orgItem.business_name}
                           size='xl'
                         />
                       ) : (
                         <Avatar
-                          src={getAvatar(org.logo_url, org.business_name)}
-                          alt={org?.business_name}
+                          src={getAvatar(
+                            orgItem.logo_url,
+                            orgItem.business_name
+                          )}
+                          alt={orgItem?.business_name}
                           size='xl'
                         />
                       )}
                       <div>
-                        <h3 className='font-medium text-lg'>
-                          {org.business_name}
-                        </h3>
+                        <div className='flex items-center gap-2'>
+                          <h3 className='font-medium text-lg'>
+                            {orgItem.business_name}
+                          </h3>
+                          {orgItem.id === org?.id && (
+                            <span className='px-2 py-1 text-xs rounded-full bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 font-medium'>
+                              Current
+                            </span>
+                          )}
+                        </div>
                         <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
-                          {org.industry}
+                          {orgItem.industry}
                         </p>
                         <div className='mt-2 flex flex-wrap gap-2'>
                           <span className='px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'>
-                            {org.business_size}
+                            {orgItem.business_size}
                           </span>
                           <span className='px-2 py-1 text-xs rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'>
-                            {org.location}
+                            {orgItem.location}
                           </span>
                         </div>
                       </div>
@@ -231,11 +320,11 @@ const BusinessAccountSettings = () => {
                       <Button
                         variant='outline'
                         size='sm'
-                        onClick={() => setSelectedOrg(org)}
+                        onClick={() => handleEditOrg(orgItem)}
                         className='flex items-center gap-1'
                       >
                         <FiEdit2 className='w-4 h-4' />
-                        {/* <span className='hidden sm:inline'>Edit</span> */}
+                        <span className='hidden sm:inline'>Edit</span>
                       </Button>
                       <Button
                         variant='outline'
@@ -243,7 +332,7 @@ const BusinessAccountSettings = () => {
                         className='flex items-center gap-1 text-red-600 hover:text-red-700'
                       >
                         <FiTrash2 className='w-4 h-4' />
-                        {/* <span className='hidden sm:inline'>Delete</span> */}
+                        <span className='hidden sm:inline'>Delete</span>
                       </Button>
                     </div>
                   </div>
@@ -254,7 +343,6 @@ const BusinessAccountSettings = () => {
         )}
 
         {/* Add/Edit Modal */}
-
         <Modal
           isOpen={showAddModal || !!selectedOrg}
           onClose={handleCloseModal}
@@ -281,7 +369,7 @@ const BusinessAccountSettings = () => {
                 name='industry'
                 className='w-full'
                 data={BUSINESS_INDUSTRIES}
-                value={formData.industry}
+                value={formData.industry || BUSINESS_INDUSTRIES[0]}
                 onChange={(e: any) =>
                   setFormData({
                     ...formData,
@@ -299,7 +387,7 @@ const BusinessAccountSettings = () => {
                 name='business_size'
                 className='w-full'
                 data={BUSINESS_SIZES}
-                value={formData.business_size}
+                value={formData.business_size || BUSINESS_SIZES[0]}
                 onChange={(e: any) =>
                   setFormData({
                     ...formData,
@@ -358,6 +446,7 @@ const BusinessAccountSettings = () => {
                     file:bg-primary-main file:text-white
                     hover:file:bg-primary-main/90
                     dark:file:bg-primary-main dark:file:text-white'
+                  required
                 />
                 {(logoPreview || selectedOrg?.logo_url) && (
                   <div className='mt-2'>
@@ -376,12 +465,7 @@ const BusinessAccountSettings = () => {
               </div>
             </div>
           </div>
-          <div
-            className={cn(
-              'flex justify-between mt-6 gap-3',
-              !selectedOrg && 'justify-end'
-            )}
-          >
+          <div className='flex justify-end mt-6 gap-3'>
             <Button
               variant='outline'
               onClick={handleCloseModal}
@@ -390,7 +474,7 @@ const BusinessAccountSettings = () => {
               Cancel
             </Button>
             <div className='flex gap-3'>
-              {selectedOrg && (
+              {selectedOrg && org?.id !== selectedOrg?.id && (
                 <Button
                   variant='primary'
                   onClick={handleSubmit}
@@ -409,7 +493,7 @@ const BusinessAccountSettings = () => {
               <Button
                 variant={selectedOrg ? 'green' : 'primary'}
                 onClick={handleSubmit}
-                disabled={isLoading}
+                disabled={isLoading || !isFormValid()}
               >
                 {isLoading ? (
                   <div className='flex items-center gap-2'>

@@ -20,6 +20,7 @@ import {
   fetchOrg,
   resolveAccount,
   saveWithdrawalAccount,
+  setOnboardingStep,
 } from '@/redux/slices/orgSlice';
 import toast from 'react-hot-toast';
 import LoadingIcon from '../ui/icons/LoadingIcon';
@@ -97,6 +98,11 @@ const BankAccountSettings = () => {
 
       if (response.type === 'onboard/save-withdrawal-account/rejected')
         throw new Error(response.payload);
+
+      if (org?.onboarding_status?.current_step! < 2) {
+        // Update the onboarding current step
+        dispatch(setOnboardingStep(2));
+      }
 
       // Refetch org details
       dispatch(fetchOrg(org?.id!));
