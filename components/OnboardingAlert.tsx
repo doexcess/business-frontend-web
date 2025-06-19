@@ -12,7 +12,7 @@ const OnboardingAlert = ({ org }: { org: BusinessProfileFull }) => {
           description:
             'Set up your withdrawal account to start receiving payments from your customers.',
           icon: <FiCreditCard className='w-5 h-5' />,
-          link: '/settings/payout',
+          link: '/settings?tab=bank-account',
           linkText: 'Add Withdrawal Account',
         };
       case 2:

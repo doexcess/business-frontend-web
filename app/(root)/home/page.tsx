@@ -130,12 +130,14 @@ const Home = () => {
               <>
                 <div className='mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'>
                   <div className='flex flex-col md:flex-row gap-2 items-center justify-between'>
-                    <div className='flex items-center gap-3'>
+                    <div className='flex items-center w-full gap-3'>
                       <div className='flex-shrink-0'>
+                        {/* Alert Icon */}
                         <svg
                           className='h-5 w-5 text-red-400'
                           viewBox='0 0 20 20'
                           fill='currentColor'
+                          aria-hidden='true'
                         >
                           <path
                             fillRule='evenodd'

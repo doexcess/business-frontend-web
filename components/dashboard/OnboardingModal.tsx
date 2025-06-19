@@ -31,6 +31,9 @@ const OnboardingModal = ({ isOpen, setIsOpen }: OnboardingModalProps) => {
   const router = useRouter();
   const { orgs, org } = useSelector((state: RootState) => state.org);
 
+  console.log(orgs);
+  console.log(org);
+
   const steps: OnboardingStep[] = [
     {
       id: 1,

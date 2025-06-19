@@ -29,6 +29,7 @@ import moment from 'moment-timezone';
 import { Textarea } from '@/components/ui/textarea';
 import dynamic from 'next/dynamic';
 import { setOnboardingStep } from '@/redux/slices/orgSlice';
+import { capitalize } from 'lodash';
 
 // Dynamically import ReactQuill to avoid SSR issues
 const ReactQuillEditor = dynamic(() => import('react-quill'), {
@@ -324,13 +325,18 @@ const AddTicketForm = () => {
         return tier;
       });
 
-      const { error, value } = createTicketSchema.validate(formData);
+      const input = {
+        ...formData,
+        keywords: formData.keywords ? formData.keywords : undefined,
+      };
+
+      const { error, value } = createTicketSchema.validate(input);
       if (error) throw new Error(error.details[0].message);
 
       const response: any = await dispatch(
         createTicket({
           credentials: {
-            ...formData,
+            ...input,
             ticket_tiers: filtered_ticket_tiers.map((tier) => ({
               ...tier,
               amount: +tier.amount!,
@@ -375,7 +381,7 @@ const AddTicketForm = () => {
   const renderDateField = (label: string, name: string, value: string) => (
     <div>
       <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
-        {label}
+        {label} <span className='text-red-500'>*</span>
       </label>
       <Input
         type='date'
@@ -394,7 +400,7 @@ const AddTicketForm = () => {
     >
       <div>
         <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
-          Event Title
+          Event Title <span className='text-red-500'>*</span>
         </label>
         <Input
           type='text'
@@ -407,7 +413,7 @@ const AddTicketForm = () => {
 
       <div>
         <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
-          Event Location
+          Event Location <span className='text-red-500'>*</span>
         </label>
         <Input
           type='text'
@@ -446,7 +452,7 @@ const AddTicketForm = () => {
 
       <div>
         <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
-          Event Description
+          Event Description <span className='text-red-500'>*</span>
         </label>
         <div className='quill-container'>
           <ReactQuillEditor
@@ -462,7 +468,7 @@ const AddTicketForm = () => {
 
       <div>
         <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
-          Event Type
+          Event Type <span className='text-red-500'>*</span>
         </label>
         <div className='flex gap-4'>
           {Object.values(EventType).map((type) => (
@@ -477,7 +483,7 @@ const AddTicketForm = () => {
                   setFormData((prev) => ({ ...prev, event_type: type }))
                 }
               />
-              {type}
+              {capitalize(type)}
             </label>
           ))}
         </div>
@@ -492,7 +498,7 @@ const AddTicketForm = () => {
 
       <div>
         <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
-          Is it a one-day event?
+          Is it a one-day event? <span className='text-red-500'>*</span>
         </label>
         <div className='flex gap-4'>
           <label className='flex items-center gap-2 text-gray-700 dark:text-white'>
@@ -539,7 +545,7 @@ const AddTicketForm = () => {
 
       <div>
         <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
-          Event Time
+          Event Time <span className='text-red-500'>*</span>
         </label>
         <Input
           type='time'
@@ -560,7 +566,6 @@ const AddTicketForm = () => {
             name='keywords'
             value={formData.keywords}
             onChange={handleInputChange}
-            required
           />
         </div>
 
@@ -605,7 +610,7 @@ const AddTicketForm = () => {
 
       <div className='space-y-4'>
         <h3 className='text-lg font-semibold text-primary-main dark:text-primary-faded'>
-          Ticket Tiers
+          Ticket Tiers <span className='text-red-500'>*</span>
         </h3>
 
         {formData.ticket_tiers.map((tier, index) => (
