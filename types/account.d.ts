@@ -111,3 +111,22 @@ export interface ResolveAccountResponse {
   statusCode: number;
   data: CreateTransferRecipientResponse;
 }
+
+export interface RegisterDetails {
+  is_first_signup: boolean;
+  user_id: string;
+  email: string;
+}
+export interface RegisterResponse {
+  statusCode: number;
+  message: string;
+  data: RegisterDetails;
+}
+export interface VerifyEmailResponse {
+  statusCode: number;
+  message: string;
+  accessToken?: string;
+  data: {
+    role: string;
+  };
+}

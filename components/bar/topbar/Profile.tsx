@@ -55,13 +55,11 @@ const Profile = ({
   };
 
   useEffect(() => {
-    if (!isConnected) return;
-
     if (allowAction) {
       handleLogoutNavigation();
       setAllowAction(false);
     }
-  }, [allowAction, isConnected]);
+  }, [allowAction]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

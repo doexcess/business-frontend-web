@@ -39,7 +39,7 @@ const ForgotPassword = () => {
 
           <ForgotPasswordForm />
 
-          <div className='flex flex-wrap justify-center gap-1 sm:gap-2 sm:mt-8 mb-4 text-sm sm:text-base'>
+          <div className='flex flex-wrap justify-center gap-1 sm:gap-2 mt-4 sm:mt-8 mb-4 text-sm sm:text-base'>
             <Link
               href='/auth/signin'
               className='text-primary-main font-bold flex gap-2'

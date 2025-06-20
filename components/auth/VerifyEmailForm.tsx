@@ -53,7 +53,11 @@ const VerifyEmailForm = ({ email }: VerifyEmailFormProps) => {
         throw new Error(response.payload.message);
       }
 
-      router.push(`/onboard/email-verified`);
+      if (response?.payload?.token) {
+        router.push('/home');
+      } else {
+        router.push(`/onboard/email-verified`);
+      }
     } catch (error: any) {
       console.error('Email verified failed:', error);
       toast.error(error.message);

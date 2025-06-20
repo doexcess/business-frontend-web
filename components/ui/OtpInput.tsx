@@ -106,7 +106,7 @@ const OTPInput = ({
           onPaste={handlePaste}
           onFocus={() => inputRefs.current[index]?.select()}
           className={cn(
-            'w-12 h-12 text-center text-xl font-medium bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500',
+            'w-12 h-12 text-center text-lg md:text-xl font-medium bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500',
             allowDarkMode &&
               'dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500',
             className
