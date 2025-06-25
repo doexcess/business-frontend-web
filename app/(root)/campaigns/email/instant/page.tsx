@@ -3,28 +3,28 @@
 import React, { useState } from 'react';
 import PageHeading from '@/components/PageHeading';
 import { NotificationKind } from '@/lib/utils';
-import InstantNotificationsList from '@/components/dashboard/notifications/email/instant/InstantNotificationsList';
+import InstantCampaignsList from '@/components/dashboard/campaigns/email/instant/InstantCampaignsList';
 
-const InstantEmailNotification = () => {
+const InstantEmailCampaign = () => {
   return (
     <main className='min-h-screen bg-gray-50 dark:bg-gray-900'>
       <div className='section-container'>
         {/* Page Heading */}
         <PageHeading
-          title='Instant Notifications'
-          brief='Track your email notifications'
+          title='Instant Campaigns'
+          brief='Track your email campaigns'
           enableBreadCrumb={true}
-          layer2='Notifications'
+          layer2='Campaigns'
           layer3='Email'
           layer4='Instant'
-          layer3Link='/notifications/email'
+          layer3Link='/Campaigns/email'
           enableBackButton={true}
         />
 
-        <InstantNotificationsList />
+        <InstantCampaignsList />
       </div>
     </main>
   );
 };
 
-export default InstantEmailNotification;
+export default InstantEmailCampaign;

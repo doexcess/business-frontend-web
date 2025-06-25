@@ -16,7 +16,7 @@ import { Modal } from '@/components/ui/Modal';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
 import { viewInstantNotification } from '@/redux/slices/notificationSlice';
-import ViewNotification from './ViewNotification';
+import ViewNotification from './ViewCampaign';
 
 interface InstantNotificationItemProps {
   notification: InstantNotification;

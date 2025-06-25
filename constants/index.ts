@@ -82,17 +82,17 @@ export const sidebarLinks = [
   },
   {
     icon: HiBell,
-    route: '/notifications/email',
-    label: 'Notifications',
+    route: '/campaigns/email',
+    label: 'Campaigns',
     group: groups.TWO,
     roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN],
     items: [
       {
-        route: '/notifications/email',
+        route: '/campaigns/email',
         label: 'Email',
       },
       {
-        route: '/notifications/whatsapp',
+        route: '/campaigns/whatsapp',
         label: 'Whatsapp',
       },
     ],

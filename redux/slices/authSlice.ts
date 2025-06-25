@@ -118,9 +118,9 @@ export const verifyLogin = createAsyncThunk(
   async (credentials: { email: string; otp: string }, { rejectWithValue }) => {
     try {
       const response = await api.post('/auth/verify-account-otp', credentials);
-      const { accessToken: token, message } = response.data;
+      const { accessToken: token, message, data } = response.data;
       Cookies.set('token', token, { expires: 3 });
-      return { token, message };
+      return { token, message, data };
     } catch (error: any) {
       // console.log(error);
       return rejectWithValue(error.response?.data || 'OTP verification failed');

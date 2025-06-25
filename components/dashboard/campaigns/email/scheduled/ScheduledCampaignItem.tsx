@@ -12,7 +12,7 @@ import {
   viewScheduledNotification,
 } from '@/redux/slices/notificationSlice';
 import { Modal } from '@/components/ui/Modal';
-import ViewNotification from '../instant/ViewNotification';
+import ViewNotification from '../instant/ViewCampaign';
 
 interface ScheduledNotificationItemProps {
   notification: ScheduledNotification;

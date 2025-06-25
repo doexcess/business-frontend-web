@@ -10,6 +10,7 @@ import { verifyLogin } from '@/redux/slices/authSlice';
 import toast from 'react-hot-toast';
 import ResendEmailOtp from './ResendEmailOtp';
 import LoadingIcon from '../ui/icons/LoadingIcon';
+import { SystemRole } from '@/lib/utils';
 
 const defaultValue = {
   email: '',
@@ -23,18 +24,11 @@ interface VerifySigninFormProps {
 const VerifySigninForm = ({ email }: VerifySigninFormProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const params = useSearchParams();
 
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [body, setBody] = useState({ ...defaultValue, email });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleContinue = () => {
-    if (selectedRole) {
-      console.log(`Selected role: ${selectedRole}`);
-    }
-  };
 
   const handleOTPComplete = (otp: string) => {
     setBody({ ...body, otp });
@@ -63,6 +57,14 @@ const VerifySigninForm = ({ email }: VerifySigninFormProps) => {
       }
 
       toast.success(response.payload.message);
+
+      if (
+        ![SystemRole.BUSINESS_SUPER_ADMIN, SystemRole.BUSINESS_ADMIN].includes(
+          response.payload.data.role
+        )
+      ) {
+        throw new Error('You are not allowed to access this resource.');
+      }
 
       router.push(`/home`);
     } catch (error: any) {

@@ -10,6 +10,7 @@ export interface RetrieveChatsProps {
 export interface RetrieveMessagesProps {
   token: string;
   chatBuddy: string;
+  page?: number;
 }
 
 export interface SendMessageProps {
@@ -30,6 +31,7 @@ export const retrieveChatsSchema = Joi.object<RetrieveChatsProps>({
 export const retrieveMessagesSchema = Joi.object<RetrieveMessagesProps>({
   token: Joi.string().required(),
   chatBuddy: Joi.string().required(),
+  page: Joi.number().optional(),
 });
 
 export const sendMessageSchema = Joi.object<SendMessageProps>({

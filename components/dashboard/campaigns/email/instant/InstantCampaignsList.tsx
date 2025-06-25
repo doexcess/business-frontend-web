@@ -4,7 +4,7 @@ import TableEndRecord from '@/components/ui/TableEndRecord';
 import { useSearchParams } from 'next/navigation';
 import React from 'react';
 import { InstantNotification } from '@/types/notification';
-import InstantNotificationItem from './InstantNotificationItem';
+import InstantNotificationItem from './InstantCampaignItem';
 import Filter from '@/components/Filter';
 import useInstantNotification from '@/hooks/page/useInstantNotification';
 import Link from 'next/link';

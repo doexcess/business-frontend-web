@@ -3,7 +3,7 @@ import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
 import TableEndRecord from '@/components/ui/TableEndRecord';
 import { useSearchParams } from 'next/navigation';
 import React from 'react';
-import ScheduledNotificationItem from './ScheduledNotificationItem';
+import ScheduledNotificationItem from './ScheduledCampaignItem';
 import useScheduledNotification from '@/hooks/page/useScheduledNotification';
 import Filter from '@/components/Filter';
 import Link from 'next/link';

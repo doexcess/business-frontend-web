@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import Bar from '@/components/bar/Index';
 import { useRouter } from 'next/navigation';
@@ -13,15 +13,29 @@ const RootLayout = ({
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
+  
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { user, loading, error, token } = useSelector(
     (state: RootState) => state.auth
   );
 
+  // Log auth state for debugging
+  useEffect(() => {
+    console.log('RootLayout: Auth state changed', {
+      hasToken: !!token,
+      tokenLength: token?.length,
+      hasUser: !!user,
+      loading,
+    });
+  }, [token, user, loading]);
+
   if (!token) {
+    console.log('RootLayout: No token, redirecting to signin');
     return router.push('/auth/signin');
   }
+
+  console.log('RootLayout: Rendering with token, setting up SocketProvider');
 
   return (
     <SocketProvider>

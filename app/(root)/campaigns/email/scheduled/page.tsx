@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { HiPlus } from 'react-icons/hi';
 import { NotificationKind } from '@/lib/utils';
 import useScheduledNotification from '@/hooks/page/useScheduledNotification';
-import ScheduledNotificationsList from '@/components/dashboard/notifications/email/scheduled/ScheduledNotificationsList';
+import ScheduledNotificationsList from '@/components/dashboard/campaigns/email/scheduled/ScheduledCampaignsList';
 
 const ScheduledEmailNotification = () => {
   const [notificationType, setNotificationType] = useState(
@@ -31,13 +31,13 @@ const ScheduledEmailNotification = () => {
       <div className='section-container'>
         {/* Page Heading */}
         <PageHeading
-          title='Scheduled Notifications'
+          title='Scheduled Campaigns'
           brief='Track your scheduled emails'
           enableBreadCrumb={true}
-          layer2='Notifications'
+          layer2='Campaigns'
           layer3='Email'
           layer4='Scheduled'
-          layer3Link='/notifications/email'
+          layer3Link='/campaigns/email'
           enableBackButton={true}
         />
 
