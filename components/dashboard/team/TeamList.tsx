@@ -4,6 +4,7 @@ import TableEndRecord from '@/components/ui/TableEndRecord';
 import { cn, ContactInviteStatus, getAvatar } from '@/lib/utils';
 import { RootState } from '@/redux/store';
 import { capitalize } from 'lodash';
+import { PencilIcon } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 import { MdOutlineAdminPanelSettings } from 'react-icons/md';
@@ -66,9 +67,12 @@ const TeamList = () => {
                       className='w-8 h-8 rounded-full object-cover'
                     />
                   )}
-                  <span className='font-medium text-gray-800 dark:text-gray-100 truncate'>
-                    {member.name || '-'}
-                  </span>
+                  <div className='flex items-center gap-1 underline underline-offset-4 dark:text-gray-200'>
+                    <span className='font-medium text-gray-800 dark:text-gray-100 truncate'>
+                      {member.name || '-'}
+                    </span>
+                    <PencilIcon size='13' />
+                  </div>
                 </Link>
               </td>
               <td className='px-4 py-2 text-gray-600 dark:text-gray-300 truncate max-w-[200px]'>

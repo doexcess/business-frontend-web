@@ -55,8 +55,7 @@ const VerifySigninForm = ({ email }: VerifySigninFormProps) => {
       if (response.type === 'auth/verify-account-otp/rejected') {
         throw new Error(response.payload.message);
       }
-
-      toast.success(response.payload.message);
+      console.log(response.payload.data);
 
       if (
         ![SystemRole.BUSINESS_SUPER_ADMIN, SystemRole.BUSINESS_ADMIN].includes(
@@ -65,6 +64,8 @@ const VerifySigninForm = ({ email }: VerifySigninFormProps) => {
       ) {
         throw new Error('You are not allowed to access this resource.');
       }
+
+      toast.success(response.payload.message);
 
       router.push(`/home`);
     } catch (error: any) {

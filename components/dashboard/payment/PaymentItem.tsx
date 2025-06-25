@@ -7,6 +7,7 @@ import {
   shortenId,
 } from '@/lib/utils';
 import { Payment } from '@/types/payment';
+import { PencilIcon } from 'lucide-react';
 import moment from 'moment-timezone';
 import Link from 'next/link';
 import React from 'react';
@@ -38,9 +39,10 @@ const PaymentItem = ({ txn, idx }: PaymentItemProps) => {
         <td className='px-6 py-2'>
           <Link
             href={`/payments/${txn.id}/details`}
-            className='hover:underline font-medium'
+            className='hover:underline font-medium flex items-center gap-1 underline underline-offset-4'
           >
             {shortenId(txn.id)}
+            <PencilIcon size='13' />
           </Link>
         </td>
 
