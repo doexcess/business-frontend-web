@@ -1,4 +1,5 @@
-import { ContactInviteStatus, Gender } from '@/lib/utils';
+import { DocFormat } from '@/lib/schema/org.schema';
+import { BusinessOwnerOrgRole, ContactInviteStatus, Gender } from '@/lib/utils';
 
 export interface BusinessProfile {
   id: string;
@@ -118,4 +119,18 @@ export interface ContactInviteResponse {
 export interface ContactInviteDetailsResponse {
   statusCode: number;
   data: ContactInvite;
+}
+
+export interface ExportUserDetails {
+  download_url: string;
+  total: number;
+  format: DocFormat;
+  role_filter: BusinessOwnerOrgRole;
+  file_name: string;
+}
+
+export interface ExportUserResponse {
+  statusCode: number;
+  message: string;
+  data: ExportUserDetails;
 }

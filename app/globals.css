@@ -327,4 +327,8 @@ body {
       transform: translateX(100%);
     }
   }
+
+  .underline-offset {
+    @apply underline underline-offset-4;
+  }
 }

@@ -20,11 +20,13 @@ import {
   FaCheckCircle,
   FaTimesCircle,
   FaRegCreditCard,
+  FaSignInAlt,
 } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { formatCurrency } from '@/lib/utils';
 import { Payment } from '@/types/payment';
 import ThemeDivBorder from '@/components/ui/ThemeDivBorder';
+import { Fa42Group } from 'react-icons/fa6';
 
 const getPurchaseTypeIcon = (type: string) => {
   switch (type) {
@@ -332,6 +334,15 @@ const ViewCustomer = () => {
               Joined on {new Date(customer?.created_at!).toLocaleDateString()}
             </span>
           </div>
+          {customer?.business_contacts[0]?.joined_via && (
+            <div className='flex items-center gap-2'>
+              <FaSignInAlt className='text-gray-400 dark:text-gray-500' />
+              <span>
+                Joined via
+                {customer?.business_contacts[0].joined_via}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

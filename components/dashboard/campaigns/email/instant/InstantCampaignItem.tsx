@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
 import { viewInstantNotification } from '@/redux/slices/notificationSlice';
 import ViewNotification from './ViewCampaign';
+import { EyeIcon } from 'lucide-react';
 
 interface InstantNotificationItemProps {
   notification: InstantNotification;
@@ -54,11 +55,12 @@ const InstantNotificationItem = ({
       >
         <td className='px-6 py-4 max-w-sm whitespace-nowrap overflow-hidden text-ellipsis text-gray-900 dark:text-white font-bold'>
           <button
-            className='hover:text-primary-400'
+            className='hover:text-primary-400 flex items-center gap-1 underline-offset'
             onClick={handleOpenNotification}
             title={notification.id}
           >
             {notification.title}
+            <EyeIcon size='13' />
           </button>
         </td>
         <td className='px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white font-bold'>

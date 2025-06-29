@@ -18,6 +18,8 @@ import { MultimediaType } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import { HiDocumentText, HiPaperAirplane } from 'react-icons/hi';
+import PDFViewer from '@/components/PDFViewer';
+import { IoIosDocument, IoIosDownload } from 'react-icons/io';
 
 type Lesson = {
   id?: string;
@@ -227,12 +229,31 @@ const CoursePreview = () => {
                   <p className='text-sm mb-4'>{selectedLesson.content}</p>
 
                   <div className='rounded-lg overflow-hidden'>
-                    {mediaType === 'pdf' && (
-                      <iframe
-                        src={selectedLesson.mediaPreview}
-                        title='PDF Preview'
-                        className='w-full h-[300px] md:h-[500px]'
-                      />
+                    {mediaType === 'pdf' && selectedLesson?.mediaPreview && (
+                      <div className='w-full flex flex-col items-center justify-center py-12'>
+                        <div className='flex flex-col items-center justify-center bg-white/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl p-8 backdrop-blur-md max-w-xs mx-auto relative'>
+                          <span className='absolute top-4 left-1/2 -translate-x-1/2 text-xs font-semibold text-primary-main bg-primary-main/10 px-3 py-1 rounded-full mb-2 tracking-wide'>
+                            PDF Document
+                          </span>
+                          <IoIosDocument className='text-7xl text-red-500 drop-shadow-lg animate-bounce-slow mb-4 mt-8' />
+                          <span className='text-base font-bold text-gray-800 dark:text-gray-100 mb-4 text-center break-all'>
+                            {decodeURIComponent(
+                              selectedLesson.mediaPreview.split('/').pop() ||
+                                'Document.pdf'
+                            )}
+                          </span>
+                          <a
+                            href={selectedLesson.mediaPreview}
+                            download
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary mt-2 mb-4'
+                          >
+                            <IoIosDownload className='text-xl' />
+                            <span>Download PDF</span>
+                          </a>
+                        </div>
+                      </div>
                     )}
                     {mediaType === 'image' && (
                       <img

@@ -13,6 +13,7 @@ import {
 } from '@/redux/slices/notificationSlice';
 import { Modal } from '@/components/ui/Modal';
 import ViewNotification from '../instant/ViewCampaign';
+import { EyeIcon } from 'lucide-react';
 
 interface ScheduledNotificationItemProps {
   notification: ScheduledNotification;
@@ -48,11 +49,12 @@ const ScheduledNotificationItem = ({
       >
         <td className='px-6 py-4 max-w-sm whitespace-nowrap overflow-hidden text-ellipsis text-gray-900 dark:text-white font-bold'>
           <button
-            className='hover:text-primary-400'
+            className='hover:text-primary-400 flex items-center gap-1 underline-offset'
             onClick={handleOpenNotification}
             title={notification.id}
           >
             {notification.title}
+            <EyeIcon size='13' />
           </button>
         </td>
         <td className='px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white font-bold'>

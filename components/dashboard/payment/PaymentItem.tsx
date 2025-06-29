@@ -7,7 +7,7 @@ import {
   shortenId,
 } from '@/lib/utils';
 import { Payment } from '@/types/payment';
-import { PencilIcon } from 'lucide-react';
+import { EyeIcon, PencilIcon } from 'lucide-react';
 import moment from 'moment-timezone';
 import Link from 'next/link';
 import React from 'react';
@@ -39,7 +39,7 @@ const PaymentItem = ({ txn, idx }: PaymentItemProps) => {
         <td className='px-6 py-2'>
           <Link
             href={`/payments/${txn.id}/details`}
-            className='hover:underline font-medium flex items-center gap-1 underline underline-offset-4'
+            className='hover:underline font-medium flex items-center gap-1 underline-offset'
           >
             {shortenId(txn.id)}
             <PencilIcon size='13' />
@@ -51,7 +51,10 @@ const PaymentItem = ({ txn, idx }: PaymentItemProps) => {
 
         {/* User */}
         <td className='px-6 py-2 min-w-[200px]'>
-          <div className='flex items-center gap-3'>
+          <Link
+            href={`/customers/${user.id}`}
+            className='flex items-center gap-3 underline-offset'
+          >
             {displayAvatar && (
               <img
                 src={getAvatar(profilePic!, user?.name)}
@@ -59,10 +62,12 @@ const PaymentItem = ({ txn, idx }: PaymentItemProps) => {
                 className='w-10 h-10 rounded-full object-cover'
               />
             )}
-            <span className='font-semibold truncate text-gray-800 dark:text-gray-100'>
+
+            <span className='font-semibold truncate text-gray-800 dark:text-gray-100 gap-1 flex items-center'>
               {user?.name || '-'}
+              <EyeIcon size='13' />
             </span>
-          </div>
+          </Link>
         </td>
 
         {/* Amount */}

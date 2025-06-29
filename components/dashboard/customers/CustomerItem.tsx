@@ -53,12 +53,7 @@ const CustomerItem = ({ customer }: CustomerItemProps) => {
           </Link>
         </td>
         <td className='px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white font-bold'>
-          <Link
-            href={`customers/${customer.id}`}
-            className={cn(
-              'flex items-center gap-1 hover:text-primary-400 underline underline-offset-4'
-            )}
-          >
+          <p className={cn('flex items-center gap-1 hover:text-primary-400')}>
             {(customer?.profile?.profile_picture! || customer.name) && (
               <img
                 src={getAvatar(
@@ -69,8 +64,8 @@ const CustomerItem = ({ customer }: CustomerItemProps) => {
                 className='w-8 h-8 rounded-full object-cover'
               />
             )}
-            {customer.name} <EyeIcon size='13' />
-          </Link>
+            {customer.name}
+          </p>
         </td>
         <td className='px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white font-bold'>
           {customer.email}

@@ -116,6 +116,11 @@ export enum SystemRole {
   BUSINESS_ADMIN = 'business-administrator',
 }
 
+export enum BusinessOwnerOrgRole {
+  USER = 'user',
+  BUSINESS_ADMIN = 'business-administrator',
+}
+
 export enum SignupRole {
   CUSTOMER = 'customer',
   BUSINESS_OWNER = 'business-owner',
