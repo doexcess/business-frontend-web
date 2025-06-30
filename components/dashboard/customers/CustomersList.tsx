@@ -113,8 +113,7 @@ const CustomersList = () => {
       return '';
     }
 
-    const baseUrl = window.location.origin;
-    return `${baseUrl}/onboard/signup?business_id=${org.id}`;
+    return `${process.env.WEBSITE_URL}/onboard/signup?business_id=${org.id}`;
   };
 
   // Copy onboarding link to clipboard
