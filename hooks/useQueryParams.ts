@@ -1,7 +1,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
-const useQueryParams = <T>(items: T[], limit: number) => {
+const useQueryParams = <T>(items: T[], limit?: number) => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryParams = new URLSearchParams(searchParams.toString());

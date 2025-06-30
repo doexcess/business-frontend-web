@@ -12,7 +12,7 @@ interface UseCustomersProps {
 }
 const useCustomers = ({
   role = SystemRole.USER,
-  limit = 100,
+  limit = 10,
 }: UseCustomersProps = {}) => {
   const dispatch = useDispatch<AppDispatch>();
   const params = useParams();

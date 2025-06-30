@@ -232,6 +232,25 @@ export const updatePassword = createAsyncThunk(
   }
 );
 
+// Async Thunk to delete account
+export const deleteAccount = createAsyncThunk(
+  'auth/delete-account',
+  async ({}, { rejectWithValue }) => {
+    try {
+      const { data } = await api.delete('/auth/delete-account');
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      // console.log(error);
+      return rejectWithValue(
+        error.response?.data || 'Failed to delete account'
+      );
+    }
+  }
+);
+
 // Async Thunk for logout
 export const logout = createAsyncThunk('auth/logout', async () => {
   Cookies.remove('token');
@@ -371,6 +390,16 @@ const authSlice = createSlice({
         state.loading = false;
       })
       .addCase(updatePassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteAccount.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteAccount.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(deleteAccount.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

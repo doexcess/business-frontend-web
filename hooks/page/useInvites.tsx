@@ -3,8 +3,11 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import useQueryParams from '../useQueryParams';
 import { fetchInvites } from '@/redux/slices/orgSlice';
+import { BusinessOwnerOrgRole } from '@/lib/utils';
 
-const useInvites = () => {
+const useInvites = (
+  role: BusinessOwnerOrgRole = BusinessOwnerOrgRole.BUSINESS_ADMIN
+) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const {
@@ -37,6 +40,7 @@ const useInvites = () => {
         ...(startDate && { startDate }),
         ...(endDate && { endDate }),
         ...(org?.id && { business_id: org.id }),
+        ...(role && { role }),
       })
     ).unwrap();
   }, [dispatch, currentPage, perPage, q, startDate, endDate, org]);

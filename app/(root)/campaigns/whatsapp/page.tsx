@@ -22,7 +22,7 @@ const WhatsappNotification = () => {
         />
 
         {/* Coming Soon Content */}
-        <div className='flex flex-col items-center justify-center py-12'>
+        <div className='flex flex-col items-center justify-center py-2'>
           {/* Main Coming Soon Card */}
           <Card className='w-full max-w-4xl dark:border-gray-600'>
             <CardContent className='p-8 sm:p-12'>

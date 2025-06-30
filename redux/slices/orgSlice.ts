@@ -242,6 +242,7 @@ export const fetchInvites = createAsyncThunk(
       startDate,
       endDate,
       business_id,
+      role,
     }: {
       page?: number;
       limit?: number;
@@ -249,6 +250,7 @@ export const fetchInvites = createAsyncThunk(
       startDate?: string;
       endDate?: string;
       business_id?: string;
+      role?: BusinessOwnerOrgRole;
     },
     { rejectWithValue }
   ) => {
@@ -256,6 +258,7 @@ export const fetchInvites = createAsyncThunk(
       const params: Record<string, any> = {};
 
       if (page !== undefined) params['pagination[page]'] = page;
+      if (role !== undefined) params['role'] = role;
       if (limit !== undefined) params['pagination[limit]'] = limit;
       if (q !== undefined) params.q = q;
       if (startDate !== undefined) params.startDate = startDate;
