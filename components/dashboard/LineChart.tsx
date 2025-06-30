@@ -100,6 +100,7 @@ export function LineChart({ data }: LineChartProps) {
                 lineWidth: 3,
                 hidden: !chart.isDatasetVisible(i),
                 index: i,
+                fontColor: color,
                 pointStyle: 'circle',
               };
             });

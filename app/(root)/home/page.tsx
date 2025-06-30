@@ -334,7 +334,7 @@ const Home = () => {
 
           <div className='py-6 space-y-6'>
             <div className='grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6'>
-              <div className='col-span-1 xl:col-span-2 bg-white border border-gray-200 dark:bg-gray-800 p-4 rounded-md'>
+              <div className='col-span-1 xl:col-span-2 bg-white border border-gray-200 dark:bg-gray-800 dark:border-0 p-4 rounded-md'>
                 <h3 className='font-semibold'>Performance</h3>
                 {analytics.monthlyRevenueLoading ? (
                   <div className='h-64 flex items-center justify-center'>
@@ -348,7 +348,7 @@ const Home = () => {
                   <LineChart data={chartData} />
                 )}
               </div>
-              <div className='bg-white dark:bg-gray-800 p-4 rounded-md border border-gray-200'>
+              <div className='bg-white dark:bg-gray-800 p-4 rounded-md border border-gray-200 dark:border-0'>
                 <h3 className='font-semibold mb-4'>Recent Activity</h3>
                 <RecentActivity activities={recentActivities} />
               </div>
