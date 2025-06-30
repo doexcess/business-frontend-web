@@ -14,6 +14,15 @@ interface RecentActivityProps {
 }
 
 export function RecentActivity({ activities }: RecentActivityProps) {
+  if (true) {
+    return (
+      <div className='flex flex-col items-center justify-center py-8 text-center text-muted-foreground'>
+        <Icon url='/icons/landing/calendar-check.svg' width={48} height={48} />
+        <p className='mt-3 text-base font-medium'>No recent activity</p>
+        <p className='text-xs'>Your recent activity will appear here.</p>
+      </div>
+    );
+  }
   return (
     <div className='space-y-4'>
       {activities.map((activity, index) => (

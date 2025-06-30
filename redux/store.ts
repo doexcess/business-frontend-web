@@ -9,6 +9,7 @@ import couponReducer from './slices/couponSlice';
 import subscriptionPlanReducer from './slices/subscriptionPlanSlice';
 import notificationReducer from './slices/notificationSlice';
 import productImportReducer from './slices/productImportSlice';
+import anayticsReducer from './slices/analyticsSlice';
 import storage from 'redux-persist/lib/storage'; // Uses localStorage
 import { persistReducer } from 'redux-persist';
 
@@ -31,6 +32,7 @@ const rootReducer = combineReducers({
   subscriptionPlan: subscriptionPlanReducer, // Not persisted
   notification: notificationReducer, // Not persisted
   productImport: productImportReducer,
+  anaytics: anayticsReducer,
 });
 
 export const store = configureStore({
