@@ -26,10 +26,11 @@ const ViewNotification = ({
     ? notification.schedule_info.recipients
     : notification?.recipients;
 
-  const status = notification?.status
+  const status = notification?.schedule_info
+    ? notification?.schedule_info?.status
+    : notification?.status
     ? NOTIFICATION_STATUS.DELIVERED
     : NOTIFICATION_STATUS.FAILED;
-
   return (
     <div
       className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4'
@@ -53,7 +54,7 @@ const ViewNotification = ({
         </h2>
 
         <div>
-          <Badge color={getColor(status)!} text={capitalize(status)} />
+          <Badge color={getColor(status!)!} text={capitalize(status)} />
         </div>
 
         {notification?.is_scheduled && (

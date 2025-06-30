@@ -185,12 +185,14 @@ const Home = () => {
                 variant='primary'
                 size='icon'
                 className='hover:bg-primary-800'
+                onClick={() => router.push('/campaigns/email/instant')}
               >
                 <Icon url='/icons/landing/plus.svg' />
               </Button>
               <Button
                 variant={'outline'}
                 className='text-lg border-primary-main text-primary-main py-1 dark:text-white hover:bg-primary-800 hover:text-white'
+                onClick={() => router.push('/campaigns/email/scheduled')}
               >
                 Schedule Message
               </Button>

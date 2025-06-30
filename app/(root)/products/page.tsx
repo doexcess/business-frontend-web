@@ -102,7 +102,8 @@ const Products = () => {
                 Manage your subscriptions, courses, and event tickets
               </p>
             </div>
-            <div className='flex gap-2 mt-4 md:mt-0'>
+            {/* TODO */}
+            {/* <div className='flex gap-2 mt-4 md:mt-0'>
               <Button
                 variant='outline'
                 className='text-lg border-primary-main text-primary-main py-1 dark:text-white hover:bg-primary-800 hover:text-white'
@@ -111,7 +112,7 @@ const Products = () => {
                 <Download className='w-5 h-5 mr-2' />
                 Import Products
               </Button>
-            </div>
+            </div> */}
           </header>
 
           {/* Product Options Grid */}

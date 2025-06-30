@@ -133,7 +133,7 @@ export interface BusinessContactDetails {
   business_id: boolean;
   is_owner: boolean;
   joined_at: boolean;
-  joined_via: boolean;
+  joined_via: string;
   status: boolean;
   role: boolean;
   created_at: boolean;

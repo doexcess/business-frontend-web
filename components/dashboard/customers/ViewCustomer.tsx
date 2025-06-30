@@ -1,7 +1,12 @@
 'use client';
 
 import Avatar from '@/components/ui/Avatar';
-import { getAvatar, getPurchaseTypeLabel, shortenId } from '@/lib/utils';
+import {
+  getAvatar,
+  getPurchaseTypeLabel,
+  reformatText,
+  shortenId,
+} from '@/lib/utils';
 import { RootState } from '@/redux/store';
 import React from 'react';
 import {
@@ -338,8 +343,13 @@ const ViewCustomer = () => {
             <div className='flex items-center gap-2'>
               <FaSignInAlt className='text-gray-400 dark:text-gray-500' />
               <span>
-                Joined via
-                {customer?.business_contacts[0].joined_via}
+                Joined via{' '}
+                <b>
+                  {reformatText(
+                    customer?.business_contacts[0].joined_via?.toLowerCase(),
+                    '_'
+                  )}
+                </b>
               </span>
             </div>
           )}

@@ -8,7 +8,16 @@ import Filter from '@/components/Filter';
 import useCustomers from '@/hooks/page/useCustomers';
 import CustomerItem from './CustomerItem';
 import { Button } from '@/components/ui/Button';
-import { Download, Upload, X, Eye, FileText, AlertCircle } from 'lucide-react';
+import {
+  Download,
+  Upload,
+  X,
+  Eye,
+  FileText,
+  AlertCircle,
+  Copy,
+  Link,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
@@ -19,6 +28,7 @@ import {
 } from '@/redux/slices/orgSlice';
 import { BusinessOwnerOrgRole } from '@/lib/utils';
 import { DocFormat, ImportUsersProps } from '@/lib/schema/org.schema';
+import { Customer } from '@/types/notification';
 import toast from 'react-hot-toast';
 import { IoIosDocument } from 'react-icons/io';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
@@ -45,6 +55,8 @@ const CustomersList = () => {
   const [importError, setImportError] = useState<string>('');
   const [showTemplate, setShowTemplate] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const {
     customers,
@@ -92,6 +104,34 @@ const CustomersList = () => {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     toast.success('Template downloaded successfully');
+  };
+
+  // Generate onboarding link with business_id
+  const generateOnboardingLink = () => {
+    if (!org?.id) {
+      toast.error('Organization not found');
+      return '';
+    }
+
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/onboard/signup?business_id=${org.id}`;
+  };
+
+  // Copy onboarding link to clipboard
+  const copyOnboardingLink = async () => {
+    const link = generateOnboardingLink();
+    if (!link) return;
+
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      toast.success('Onboarding link copied to clipboard!');
+
+      // Reset copied state after 2 seconds
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast.error('Failed to copy link to clipboard');
+    }
   };
 
   // Helper function to convert Excel scientific notation to phone number
@@ -473,6 +513,15 @@ const CustomersList = () => {
                 >
                   <Upload size={18} />
                 </Button>
+                <Button
+                  size='icon'
+                  variant='primary'
+                  className='text-md text-md flex p-2 gap-2'
+                  title='Get Onboarding Link'
+                  onClick={() => setShowOnboardingModal(true)}
+                >
+                  <Link size={18} />
+                </Button>
               </div>
             </>
           }
@@ -498,7 +547,7 @@ const CustomersList = () => {
               </tr>
             </thead>
             <tbody className='text-sm'>
-              {customers.map((customer) => (
+              {customers.map((customer: Customer) => (
                 <CustomerItem key={customer.id} customer={customer} />
               ))}
 
@@ -876,6 +925,109 @@ const CustomersList = () => {
                     </div>
                   )}
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Onboarding Link Modal */}
+      {showOnboardingModal && (
+        <div className='fixed inset-0 bg-black/50 backdrop-blur-sm rounded-xl flex items-center justify-center z-50 p-4'>
+          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-2xl'>
+            {/* Header */}
+            <div className='flex justify-between items-center p-6 border-b rounded-t-xl border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700'>
+              <div className='flex items-center gap-3'>
+                <div className='p-2 bg-primary-main/10 rounded-lg'>
+                  <Link className='text-primary-main' size={24} />
+                </div>
+                <div>
+                  <h3 className='text-xl font-bold text-gray-900 dark:text-white'>
+                    Onboarding Link
+                  </h3>
+                  <p className='text-sm text-gray-600 dark:text-gray-400'>
+                    Share this link with customers to join your business
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowOnboardingModal(false)}
+                className='text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg'
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className='p-6'>
+              <div className='mb-6'>
+                <h4 className='text-lg font-semibold text-gray-900 dark:text-white mb-2'>
+                  Customer Onboarding Link
+                </h4>
+                <p className='text-sm text-gray-600 dark:text-gray-400 mb-4'>
+                  Copy and share this link with your customers. When they click
+                  the link, they'll be directed to sign up and automatically
+                  join your business.
+                </p>
+              </div>
+
+              {/* Link Display */}
+              <div className='mb-6'>
+                <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                  Onboarding Link
+                </label>
+                <div className='flex items-center gap-2'>
+                  <div className='flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-3'>
+                    <input
+                      type='text'
+                      value={generateOnboardingLink()}
+                      readOnly
+                      className='w-full bg-transparent text-sm text-gray-900 dark:text-white outline-none'
+                    />
+                  </div>
+                  <Button
+                    variant='primary'
+                    onClick={copyOnboardingLink}
+                    className='px-4 py-3'
+                    disabled={copied}
+                  >
+                    {copied ? (
+                      <span className='flex items-center gap-2'>
+                        <span className='text-green-500'>✓</span>
+                        Copied!
+                      </span>
+                    ) : (
+                      <span className='flex items-center gap-2'>
+                        <Copy size={16} />
+                        Copy
+                      </span>
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Instructions */}
+              <div className='bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4'>
+                <h5 className='text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2'>
+                  How it works:
+                </h5>
+                <ul className='text-sm text-blue-800 dark:text-blue-200 space-y-1'>
+                  <li>
+                    • Share this link with your customers via email, SMS, or any
+                    communication channel
+                  </li>
+                  <li>
+                    • When customers click the link, they'll be taken to the
+                    signup page
+                  </li>
+                  <li>
+                    • They'll automatically be associated with your business
+                  </li>
+                  <li>
+                    • You'll see them appear in your customers list once they
+                    complete registration
+                  </li>
+                </ul>
               </div>
             </div>
           </div>

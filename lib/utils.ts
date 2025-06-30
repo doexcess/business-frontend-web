@@ -195,7 +195,7 @@ export const emailSplit = (email: string) => {
 export const getColor = (status: string) => {
   const details = badgeColors?.find(
     (badge: { color: string; for: Array<string> }) =>
-      badge.for.includes(status.toLowerCase())
+      badge.for.includes(status?.toLowerCase())
   );
 
   return details?.color;
@@ -373,3 +373,7 @@ export const BUSINESS_INDUSTRIES = [
 ];
 
 export type BusinessIndustry = (typeof BUSINESS_INDUSTRIES)[number];
+
+export const reformatText = (text: string, separator: string) => {
+  return text.split(separator).join(' ');
+};
