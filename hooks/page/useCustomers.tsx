@@ -8,8 +8,12 @@ import { SystemRole } from '@/lib/utils';
 
 interface UseCustomersProps {
   role?: SystemRole;
+  limit?: number;
 }
-const useCustomers = ({ role = SystemRole.USER }: UseCustomersProps = {}) => {
+const useCustomers = ({
+  role = SystemRole.USER,
+  limit = 10,
+}: UseCustomersProps = {}) => {
   const dispatch = useDispatch<AppDispatch>();
   const params = useParams();
 
@@ -28,7 +32,7 @@ const useCustomers = ({ role = SystemRole.USER }: UseCustomersProps = {}) => {
     handleSearchSubmit,
     handleFilterByDateSubmit,
     handleRefresh,
-  } = useQueryParams(customers);
+  } = useQueryParams(customers, limit);
 
   useEffect(() => {
     dispatch(

@@ -11,13 +11,7 @@ import React, { Suspense, useEffect } from 'react';
 const SignupContent = () => {
   const router = useRouter();
   const searchParam = useSearchParams();
-  const role = searchParam.get('role')! as SignupRole;
-
-  useEffect(() => {
-    if (![SignupRole.BUSINESS_OWNER, SignupRole.CUSTOMER].includes(role)) {
-      router.push('/onboard/select-type');
-    }
-  });
+  const role = SignupRole.BUSINESS_OWNER;
 
   return (
     <div className='w-full max-w-2xl border-2 border-white rounded-2xl bg-primary-light p-4 sm:p-8 md:p-10 my-4 sm:my-8 md:my-12'>

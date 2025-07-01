@@ -6,6 +6,7 @@ import moment from 'moment'; // Import moment.js
 import Link from 'next/link';
 import { Coupon } from '@/types/coupon';
 import { useParams } from 'next/navigation';
+import { PencilIcon } from 'lucide-react';
 
 interface CouponItemProps {
   coupon: Coupon;
@@ -55,10 +56,11 @@ const CouponItem = ({ coupon }: CouponItemProps) => {
         >
           <Link
             href={`/coupons/${coupon.id}/edit`}
-            className='hover:text-primary-400'
+            className='hover:text-primary-400 flex items-center gap-1 underline-offset'
             title={coupon.code}
           >
             {coupon.code}
+            <PencilIcon size='13' />
           </Link>
         </td>
 

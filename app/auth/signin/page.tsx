@@ -47,7 +47,7 @@ const Signin = () => {
           <div className='flex flex-wrap justify-center gap-1 sm:gap-2 mt-6 sm:mt-8 mb-4 text-sm sm:text-base'>
             <p>Don't have an account?</p>
             <Link
-              href='/onboard/select-type'
+              href='/onboard/signup'
               className='text-primary-main font-bold'
             >
               Create one

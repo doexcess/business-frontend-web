@@ -6,7 +6,7 @@ import { AppDispatch } from '@/redux/store';
 import { useRouter } from 'next/navigation';
 import { LoginFormSchema, LoginProps } from '@/lib/schema/auth.schema';
 import { login } from '@/redux/slices/authSlice';
-import { encryptInput } from '@/lib/utils';
+import { encryptInput, SystemRole } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import LoadingIcon from '../ui/icons/LoadingIcon';
 import { Eye, EyeOff } from 'lucide-react';
@@ -15,6 +15,7 @@ import { socketService } from '@/lib/services/socketService';
 const defaultValue = {
   email: '',
   password: '',
+  role: '',
 };
 
 const SigninForm = () => {
@@ -23,6 +24,7 @@ const SigninForm = () => {
 
   const [body, setBody] = useState({
     ...defaultValue,
+    role: SystemRole.BUSINESS_SUPER_ADMIN,
   } as LoginProps);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -131,7 +133,7 @@ const SigninForm = () => {
         <button
           type='submit'
           disabled={!isFormValid || isSubmitting}
-          className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all ${
+          className={`w-full text-sm py-3 px-4 rounded-lg font-medium text-white transition-all ${
             isFormValid
               ? 'bg-primary-main hover:bg-primary-800'
               : 'bg-primary-faded cursor-not-allowed'

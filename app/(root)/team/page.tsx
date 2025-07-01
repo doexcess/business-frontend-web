@@ -17,7 +17,11 @@ import {
 } from '@/lib/schema/org.schema';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
-import { fetchInvites, inviteMember } from '@/redux/slices/orgSlice';
+import {
+  fetchInvites,
+  inviteMember,
+  setOnboardingStep,
+} from '@/redux/slices/orgSlice';
 import toast from 'react-hot-toast';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 
@@ -82,6 +86,11 @@ const Team = () => {
       toast.success(response.payload.message);
       setInviteOpen(false);
       setBody({ ...body, email: '' });
+
+      if (org?.onboarding_status?.current_step! < 3) {
+        // Update the onboarding current step
+        dispatch(setOnboardingStep(3));
+      }
 
       // Fetch
       dispatch(

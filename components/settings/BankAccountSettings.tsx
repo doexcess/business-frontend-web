@@ -20,6 +20,7 @@ import {
   fetchOrg,
   resolveAccount,
   saveWithdrawalAccount,
+  setOnboardingStep,
 } from '@/redux/slices/orgSlice';
 import toast from 'react-hot-toast';
 import LoadingIcon from '../ui/icons/LoadingIcon';
@@ -97,6 +98,11 @@ const BankAccountSettings = () => {
 
       if (response.type === 'onboard/save-withdrawal-account/rejected')
         throw new Error(response.payload);
+
+      if (org?.onboarding_status?.current_step! < 2) {
+        // Update the onboarding current step
+        dispatch(setOnboardingStep(2));
+      }
 
       // Refetch org details
       dispatch(fetchOrg(org?.id!));
@@ -184,17 +190,28 @@ const BankAccountSettings = () => {
                 }}
                 required
               >
-                <SelectTrigger id='bank' className='w-full'>
+                <SelectTrigger
+                  id='bank'
+                  className='w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white'
+                >
                   <SelectValue placeholder='Select your bank' />
                 </SelectTrigger>
-                <SelectContent className='bg-gray-800'>
-                  {loading
-                    ? 'Loading'
-                    : banks.map((bank, index) => (
-                        <SelectItem key={index} value={`${bank.name}`}>
-                          {bank.name}
-                        </SelectItem>
-                      ))}
+                <SelectContent className='bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white'>
+                  {loading ? (
+                    <span className='text-gray-500 dark:text-gray-400'>
+                      Loading
+                    </span>
+                  ) : (
+                    banks.map((bank, index) => (
+                      <SelectItem
+                        key={index}
+                        value={`${bank.name}`}
+                        className='hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white'
+                      >
+                        {bank.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>

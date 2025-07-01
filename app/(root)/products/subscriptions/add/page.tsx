@@ -10,9 +10,10 @@ const AddSubscription = () => {
           title='Add Subscription'
           enableBreadCrumb={true}
           layer2='Products'
+          layer2Link='/products'
           layer3='Subscriptions'
-          layer4='Add Subscription'
           layer3Link='/products/subscriptions'
+          layer4='Add Subscription'
           // enableBackButton={true}
         />
 

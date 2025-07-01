@@ -111,6 +111,10 @@ body {
     color: #5c5f63;
   }
 
+  .div {
+    @apply text-gray-600 dark:text-gray-300;
+  }
+
   .section-container {
     @apply p-4 md:ml-64 h-auto pt-10;
   }
@@ -322,5 +326,9 @@ body {
     100% {
       transform: translateX(100%);
     }
+  }
+
+  .underline-offset {
+    @apply underline underline-offset-4;
   }
 }

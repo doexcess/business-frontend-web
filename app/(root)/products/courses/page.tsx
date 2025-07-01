@@ -14,7 +14,9 @@ const Courses = () => {
           brief='Create and manage your courses with ease'
           enableBreadCrumb={true}
           layer2='Products'
+          layer2Link='/products'
           layer3='Courses'
+          layer3Link='/products/courses'
           ctaButtons={
             <div className='flex-shrink-0 self-start'>
               <Link

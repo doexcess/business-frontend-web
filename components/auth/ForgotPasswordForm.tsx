@@ -82,7 +82,7 @@ const ForgotPasswordForm = () => {
       <button
         type='submit'
         disabled={!isFormValid || isSubmitting}
-        className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all ${
+        className={`w-full text-sm py-3 px-4 rounded-lg font-medium text-white transition-all ${
           isFormValid
             ? 'bg-primary-main hover:bg-primary-800'
             : 'bg-primary-faded cursor-not-allowed'

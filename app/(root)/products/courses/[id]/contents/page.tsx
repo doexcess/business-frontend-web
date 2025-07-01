@@ -26,6 +26,7 @@ import {
   UpdateModulesProps,
 } from '@/lib/schema/product.schema';
 import { MultimediaType } from '@/lib/utils';
+import { IoIosDocument, IoIosDownload } from 'react-icons/io';
 
 type Lesson = {
   id?: string;
@@ -301,6 +302,22 @@ const CourseContent = () => {
           />
         </div>
       );
+    } else if (lesson.mediaType === MultimediaType.DOCUMENT) {
+      return (
+        <div className='mt-2 w-40 h-40 border rounded-md flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 p-2'>
+          <IoIosDocument className='text-5xl text-red-600' />
+          <a
+            href={lesson.mediaPreview}
+            download
+            target='_blank'
+            rel='noopener noreferrer'
+            className='mt-2 text-xs text-primary-main hover:underline flex items-center gap-1'
+          >
+            <IoIosDownload />
+            <span>Download PDF</span>
+          </a>
+        </div>
+      );
     }
     return null;
   };
@@ -312,9 +329,10 @@ const CourseContent = () => {
           title='Add course contents'
           enableBreadCrumb={true}
           layer2='Products'
+          layer2Link='/products'
           layer3='Courses'
+          layer3Link='/products/courses'
           layer4='Contents'
-          layer3Link={'/products/courses'}
           enableBackButton={true}
           ctaButtons={
             <div className='flex gap-2 h-10'>

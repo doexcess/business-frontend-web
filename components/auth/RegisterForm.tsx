@@ -144,14 +144,12 @@ const RegisterForm = ({ role }: RegisterFormCompProps) => {
               htmlFor='name'
               className='block mb-2 text-sm font-bold text-gray-900'
             >
-              {role === SignupRole.BUSINESS_OWNER ? 'Business Name' : 'Name'}
+              Name
             </label>
             <Input
               type='text'
               name='name'
-              placeholder={`Enter your ${
-                role === SignupRole.BUSINESS_OWNER ? 'company name' : 'name'
-              }`}
+              placeholder={`Enter your name`}
               className='w-full rounded-lg text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500'
               value={body.name}
               required
@@ -165,16 +163,12 @@ const RegisterForm = ({ role }: RegisterFormCompProps) => {
               htmlFor='email'
               className='block mb-2 text-sm font-bold text-gray-900'
             >
-              {role === SignupRole.BUSINESS_OWNER ? 'Business Email' : 'Email'}
+              Email
             </label>
             <Input
               type='email'
               name='email'
-              placeholder={
-                role === SignupRole.BUSINESS_OWNER
-                  ? 'you@yourcompany.com'
-                  : 'you@example.com'
-              }
+              placeholder={'you@example.com'}
               className='w-full rounded-lg text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-primary-500'
               value={body.email}
               required

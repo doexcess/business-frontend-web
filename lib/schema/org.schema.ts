@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { BusinessOwnerOrgRole, SystemRole } from '../utils';
 
 export const createBusinessProfileSchema = Joi.object({
   business_name: Joi.string().min(2).max(100).required(),
@@ -68,4 +69,38 @@ export const resolveAccountFormSchema = Joi.object({
 export interface ResolveAccountProps {
   account_number: string;
   bank_code: string;
+}
+
+export interface ImportUserDetails {
+  name: string;
+  email: string;
+  role: BusinessOwnerOrgRole;
+  phone: string;
+}
+
+export interface ImportUsersProps {
+  users: ImportUserDetails[];
+}
+
+export const importUserSchema = Joi.object({
+  users: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().min(2).max(100).required(),
+        email: Joi.string().required(),
+        phone: Joi.string().optional(),
+        role: Joi.string()
+          .valid(BusinessOwnerOrgRole)
+          .default(BusinessOwnerOrgRole.USER),
+      })
+    )
+    .min(1)
+    .max(100)
+    .required(),
+});
+
+export enum DocFormat {
+  csv = 'csv',
+  json = 'json',
+  xlsx = 'xlsx',
 }

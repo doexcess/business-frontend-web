@@ -5,6 +5,7 @@ import { Modal } from '@/components/ui/Modal';
 import { cn, formatMoney, getAvatar, shortenId } from '@/lib/utils';
 import { AppDispatch, RootState } from '@/redux/store';
 import { Customer } from '@/types/notification';
+import { EyeIcon, PencilIcon } from 'lucide-react';
 import moment from 'moment-timezone';
 import Link from 'next/link';
 import React, { useState } from 'react';
@@ -20,13 +21,6 @@ const CustomerItem = ({ customer }: CustomerItemProps) => {
   const { org } = useSelector((state: RootState) => state.org);
 
   const handleOpenSubscription = () => {
-    // dispatch(
-    //   fetchSubscriptionPlan({
-    //     id: subscription_plan.id,
-    //     ...(org?.id && { business_id: org?.id as string }),
-    //   })
-    // );
-
     setIsPlanModalOpen(true);
   };
 
@@ -52,17 +46,14 @@ const CustomerItem = ({ customer }: CustomerItemProps) => {
         >
           <Link
             href={`/customers/${customer.id}`}
-            className='hover:text-primary-400 p-0'
+            className='hover:text-primary-400 p-0 underline underline-offset-4 flex items-center gap-1'
             title={customer.id}
           >
-            {shortenId(customer.id)}
+            {shortenId(customer.id)} <PencilIcon size='13' />
           </Link>
         </td>
         <td className='px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white font-bold'>
-          <Link
-            href={`team/${customer.id}`}
-            className={cn('flex items-center gap-2 ')}
-          >
+          <p className={cn('flex items-center gap-1 hover:text-primary-400')}>
             {(customer?.profile?.profile_picture! || customer.name) && (
               <img
                 src={getAvatar(
@@ -74,7 +65,7 @@ const CustomerItem = ({ customer }: CustomerItemProps) => {
               />
             )}
             {customer.name}
-          </Link>
+          </p>
         </td>
         <td className='px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white font-bold'>
           {customer.email}

@@ -67,9 +67,10 @@ const EditCourse = () => {
           brief={`Date created - ${moment(course?.created_at).format('LL')}`}
           enableBreadCrumb={true}
           layer2='Products'
+          layer2Link='/products'
           layer3='Courses'
-          layer4='Edit Course'
           layer3Link='/products/courses'
+          layer4='Edit Course'
           enableBackButton={true}
           ctaButtons={
             <div className='flex-shrink-0 self-start'>

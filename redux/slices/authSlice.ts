@@ -10,7 +10,12 @@ import {
   VerifyEmailFormProps,
   VerifyPasswordTokenProps,
 } from '@/lib/schema/auth.schema';
-import { Profile, ProfileResponse } from '@/types/account';
+import {
+  Profile,
+  ProfileResponse,
+  RegisterResponse,
+  VerifyEmailResponse,
+} from '@/types/account';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
 
@@ -35,10 +40,14 @@ export const register = createAsyncThunk(
   'auth/register',
   async (credentials: RegisterFormProps, { rejectWithValue }) => {
     try {
-      const { data } = await api.post('/auth/register', credentials);
+      const { data } = await api.post<RegisterResponse>(
+        '/auth/register',
+        credentials
+      );
 
       return {
         message: data.message,
+        data: data.data,
       };
     } catch (error: any) {
       return rejectWithValue(error.response?.data || 'Registration failed');
@@ -51,10 +60,18 @@ export const verifyEmail = createAsyncThunk(
   'auth/verify-email',
   async (credentials: VerifyEmailFormProps, { rejectWithValue }) => {
     try {
-      const { data } = await api.post('/auth/verify-email', credentials);
+      const { data } = await api.post<VerifyEmailResponse>(
+        '/auth/verify-email',
+        credentials
+      );
+
+      if (data?.accessToken) {
+        Cookies.set('token', data?.accessToken, { expires: 3 });
+      }
 
       return {
         message: data.message,
+        token: data?.accessToken,
       };
     } catch (error: any) {
       return rejectWithValue(
@@ -101,9 +118,9 @@ export const verifyLogin = createAsyncThunk(
   async (credentials: { email: string; otp: string }, { rejectWithValue }) => {
     try {
       const response = await api.post('/auth/verify-account-otp', credentials);
-      const { accessToken: token, message } = response.data;
+      const { accessToken: token, message, data } = response.data;
       Cookies.set('token', token, { expires: 3 });
-      return { token, message };
+      return { token, message, data };
     } catch (error: any) {
       // console.log(error);
       return rejectWithValue(error.response?.data || 'OTP verification failed');
@@ -215,6 +232,25 @@ export const updatePassword = createAsyncThunk(
   }
 );
 
+// Async Thunk to delete account
+export const deleteAccount = createAsyncThunk(
+  'auth/delete-account',
+  async ({}, { rejectWithValue }) => {
+    try {
+      const { data } = await api.delete('/auth/delete-account');
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      // console.log(error);
+      return rejectWithValue(
+        error.response?.data || 'Failed to delete account'
+      );
+    }
+  }
+);
+
 // Async Thunk for logout
 export const logout = createAsyncThunk('auth/logout', async () => {
   Cookies.remove('token');
@@ -244,6 +280,9 @@ const authSlice = createSlice({
       })
       .addCase(verifyEmail.fulfilled, (state, action) => {
         state.loading = false;
+        if (action.payload?.token) {
+          state.token = action.payload?.token;
+        }
       })
       .addCase(verifyEmail.rejected, (state, action) => {
         state.loading = false;
@@ -351,6 +390,16 @@ const authSlice = createSlice({
         state.loading = false;
       })
       .addCase(updatePassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteAccount.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteAccount.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(deleteAccount.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

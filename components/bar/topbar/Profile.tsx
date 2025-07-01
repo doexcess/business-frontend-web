@@ -12,7 +12,7 @@ import Link from 'next/link';
 import useOrgs from '@/hooks/page/useOrgs';
 import { IoIosAdd } from 'react-icons/io';
 import { fetchOrg } from '@/redux/slices/orgSlice';
-import { SystemRole } from '@/lib/utils';
+import { getAvatar, SystemRole } from '@/lib/utils';
 
 const Profile = ({
   isOpen,
@@ -55,13 +55,11 @@ const Profile = ({
   };
 
   useEffect(() => {
-    if (!isConnected) return;
-
     if (allowAction) {
       handleLogoutNavigation();
       setAllowAction(false);
     }
-  }, [allowAction, isConnected]);
+  }, [allowAction]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -149,10 +147,15 @@ const Profile = ({
                         className='flex items-center gap-2 w-full text-left py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white justify-between'
                       >
                         <p className='flex gap-1'>
-                          <img
+                          {/* <img
                             src={org.logo_url}
                             alt={`${org.business_name} logo`}
                             className='w-5 h-5 rounded-full object-contain border dark:border-gray-600 border-graay-400 '
+                          /> */}
+                          <img
+                            src={getAvatar(org.logo_url, org.business_name)}
+                            alt={org.business_name}
+                            className='w-5 h-5 rounded-full object-cover'
                           />
                           {org.business_name}{' '}
                         </p>
@@ -165,7 +168,7 @@ const Profile = ({
 
                 <li>
                   <Link
-                    href='/settings/business'
+                    href='/settings?tab=business-account'
                     className='flex items-center gap-2 py-2 px-4 text-sm font-medium text-primary-main hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-primary-faded dark:hover:text-white'
                   >
                     <IoIosAdd size={20} />

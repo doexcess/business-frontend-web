@@ -25,6 +25,7 @@ import { useRouter } from 'next/navigation';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
 import useOrg from '@/hooks/page/useOrg';
 import { createCourse } from '@/redux/slices/courseSlice';
+import { setOnboardingStep } from '@/redux/slices/orgSlice';
 
 const defaultValue = {
   title: '',
@@ -128,6 +129,11 @@ const AddCourseForm = () => {
 
       if (response.type === 'product-course-crud/create/rejected') {
         throw new Error(response.payload.message);
+      }
+
+      if (org?.onboarding_status?.current_step! < 4) {
+        // Update the onboarding current step
+        dispatch(setOnboardingStep(4));
       }
 
       toast.success('Course created successfully!');

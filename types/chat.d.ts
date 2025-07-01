@@ -2,18 +2,21 @@ import { ChatReadStatus } from '@/lib/utils';
 
 export interface RetrieveChatsProps {
   token: string;
-  status: ChatReadStatus;
+  status?: ChatReadStatus;
+  q?: string;
 }
 
 export interface RetrieveMessagesProps {
   token: string;
   chatBuddy: string;
+  page?: number;
 }
 
 export interface SendMessageProps {
   token: string;
   chatBuddy: string;
-  message: string;
+  message?: string;
+  file?: string;
 }
 
 export interface Chat {
@@ -121,6 +124,7 @@ export interface MessagesResponse {
     count: number;
     chatId?: string;
     chat: Chat;
+    page?: number;
   };
 }
 

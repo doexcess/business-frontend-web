@@ -8,15 +8,22 @@ import {
   ContactInvite,
   ContactInviteDetailsResponse,
   ContactInviteResponse,
+  ExportUserResponse,
 } from '@/types/org';
 import {
   AcceptInviteProps,
   CreateBusinessProfileProps,
+  DocFormat,
+  ImportUsersProps,
   InviteContactProps,
   ResolveAccountProps,
   SaveBankAccountProps,
 } from '@/lib/schema/org.schema';
-import { ContactInviteStatus, SystemRole } from '@/lib/utils';
+import {
+  BusinessOwnerOrgRole,
+  ContactInviteStatus,
+  SystemRole,
+} from '@/lib/utils';
 import {
   BanksResponse,
   PaystackBank,
@@ -40,6 +47,8 @@ interface OrgState {
   customersLoading: boolean;
   customer: Customer | null;
   customerLoading: boolean;
+  importUserLoading: boolean;
+  exportUserLoading: boolean;
   banksLoading: boolean;
   bankLoading: boolean;
   invite: ContactInvite | null;
@@ -62,6 +71,8 @@ const initialState: OrgState = {
   customers: [],
   totalCustomers: 0,
   customersLoading: true,
+  importUserLoading: true,
+  exportUserLoading: true,
   customer: null,
   customerLoading: true,
   banksLoading: true,
@@ -231,6 +242,7 @@ export const fetchInvites = createAsyncThunk(
       startDate,
       endDate,
       business_id,
+      role,
     }: {
       page?: number;
       limit?: number;
@@ -238,6 +250,7 @@ export const fetchInvites = createAsyncThunk(
       startDate?: string;
       endDate?: string;
       business_id?: string;
+      role?: BusinessOwnerOrgRole;
     },
     { rejectWithValue }
   ) => {
@@ -245,6 +258,7 @@ export const fetchInvites = createAsyncThunk(
       const params: Record<string, any> = {};
 
       if (page !== undefined) params['pagination[page]'] = page;
+      if (role !== undefined) params['role'] = role;
       if (limit !== undefined) params['pagination[limit]'] = limit;
       if (q !== undefined) params.q = q;
       if (startDate !== undefined) params.startDate = startDate;
@@ -406,6 +420,7 @@ export const fetchCustomers = createAsyncThunk(
     if (business_id !== undefined) params['business_id'] = business_id;
     if (startDate !== undefined) params['startDate'] = startDate;
     if (endDate !== undefined) params['endDate'] = endDate;
+    params['business_contacts'] = true;
 
     try {
       const { data } = await api.get<CustomersResponse>(
@@ -456,6 +471,71 @@ export const fetchCustomer = createAsyncThunk(
   }
 );
 
+// Async thunk to import users
+export const importUsers = createAsyncThunk(
+  'onboard/import-users',
+  async (
+    {
+      credentials,
+      business_id,
+    }: { credentials: ImportUsersProps; business_id: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const headers: Record<string, any> = {};
+
+      if (business_id !== undefined) headers['Business-Id'] = business_id;
+
+      const { data } = await api.post('/onboard/import-users', credentials, {
+        headers,
+      });
+
+      return {
+        message: data.message,
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Failed to import users');
+    }
+  }
+);
+
+// Async thunk to export users
+export const exportUsers = createAsyncThunk(
+  'onboard/export-users',
+  async (
+    {
+      format,
+      role,
+      business_id,
+    }: { format: DocFormat; role: BusinessOwnerOrgRole; business_id: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const params: Record<string, any> = {};
+      const headers: Record<string, any> = {};
+
+      if (format !== undefined) params['format'] = format;
+      if (role !== undefined) params['role'] = role;
+      if (business_id !== undefined) headers['Business-Id'] = business_id;
+
+      const { data } = await api.get<ExportUserResponse>(
+        '/onboard/export-users',
+        {
+          headers,
+          params,
+        }
+      );
+
+      return {
+        message: data.message,
+        data: data.data,
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Failed to export users');
+    }
+  }
+);
+
 const orgSlice = createSlice({
   name: 'org',
   initialState,
@@ -493,6 +573,11 @@ const orgSlice = createSlice({
         } as ContactInvite;
       } else {
         state.error = 'Invite not found in local state';
+      }
+    },
+    setOnboardingStep: (state, action: PayloadAction<number>) => {
+      if (state.org?.onboarding_status) {
+        state.org.onboarding_status.current_step = action.payload;
       }
     },
   },
@@ -695,11 +780,39 @@ const orgSlice = createSlice({
       .addCase(fetchCustomer.rejected, (state, action) => {
         state.customerLoading = false;
         state.error = action.payload as string;
+      })
+      .addCase(importUsers.pending, (state) => {
+        state.importUserLoading = true;
+        state.error = null;
+      })
+      .addCase(importUsers.fulfilled, (state, action) => {
+        state.importUserLoading = false;
+      })
+      .addCase(importUsers.rejected, (state, action) => {
+        state.importUserLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(exportUsers.pending, (state) => {
+        state.exportUserLoading = true;
+        state.error = null;
+      })
+      .addCase(exportUsers.fulfilled, (state, action) => {
+        state.exportUserLoading = false;
+      })
+      .addCase(exportUsers.rejected, (state, action) => {
+        state.exportUserLoading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
-export const { setPage, setPerPage, switchToOrg, clearOrg, viewInvite } =
-  orgSlice.actions;
+export const {
+  setPage,
+  setPerPage,
+  switchToOrg,
+  clearOrg,
+  viewInvite,
+  setOnboardingStep,
+} = orgSlice.actions;
 
 export default orgSlice.reducer;
