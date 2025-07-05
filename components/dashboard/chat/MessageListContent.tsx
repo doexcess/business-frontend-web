@@ -61,7 +61,7 @@ const MessageListContent = ({
             {chat.chat_buddy.name}
           </p>
           <span className={clsx('text-xs font-medium')}>
-            {moment(chat.messages[0].created_at).fromNow()}
+            {moment(chat.messages[0]?.created_at).fromNow()}
           </span>
         </div>
         <div className='flex justify-between items-center'>
@@ -75,7 +75,7 @@ const MessageListContent = ({
               {chat.unread}
             </span>
           )}
-          {chat.messages[0].read && <Icon url='/icons/chat/check.svg' />}
+          {chat.messages[0]?.read && <Icon url='/icons/chat/check.svg' />}
         </div>
       </div>
     </div>

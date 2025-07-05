@@ -55,9 +55,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <body className={`font-gilroy bg-white dark:bg-gray-900`}>
-            {children}
-          </body>
+          <body className={`font-gilroy `}>{children}</body>
         </ThemeProvider>
       </html>
     </ReduxProvider>

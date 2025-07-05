@@ -36,8 +36,7 @@ const Signin = () => {
           </h1>
 
           <p className='text-sm sm:text-base text-gray-600 text-center mb-6 max-w-md'>
-            Log in to explore courses, events and the businesses you've
-            subscribed to.
+            Log in to stay connected and explore your experience.
           </p>
 
           <SigninForm />
@@ -47,7 +46,7 @@ const Signin = () => {
           <div className='flex flex-wrap justify-center gap-1 sm:gap-2 mt-6 sm:mt-8 mb-4 text-sm sm:text-base'>
             <p>Don't have an account?</p>
             <Link
-              href='/onboard/signup'
+              href='/onboard/select-type'
               className='text-primary-main font-bold'
             >
               Create one

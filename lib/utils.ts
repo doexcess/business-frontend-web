@@ -293,7 +293,7 @@ export enum NotificationType {
   EMAIL = 'EMAIL',
 }
 
-export const actualRole = (role: SignupRole): SystemRole | string => {
+export const actualRole = (role: SignupRole | string): SystemRole | string => {
   let roleName = '';
   if (role === SignupRole.CUSTOMER) {
     roleName = SystemRole.USER;

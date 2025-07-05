@@ -37,7 +37,7 @@ type PasswordStrength = {
 };
 
 interface RegisterFormCompProps {
-  role: SignupRole;
+  role: SignupRole | string;
 }
 const RegisterForm = ({ role }: RegisterFormCompProps) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -253,11 +253,19 @@ const RegisterForm = ({ role }: RegisterFormCompProps) => {
             <div className='ml-3 text-sm'>
               <label htmlFor='terms' className='font-medium text-gray-900'>
                 I agree to the{' '}
-                <Link href='/terms' className='text-gray-600 hover:underline'>
+                <Link
+                  href={`${process.env.NEXT_PUBLIC_WEBSITE_URL}/terms`}
+                  className='text-gray-600 hover:underline'
+                  target='_blank'
+                >
                   Terms & Conditions
                 </Link>{' '}
                 and{' '}
-                <Link href='/privacy' className='text-gray-600 hover:underline'>
+                <Link
+                  href={`${process.env.NEXT_PUBLIC_WEBSITE_URL}/privacy-policy`}
+                  className='text-gray-600 hover:underline'
+                  target='_blank'
+                >
                   Privacy Policy
                 </Link>
               </label>

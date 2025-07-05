@@ -710,7 +710,7 @@ const orgSlice = createSlice({
         state.loading = false;
         state.invite = {
           ...state.invite!,
-          status: ContactInviteStatus.INACTIVE,
+          status: ContactInviteStatus.SUSPENDED,
         };
       })
       .addCase(deactivateMember.rejected, (state, action) => {
