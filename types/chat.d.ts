@@ -22,6 +22,7 @@ export interface SendMessageProps {
 export interface Chat {
   id: string;
   last_message: string;
+  last_message_at: string;
   is_archived: boolean;
   unread: number;
   created_at: string;

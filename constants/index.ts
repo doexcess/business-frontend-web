@@ -42,6 +42,14 @@ export const sidebarLinks = [
     activeIconColor: 'text-primary-main', // Add this
   },
   {
+    icon: HiHome,
+    route: '/dashboard/home',
+    label: 'Overview',
+    group: groups.ONE,
+    roleOptions: [SystemRole.USER],
+    activeIconColor: 'text-primary-main', // Add this
+  },
+  {
     icon: IoIosPricetag,
     route: '/products',
     label: 'Products',
@@ -63,7 +71,28 @@ export const sidebarLinks = [
       },
     ],
   },
-
+  {
+    icon: IoIosPricetag,
+    route: '/dashboard/products',
+    label: 'Products',
+    group: groups.ONE,
+    roleOptions: [SystemRole.USER],
+    activeIconColor: 'text-primary-main', // Add this
+    items: [
+      {
+        route: '/dashboard/products/courses',
+        label: 'Courses',
+      },
+      {
+        route: '/dashboard/products/tickets',
+        label: 'Event Tickets',
+      },
+      {
+        route: '/dashboard/products/subscription-plans',
+        label: 'Subscription Plans',
+      },
+    ],
+  },
   {
     icon: HiUsers,
     route: '/customers',
@@ -130,11 +159,27 @@ export const sidebarLinks = [
     activeIconColor: 'text-primary-main', // Add this
   },
   {
+    icon: IoIosAnalytics,
+    route: '/dashboard/orders',
+    label: 'Orders',
+    group: groups.ONE,
+    roleOptions: [SystemRole.USER],
+    activeIconColor: 'text-primary-main', // Add this
+  },
+  {
     icon: IoMdChatboxes,
     route: '/messages',
     label: 'Messages',
     group: groups.ONE,
     roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN, SystemRole.BUSINESS_ADMIN],
+    activeIconColor: 'text-primary-main', // Add this
+  },
+  {
+    icon: IoMdChatboxes,
+    route: '/dashboard/messages',
+    label: 'Messages',
+    group: groups.ONE,
+    roleOptions: [SystemRole.USER],
     activeIconColor: 'text-primary-main', // Add this
   },
 
@@ -143,7 +188,15 @@ export const sidebarLinks = [
     route: '/settings',
     label: 'Settings',
     group: groups.TWO,
-    roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN],
+    roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN, SystemRole.BUSINESS_ADMIN],
+    activeIconColor: 'text-primary-main', // Add this
+  },
+  {
+    icon: IoIosCog,
+    route: '/dashboard/settings',
+    label: 'Settings',
+    group: groups.TWO,
+    roleOptions: [SystemRole.USER],
     activeIconColor: 'text-primary-main', // Add this
   },
   // {

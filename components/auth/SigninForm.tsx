@@ -15,7 +15,6 @@ import { socketService } from '@/lib/services/socketService';
 const defaultValue = {
   email: '',
   password: '',
-  role: '',
 };
 
 const SigninForm = () => {
@@ -24,7 +23,6 @@ const SigninForm = () => {
 
   const [body, setBody] = useState({
     ...defaultValue,
-    role: SystemRole.BUSINESS_SUPER_ADMIN,
   } as LoginProps);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -84,7 +82,7 @@ const SigninForm = () => {
               <Input
                 type='text'
                 name='email'
-                placeholder='Enter your business email address'
+                placeholder='Enter your email address'
                 className='w-full rounded-lg text-gray-900'
                 value={body.email}
                 required={true}

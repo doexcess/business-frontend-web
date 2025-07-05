@@ -113,14 +113,14 @@ const Profile = ({
                 Settings
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link
                 href='/help'
                 className='block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white'
               >
                 Help
               </Link>
-            </li>
+            </li> */}
             <li>
               <button
                 onClick={() => setLogoutOpenModal(true)}

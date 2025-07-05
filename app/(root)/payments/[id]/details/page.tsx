@@ -10,7 +10,7 @@ import {
   PaymentStatus,
   shortenId,
 } from '@/lib/utils';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import moment from 'moment';
 import Link from 'next/link';
 import { IoIosChatboxes } from 'react-icons/io';
@@ -19,12 +19,6 @@ import usePayment from '@/hooks/page/usePayment';
 import XIcon from '@/components/ui/icons/XIcon';
 import ThemeDivBorder from '@/components/ui/ThemeDivBorder';
 import ShimmerCard from '@/components/ShimmerCard';
-import { useSocket } from '@/context/SocketProvider';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@/redux/store';
-import { RecentChatRetrievedResponse } from '@/types/chat';
-import { chatsRetrieved, recentChatRetrieved } from '@/redux/slices/chatSlice';
-import { socketService } from '@/lib/services/socketService';
 
 const ViewPayment = () => {
   const { payment, loading } = usePayment();
@@ -111,14 +105,16 @@ const ViewPayment = () => {
             <div>
               {(payment?.user?.profile?.profile_picture! ||
                 payment?.user.name) && (
-                <img
-                  src={getAvatar(
-                    payment.user?.profile?.profile_picture!,
-                    payment.user.name
-                  )}
-                  alt={payment.user.name}
-                  className='w-20 h-20 rounded-full object-cover'
-                />
+                <Link href={`/customers/${payment?.user_id}`}>
+                  <img
+                    src={getAvatar(
+                      payment.user?.profile?.profile_picture!,
+                      payment.user.name
+                    )}
+                    alt={payment.user.name}
+                    className='w-20 h-20 rounded-full object-cover'
+                  />
+                </Link>
               )}
             </div>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 dark:text-gray-300'>

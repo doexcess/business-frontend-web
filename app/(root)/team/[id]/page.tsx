@@ -201,6 +201,7 @@ const TeamMember = () => {
           enableBreadCrumb
           layer2='Team'
           layer3='Team Member'
+          layer2Link='/team'
           enableBackButton
           ctaButtons={
             <div className='flex gap-2'>
@@ -307,7 +308,7 @@ const TeamMember = () => {
                     <MdOutlineAdminPanelSettings className='text-blue-500' />
                   )}
                   <span
-                    className={`font-medium py-1 rounded-full ${
+                    className={`font-medium py-1 px-3 rounded-full ${
                       invite?.is_owner
                         ? 'bg-blue-100 text-blue-700 dark:bg-blue-800/20 dark:text-blue-400'
                         : 'bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300'

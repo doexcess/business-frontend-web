@@ -5,7 +5,7 @@ import PageHeading from '@/components/PageHeading';
 import { Button } from '@/components/ui/Button';
 import { CiBank } from 'react-icons/ci';
 import { FaArrowDown, FaArrowUp, FaListUl, FaWallet } from 'react-icons/fa6';
-import { formatMoney } from '@/lib/utils'; // optional utility for className handling
+import { cn, formatMoney, SystemRole } from '@/lib/utils'; // optional utility for className handling
 import { Modal } from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import { useSelector } from 'react-redux';
@@ -15,11 +15,12 @@ import PaymentList from '@/components/dashboard/payment/PaymentList';
 
 const Wallet = () => {
   const { org: organization } = useSelector((state: RootState) => state.org);
+  const { profile } = useSelector((state: RootState) => state.auth);
 
   const { total_credit, total_debit, total_trx } = usePayments();
 
   const walletBalance = formatMoney(
-    +organization?.business_wallet?.balance!,
+    +organization?.business_wallet?.balance! || 0,
     organization?.business_wallet?.currency
   );
   const totalTransactions = formatMoney(
@@ -55,7 +56,13 @@ const Wallet = () => {
           enableBreadCrumb={true}
           layer2='Wallet'
           ctaButtons={
-            <div className='flex-shrink-0 self-start'>
+            <div
+              className={cn(
+                'flex-shrink-0 self-start',
+                profile?.role?.role_id !== SystemRole.BUSINESS_SUPER_ADMIN &&
+                  'hidden'
+              )}
+            >
               <Button
                 variant='primary'
                 className='text-md gap-2 py-2 rounded-lg'

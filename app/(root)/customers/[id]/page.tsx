@@ -37,7 +37,7 @@ const Customer = () => {
                 {chatOpen ? 'Close Chat' : 'Chat'}
               </Button>
               <Link
-                href={`/notifications/email/compose?customerId=${customer?.id}`}
+                href={`/campaigns/email/compose?customerId=${customer?.id}`}
                 className='text-md border-primary-main text-primary-main py-1 dark:text-white hover:bg-primary-800 hover:text-white px-3 flex items-center gap-1 border rounded-lg'
                 // onClick={() => setChatOpen(!chatOpen)}
               >
@@ -51,11 +51,11 @@ const Customer = () => {
         <ViewCustomer />
 
         {customer && chatOpen && (
-          <div className='fixed bottom-4 right-4 w-80 max-w-[95vw] bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden z-10'>
+          <div className='fixed bottom-4 right-4 w-80 max-w-[95vw] bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden z-10 '>
             <>
               <Chat
                 chatbuddyId={customer?.id!}
-                height='h-[50vh] max-h-[40vh] md:max-h-[30vh] lg:max-h-[38vh]'
+                // height='h-[50vh] max-h-[40vh] md:max-h-[30vh] lg:max-h-[38vh]'
                 enabledBackButton={false}
                 rightSideComponent={
                   <button onClick={() => setChatOpen(false)}>

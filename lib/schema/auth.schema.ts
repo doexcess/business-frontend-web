@@ -33,12 +33,12 @@ export interface VerifyEmailFormProps {
 export const LoginFormSchema = Joi.object({
   email: Joi.string().required(),
   password: Joi.string().min(8).required(),
-  role: Joi.string().required(),
+  // role: Joi.string().required(),
 });
 export interface LoginProps {
   email: string;
   password: string;
-  role: string;
+  // role: string;
 }
 
 export const ResendEmailFormSchema = Joi.object({

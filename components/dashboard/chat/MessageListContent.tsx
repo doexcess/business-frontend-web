@@ -19,6 +19,34 @@ const MessageListContent = ({
   chat,
   chats,
 }: MessageListContentProps) => {
+  // Format last message time with proper fallback
+  const formatLastMessageTime = (timestamp?: string) => {
+    if (!timestamp) return '';
+
+    try {
+      const messageDate = new Date(timestamp);
+      const now = new Date();
+
+      // Check if date is valid
+      if (isNaN(messageDate.getTime())) return '';
+
+      const diffInMinutes =
+        (now.getTime() - messageDate.getTime()) / (1000 * 60);
+      const diffInHours = diffInMinutes / 60;
+      const diffInDays = diffInHours / 24;
+
+      if (diffInMinutes < 1) return 'Just now';
+      if (diffInMinutes < 60) return `${Math.floor(diffInMinutes)}m ago`;
+      if (diffInHours < 24) return `${Math.floor(diffInHours)}h ago`;
+      if (diffInDays < 7) return `${Math.floor(diffInDays)}d ago`;
+      if (diffInDays < 30) return `${Math.floor(diffInDays / 7)}w ago`;
+      if (diffInDays < 365) return `${Math.floor(diffInDays / 30)}mo ago`;
+      return `${Math.floor(diffInDays / 365)}y ago`;
+    } catch (error) {
+      return '';
+    }
+  };
+
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
 
@@ -61,7 +89,7 @@ const MessageListContent = ({
             {chat.chat_buddy.name}
           </p>
           <span className={clsx('text-xs font-medium')}>
-            {moment(chat.messages[0]?.created_at).fromNow()}
+            {formatLastMessageTime(chat.messages[0]?.updated_at)}
           </span>
         </div>
         <div className='flex justify-between items-center'>

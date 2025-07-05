@@ -144,10 +144,6 @@ const CustomersList = () => {
       return stringValue;
     }
 
-    console.log(123);
-
-    console.log(stringValue);
-
     // Handle scientific notation (e.g., 2.34903E+12)
     if (stringValue.includes('E') || stringValue.includes('e')) {
       try {

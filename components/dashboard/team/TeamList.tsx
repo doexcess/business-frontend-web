@@ -53,7 +53,7 @@ const TeamList = () => {
                     member.user?.id === profile?.id ? '' : `team/${member.id}`
                   }
                   className={cn(
-                    'flex items-center gap-3 ',
+                    'flex items-center gap-3 pr-3',
                     member.user?.id === profile?.id && 'cursor-default'
                   )}
                 >

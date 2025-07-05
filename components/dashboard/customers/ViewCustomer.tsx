@@ -31,7 +31,6 @@ import { useSelector } from 'react-redux';
 import { formatCurrency } from '@/lib/utils';
 import { Payment } from '@/types/payment';
 import ThemeDivBorder from '@/components/ui/ThemeDivBorder';
-import { Fa42Group } from 'react-icons/fa6';
 
 const getPurchaseTypeIcon = (type: string) => {
   switch (type) {

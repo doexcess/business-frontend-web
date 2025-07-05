@@ -178,6 +178,51 @@ export default function Chat({
   enabledBackButton = true,
   rightSideComponent,
 }: ChatProps) {
+  // Format message time with smart display
+  const formatMessageTime = (timestamp: string) => {
+    const messageDate = new Date(timestamp);
+    const now = new Date();
+    const diffInHours =
+      (now.getTime() - messageDate.getTime()) / (1000 * 60 * 60);
+
+    // Today: show time only
+    if (messageDate.toDateString() === now.toDateString()) {
+      return messageDate.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+
+    // Yesterday: show "Yesterday" + time
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (messageDate.toDateString() === yesterday.toDateString()) {
+      return `Yesterday ${messageDate.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`;
+    }
+
+    // Within last 7 days: show day name + time
+    if (diffInHours < 168) {
+      return `${messageDate.toLocaleDateString([], {
+        weekday: 'short',
+      })} ${messageDate.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`;
+    }
+
+    // Older: show date + time
+    return `${messageDate.toLocaleDateString([], {
+      month: 'short',
+      day: 'numeric',
+    })} ${messageDate.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    })}`;
+  };
+
   const { isConnected } = useSocket();
   const [input, setInput] = useState('');
   const [filePreview, setFilePreview] = useState<FilePreview | null>(null);
@@ -514,10 +559,7 @@ export default function Chat({
         )}
         <div className='flex justify-end items-center mt-1 gap-1'>
           <span className='text-xs text-gray-500 dark:text-gray-300'>
-            {new Date(message.created_at).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
+            {formatMessageTime(message.created_at)}
           </span>
           {message.initiator_id === profile?.id && (
             <span
@@ -585,8 +627,25 @@ export default function Chat({
               <MessageSkeleton isOwnMessage={true} />
               <MessageSkeleton isOwnMessage={false} />
             </>
-          ) : (
+          ) : messages.length ? (
             messages.map(renderMessage)
+          ) : (
+            <div className='flex flex-col items-center justify-center h-full min-h-[full] text-center'>
+              <div className='w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4'>
+                <Icon
+                  url='/icons/chat/chats.svg'
+                  width={24}
+                  className='text-gray-400'
+                />
+              </div>
+              <h3 className='text-lg font-semibold text-gray-800 dark:text-white mb-2'>
+                No messages yet
+              </h3>
+              <p className='text-gray-500 dark:text-gray-400 max-w-sm'>
+                Start a conversation by sending your first message to{' '}
+                {chat?.chat_buddy?.name}
+              </p>
+            </div>
           )}
           <div ref={messagesEndRef} />
         </div>

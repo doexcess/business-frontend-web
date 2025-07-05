@@ -27,7 +27,7 @@ const Home = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { profile } = useSelector((state: RootState) => state.auth);
   const { orgs, org } = useSelector((state: RootState) => state.org);
-  const analytics = useSelector((state: RootState) => state.anaytics);
+  const analytics = useSelector((state: RootState) => state.analytics);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showOrgModal, setShowOrgModal] = useState(false);
 
@@ -186,7 +186,7 @@ const Home = () => {
         {/* Main Content */}
         <div className='flex-1 text-black-1 dark:text-white'>
           {/* Profile Completion Banner */}
-          {profile?.role.role_id === SystemRole.BUSINESS_SUPER_ADMIN &&
+          {profile?.role?.role_id === SystemRole.BUSINESS_SUPER_ADMIN &&
             (!orgs.length || org?.onboarding_status?.current_step !== 4) && (
               <>
                 <div className='mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'>
@@ -230,7 +230,7 @@ const Home = () => {
             )}
 
           {/* Onboarding Modal */}
-          {profile?.role.role_id === SystemRole.BUSINESS_SUPER_ADMIN && (
+          {profile?.role?.role_id === SystemRole.BUSINESS_SUPER_ADMIN && (
             <OnboardingModal
               isOpen={showProfileModal}
               setIsOpen={setShowProfileModal}
