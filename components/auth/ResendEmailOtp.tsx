@@ -31,7 +31,6 @@ const ResendEmailOtp = () => {
     ...defaultValue,
     email: decyptedData.email,
     password: decyptedData.password,
-    role: decyptedData.role,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
