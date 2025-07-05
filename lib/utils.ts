@@ -144,8 +144,9 @@ export enum EventType {
 
 export enum ContactInviteStatus {
   ACTIVE = 'active',
-  INACTIVE = 'inactive',
+  SUSPENDED = 'suspended',
   PENDING = 'pending',
+  EXPIRED = 'expired',
 }
 
 export const NotificationStatusTypes = [

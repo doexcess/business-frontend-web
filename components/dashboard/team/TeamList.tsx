@@ -67,11 +67,20 @@ const TeamList = () => {
                       className='w-8 h-8 rounded-full object-cover'
                     />
                   )}
-                  <div className='flex items-center gap-1 underline underline-offset-4 dark:text-gray-200'>
+                  <div
+                    className={cn(
+                      'flex items-center gap-1 underline underline-offset-4 dark:text-gray-200',
+                      member.user?.id === profile?.id && 'no-underline'
+                    )}
+                  >
                     <span className='font-medium text-gray-800 dark:text-gray-100 truncate'>
-                      {member.name || '-'}
+                      {member.user?.id === profile?.id
+                        ? 'You'
+                        : member.name || '-'}
                     </span>
-                    <PencilIcon size='13' />
+                    {member.user?.id !== profile?.id && (
+                      <PencilIcon size='13' />
+                    )}
                   </div>
                 </Link>
               </td>

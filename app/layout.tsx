@@ -26,6 +26,27 @@ export default function RootLayout({
   return (
     <ReduxProvider>
       <html lang='en'>
+        <head>
+          <link rel='icon' href='/icons/icon.png' />
+          <meta property='og:image' content='/icons/icon.png' />
+          <meta name='twitter:image' content='/icons/icon.png' />
+          <script
+            type='application/ld+json'
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'Organization',
+                name: 'Doexcess',
+                url: 'https://doexcess.com',
+                logo: 'https://doexcess.com/icons/icon.png',
+                sameAs: [
+                  'https://twitter.com/doexcess',
+                  'https://www.linkedin.com/company/doexcess',
+                ],
+              }),
+            }}
+          />
+        </head>
         <ConfettiProvider />
         <ToastProvider />
         <ThemeProvider

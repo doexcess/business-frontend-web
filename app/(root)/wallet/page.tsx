@@ -20,19 +20,19 @@ const Wallet = () => {
 
   const walletBalance = formatMoney(
     +organization?.business_wallet?.balance!,
-    organization?.business_wallet.currency
+    organization?.business_wallet?.currency
   );
   const totalTransactions = formatMoney(
     total_trx,
-    organization?.business_wallet.currency
+    organization?.business_wallet?.currency
   );
   const totalCredit = formatMoney(
     total_credit,
-    organization?.business_wallet.currency
+    organization?.business_wallet?.currency
   );
   const totalDebit = formatMoney(
     total_debit,
-    organization?.business_wallet.currency
+    organization?.business_wallet?.currency
   );
 
   const [isWithdrawModalOpen, setWithdrawModalOpen] = useState(false);

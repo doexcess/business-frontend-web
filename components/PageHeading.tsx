@@ -66,7 +66,7 @@ const PageHeading = ({
               {layer1 && (
                 <li className='inline-flex items-center'>
                   <Link
-                    href={`/`}
+                    href={`/home`}
                     className='inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-main dark:text-gray-400 dark:hover:text-white'
                   >
                     <svg

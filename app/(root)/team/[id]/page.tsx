@@ -24,6 +24,9 @@ import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import ActivateIcon from '@/components/ui/icons/ActivateIcon';
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
 import useInvites from '@/hooks/page/useInvites';
+import { IoIosChatboxes } from 'react-icons/io';
+import Chat from '@/components/dashboard/chat/Chat';
+import { XIcon } from 'lucide-react';
 
 const TeamMember = () => {
   const router = useRouter();
@@ -32,6 +35,8 @@ const TeamMember = () => {
 
   const { invite } = useSelector((state: RootState) => state.org);
   const { invites, count, loading, onClickNext, onClickPrev } = useInvites();
+
+  const [chatOpen, setChatOpen] = useState(false);
 
   const [isSubmittingResendInvite, setIsSubmittingResendInvite] =
     useState(false);
@@ -199,7 +204,18 @@ const TeamMember = () => {
           enableBackButton
           ctaButtons={
             <div className='flex gap-2'>
-              {invite?.status === ContactInviteStatus.PENDING ? (
+              {invite?.user && invite.status === ContactInviteStatus.ACTIVE && (
+                <Button
+                  variant='primary'
+                  className='text-md bg-primary gap-1 py-2 rounded-lg flex items-center px-3'
+                  onClick={() => setChatOpen(!chatOpen)}
+                >
+                  <IoIosChatboxes className='text-lg' />
+                  {chatOpen ? 'Close Chat' : 'Chat'}
+                </Button>
+              )}
+              {invite?.status === ContactInviteStatus.PENDING ||
+              invite?.status === ContactInviteStatus.EXPIRED ? (
                 <Button
                   variant='outline'
                   className='text-md flex p-2 px-4 gap-2 dark:text-white dark:hover:bg-white dark:hover:text-gray-800'
@@ -389,6 +405,23 @@ const TeamMember = () => {
           allowAction={allowResendInviteAction}
           setAllowAction={setAllowResendInviteAction}
         />
+
+        {invite?.user && chatOpen && (
+          <div className='fixed bottom-4 right-4 w-80 max-w-[95vw] bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden z-10'>
+            <>
+              <Chat
+                chatbuddyId={invite.user?.id!}
+                height='h-[50vh] max-h-[40vh] md:max-h-[30vh] lg:max-h-[38vh]'
+                enabledBackButton={false}
+                rightSideComponent={
+                  <button onClick={() => setChatOpen(false)}>
+                    <XIcon />
+                  </button>
+                }
+              />
+            </>
+          </div>
+        )}
       </div>
     </main>
   );
