@@ -72,6 +72,7 @@ export const verifyEmail = createAsyncThunk(
       return {
         message: data.message,
         token: data?.accessToken,
+        data: data?.data,
       };
     } catch (error: any) {
       return rejectWithValue(
