@@ -28,6 +28,7 @@ const EditEmail = () => {
           layer2='Campaigns'
           layer3='Email'
           layer4='Edit'
+          layer3Link='/campaigns/email'
         />
       </header>
 

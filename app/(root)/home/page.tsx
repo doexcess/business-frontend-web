@@ -1,6 +1,5 @@
 'use client';
 
-import { Card } from '@/components/dashboard/Card';
 import { ClientRequestsTable } from '@/components/dashboard/ClientRequestsTable';
 import { LineChart } from '@/components/dashboard/LineChart';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
@@ -12,8 +11,6 @@ import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import OnboardingModal from '@/components/dashboard/OnboardingModal';
-import { Modal } from '@/components/ui/Modal';
-import OnboardingAlert from '@/components/OnboardingAlert';
 import SelectOrgModal from '@/components/dashboard/SelectOrgModal';
 import { useRouter } from 'next/navigation';
 import {

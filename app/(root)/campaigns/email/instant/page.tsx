@@ -17,7 +17,7 @@ const InstantEmailCampaign = () => {
           layer2='Campaigns'
           layer3='Email'
           layer4='Instant'
-          layer3Link='/Campaigns/email'
+          layer3Link='/campaigns/email'
           enableBackButton={true}
         />
 

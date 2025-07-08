@@ -61,7 +61,7 @@ const VerifySigninForm = ({ email }: VerifySigninFormProps) => {
       const route = [
         SystemRole.BUSINESS_SUPER_ADMIN,
         SystemRole.BUSINESS_ADMIN,
-      ].includes(response.payload.data.role.role_id)
+      ].includes(response.payload.data.role)
         ? '/home'
         : '/dashboard/home';
 

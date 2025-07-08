@@ -7,16 +7,16 @@ import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
 import { SocketProvider } from '@/context/SocketProvider';
+import { SystemRole } from '@/lib/utils';
 
 const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-  
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const { user, loading, error, token } = useSelector(
+  const { user, loading, error, token, profile } = useSelector(
     (state: RootState) => state.auth
   );
 
@@ -33,6 +33,12 @@ const RootLayout = ({
   if (!token) {
     console.log('RootLayout: No token, redirecting to signin');
     return router.push('/auth/signin');
+  }
+
+  if (profile) {
+    if (profile.role.role_id === SystemRole.USER) {
+      return router.push('/dashboard/home');
+    }
   }
 
   console.log('RootLayout: Rendering with token, setting up SocketProvider');
