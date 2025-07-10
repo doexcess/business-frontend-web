@@ -146,6 +146,7 @@ export interface PaymentDetailsResponse {
 export interface PaymentInitData {
   authorization_url: string;
   payment_id: string;
+  access_code: string;
 }
 
 export interface PaymentInitResponse {

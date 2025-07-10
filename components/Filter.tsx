@@ -16,6 +16,7 @@ const Filter = ({
   showSearch = true,
   enableRightSearchBar = false,
   showFullSearchWidth = false,
+  showFilterByDate = true,
   searchPlaceholder = 'Search',
   showPeriod = true,
   handleSearchSubmit,
@@ -30,6 +31,7 @@ const Filter = ({
   showFullSearchWidth?: boolean;
   searchPlaceholder?: string;
   showPeriod?: boolean;
+  showFilterByDate?: boolean;
   handleSearchSubmit?: (input: string) => void;
   handleFilterByDateSubmit?: (
     startDate: string,
@@ -67,6 +69,8 @@ const Filter = ({
       <div
         className={`flex dark:text-white ${showPeriod && 'flex-col'} ${
           !showSearch ? 'justify-end mt-5' : 'mt-2 mb-2'
+        } ${
+          enableRightSearchBar && 'flex-col md:flex-row'
         } lg:flex-row gap-3 lg:gap-0`}
       >
         <div className={`flex items-center gap-2 flex-[4]`}>
@@ -91,7 +95,8 @@ const Filter = ({
             <h1
               className={cn(
                 'text-2xl font-bold',
-                pageTitleClass && pageTitleClass
+                pageTitleClass && pageTitleClass,
+                enableRightSearchBar && 'hidden md:block'
               )}
             >
               {pageTitle!}
@@ -122,15 +127,17 @@ const Filter = ({
               />
             </form>
           )}
-          <Button
-            title='Search with date filter'
-            size='icon'
-            variant='secondary'
-            className='text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-2 py-2 dark:bg-gray-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800 flex gap-1 items-center'
-            onClick={() => setOpenModal(true)}
-          >
-            <HiDotsVertical size={20} className={'text-2xl'} />
-          </Button>
+          {showFilterByDate && (
+            <Button
+              title='Search with date filter'
+              size='icon'
+              variant='secondary'
+              className='text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-2 py-2 dark:bg-gray-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800 flex gap-1 items-center'
+              onClick={() => setOpenModal(true)}
+            >
+              <HiDotsVertical size={20} className={'text-2xl'} />
+            </Button>
+          )}
           <Button
             title='Refresh'
             size='icon'

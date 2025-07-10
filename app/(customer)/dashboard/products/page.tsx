@@ -16,6 +16,7 @@ import { AppDispatch, RootState } from '@/redux/store';
 import { addToCart, fetchCart } from '@/redux/slices/cartSlice';
 import { ProductType } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import Icon from '@/components/ui/Icon';
 
 const Products = () => {
   const [search, setSearch] = useState('');
@@ -63,6 +64,7 @@ const Products = () => {
             showPeriod={false}
             enableRightSearchBar={true}
             showFullSearchWidth={true}
+            showFilterByDate={false}
             handleSearchSubmit={setSearch}
             handleRefresh={handleRefresh}
           />
@@ -266,6 +268,9 @@ const Products = () => {
                                   }}
                                   disabled={anyTierInCart}
                                 >
+                                  <span role='img' aria-label='Buy'>
+                                    <Icon url='/icons/cart.svg' width={15} />
+                                  </span>{' '}
                                   Buy
                                 </Button>
                               )}

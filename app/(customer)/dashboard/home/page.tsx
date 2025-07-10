@@ -109,7 +109,7 @@ const DashboardHome = () => {
 
             {/* Quick Actions */}
             <DashboardCard title='Quick Actions'>
-              <div className='flex flex-row md:flex-col gap-2'>
+              <div className='flex flex-row md:flex-col lg:flex-row md:justify-center lg:justify-start gap-2'>
                 {QUICK_ACTIONS.map((action, idx) => (
                   <Link
                     key={action.label}
