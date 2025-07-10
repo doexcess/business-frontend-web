@@ -1,30 +1,63 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Select from '@/components/Select';
-import Icon from '@/components/ui/Icon';
+import Input from '@/components/ui/Input';
 
-const CourseFilters = () => {
+const priceRangeOptions = [
+  'All Prices',
+  'Under ₦10,000',
+  '₦10,000 - ₦50,000',
+  '₦50,000 - ₦100,000',
+  'Over ₦100,000',
+];
+
+interface CourseFiltersProps {
+  search: string;
+  priceRange: string;
+  onSearch: (value: string) => void;
+  onPriceRangeChange: (value: string) => void;
+}
+
+const CourseFilters = ({
+  search,
+  priceRange,
+  onSearch,
+  onPriceRangeChange,
+}: CourseFiltersProps) => {
+  const [inputValue, setInputValue] = useState(search);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      onSearch(inputValue);
+    }
+  };
+
   return (
-    <div className='grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-4'>
-      <div className=''>
-        <Select
-          name='category'
-          className='font-bold text-base w-full' // w-full to fill grid cell
-          data={['Category']}
-          required={true}
-          value={'Category'}
-        />
-      </div>
-      <div className=''>
-        <Select
-          name='price-range'
-          className='font-bold text-base w-full' // w-full to fill grid cell
-          data={['Price Range']}
-          required={true}
-          value={'Price Range'}
-        />
-      </div>
+    <div className='flex flex-row gap-4 items-center'>
+      <Input
+        type='text'
+        placeholder='Search for anything...'
+        className='border border-gray-300 rounded px-3  py-2 md:py-[10px] text-base w-full  dark:bg-gray-800 dark:text-white'
+        value={inputValue}
+        onChange={handleInputChange}
+        onKeyDown={handleInputKeyDown}
+      />
+      <Select
+        name='price-range'
+        className='font-bold text-base w-full py-2 rounded'
+        data={priceRangeOptions}
+        required={true}
+        value={priceRange}
+        onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+          onPriceRangeChange(e.target.value)
+        }
+      />
     </div>
   );
 };

@@ -378,3 +378,5 @@ export type BusinessIndustry = (typeof BUSINESS_INDUSTRIES)[number];
 export const reformatText = (text: string, separator: string) => {
   return text.split(separator).join(' ');
 };
+
+export const OK = 200;

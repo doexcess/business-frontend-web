@@ -5,6 +5,40 @@ import { AppDispatch, RootState } from '@/redux/store';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { SystemRole } from '@/lib/utils';
+import Link from 'next/link';
+
+const QUICK_ACTIONS = [
+  {
+    label: 'View Products',
+    className: 'bg-blue-50 text-primary-main hover:bg-blue-100',
+    link: '/dashboard/products', // TODO: Implement action
+  },
+  {
+    label: 'Create New Order',
+    className: 'bg-primary-main text-white hover:bg-blue-700',
+    link: '/dashboard/cart', // TODO: Implement action
+  },
+];
+
+const HELP_LINK = `${process.env.NEXT_PUBLIC_WEBSITE_URL}/contact`;
+
+function DashboardCard({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className='bg-white dark:bg-gray-800 border border-neutral-3 dark:border-black-2 rounded-lg shadow p-4 flex flex-col gap-2'>
+      <div className='font-medium text-gray-800 mb-2 dark:text-white'>
+        {title}
+      </div>
+      {children}
+    </div>
+  );
+}
 
 const DashboardHome = () => {
   const router = useRouter();
@@ -15,38 +49,42 @@ const DashboardHome = () => {
   const [showOrgModal, setShowOrgModal] = useState(false);
 
   useEffect(() => {
+    // Redirect based on role
+    if (profile?.role?.role_id === SystemRole.USER) {
+      router.replace('/dashboard/home');
+    } else if (
+      profile?.role?.role_id === SystemRole.BUSINESS_ADMIN ||
+      profile?.role?.role_id === SystemRole.BUSINESS_SUPER_ADMIN
+    ) {
+      router.replace('/home');
+    }
     // Show org selection modal if no org is selected
     if (!org && orgs.length > 0) {
       setShowOrgModal(true);
     }
-  }, [org, orgs]);
+  }, [profile?.role?.role_id, org, orgs, router]);
 
   if (!org && orgs.length > 0) {
     return <SelectOrgModal isOpen={true} organizations={orgs} />;
   }
 
   return (
-    <main className='section-container'>
+    <div className='section-container'>
       <div className='h-full'>
         <div className='mx-auto space-y-3 text-black-1 dark:text-white'>
           {/* Welcome Header */}
           <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2'>
-            <h1 className='text-2xl font-bold '>
+            <h1 className='text-2xl font-bold'>
               Welcome{profile?.name ? `, ${profile.name}` : ''}!
             </h1>
-            {/* Optionally, add a profile/settings button here */}
           </div>
 
           {/* Organization Info or Prompt */}
-          <div className='bg-white dark:bg-gray-800 border border-neutral-3 dark:border-black-2 rounded-lg shadow p-6 flex flex-col gap-2'>
+          <DashboardCard title='Your Organization'>
             {org ? (
-              <>
-                <div className='text-lg font-semibold '>Your Organization</div>
-                <div className=''>{org.business_name}</div>
-                {/* Add more org details here if needed */}
-              </>
+              <div>{org.business_name}</div>
             ) : (
-              <div className='text-gray-700'>
+              <div className='text-gray-700 dark:text-gray-300'>
                 You are not a member of any organization yet. <br />
                 {orgs.length === 0 ? (
                   <span>
@@ -58,53 +96,52 @@ const DashboardHome = () => {
                 )}
               </div>
             )}
-          </div>
+          </DashboardCard>
 
           {/* Dashboard Sections */}
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
             {/* Recent Activity */}
-            <div className='bg-white border rounded-lg shadow p-4 flex flex-col gap-2'>
-              <div className='font-medium text-gray-800 mb-2'>
-                Recent Activity
-              </div>
-              <div className='text-gray-500 text-sm'>
+            <DashboardCard title='Recent Activity'>
+              <div className='text-gray-500 text-sm dark:text-gray-400'>
                 No recent activity yet.
               </div>
-            </div>
+            </DashboardCard>
 
             {/* Quick Actions */}
-            <div className='bg-white border rounded-lg shadow p-4 flex flex-col gap-2'>
-              <div className='font-medium text-gray-800 mb-2'>
-                Quick Actions
+            <DashboardCard title='Quick Actions'>
+              <div className='flex flex-row md:flex-col gap-2'>
+                {QUICK_ACTIONS.map((action, idx) => (
+                  <Link
+                    key={action.label}
+                    className={`rounded px-4 py-2 text-sm font-medium transition mb-2 ${action.className}`}
+                    href={action.link}
+                    type='button'
+                  >
+                    {action.label}
+                  </Link>
+                ))}
               </div>
-              <button className='bg-primary-main text-white rounded px-4 py-2 text-sm font-medium hover:bg-blue-700 transition'>
-                Create New Order
-              </button>
-              <button className='bg-blue-50 text-primary-main rounded px-4 py-2 text-sm font-medium hover:bg-blue-100 transition'>
-                View Products
-              </button>
-            </div>
+            </DashboardCard>
 
             {/* Help/Support */}
-            <div className='bg-white border rounded-lg shadow p-4 flex flex-col gap-2'>
-              <div className='font-medium text-gray-800 mb-2'>
-                Help & Support
-              </div>
-              <div className='text-gray-500 text-sm'>
+            <DashboardCard title='Help & Support'>
+              <div className='text-gray-500 text-sm dark:text-gray-400'>
                 Need help?{' '}
                 <a
-                  href={`${process.env.NEXT_PUBLIC_WEBSITE_URL}/contact`}
+                  href={HELP_LINK}
                   className='text-primary-main hover:underline'
+                  target='_blank'
+                  rel='noopener noreferrer'
                 >
                   Visit our Help Center
                 </a>
                 .
               </div>
-            </div>
+            </DashboardCard>
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 };
 

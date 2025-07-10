@@ -28,17 +28,13 @@ const RootLayout = ({
       hasUser: !!user,
       loading,
     });
-  }, [token, user, loading]);
+
+    console.log(profile);
+  }, [token, user, loading, profile]);
 
   if (!token) {
     console.log('RootLayout: No token, redirecting to signin');
     return router.push('/auth/signin');
-  }
-
-  if (profile) {
-    if (profile.role.role_id === SystemRole.USER) {
-      return router.push('/dashboard/home');
-    }
   }
 
   console.log('RootLayout: Rendering with token, setting up SocketProvider');

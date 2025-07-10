@@ -9,6 +9,7 @@ import {
   HiOutlineQuestionMarkCircle,
   HiOutlineUpload,
   HiQuestionMarkCircle,
+  HiShoppingCart,
   HiUpload,
   HiUserGroup,
   HiUsers,
@@ -92,6 +93,14 @@ export const sidebarLinks = [
         label: 'Subscription Plans',
       },
     ],
+  },
+  {
+    icon: HiShoppingCart,
+    route: '/dashboard/cart',
+    label: 'Cart',
+    group: groups.ONE,
+    roleOptions: [SystemRole.USER],
+    activeIconColor: 'text-primary-main', // Add this
   },
   {
     icon: HiUsers,

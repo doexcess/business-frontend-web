@@ -7,8 +7,16 @@ import MobileNav from '../sidebar/MobileNav';
 import RecentNotifications from './RecentNotifications';
 import Search from './Search';
 import Icon from '@/components/ui/Icon';
+import useCart from '@/hooks/page/useCart';
+import { ShoppingCart } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
+import { SystemRole } from '@/lib/utils';
 
 const Topbar = () => {
+  const { count } = useCart();
+  const { profile } = useSelector((state: RootState) => state.auth);
+
   const [isOpen, setIsOpen] = useState({
     profileDialog: false,
     appsDialog: false,
@@ -41,6 +49,24 @@ const Topbar = () => {
         </div>
         <div className='flex items-center lg:order-2 gap-1'>
           <RecentNotifications />
+
+          {/* Cart Icon with Badge */}
+          {profile?.role.role_id === SystemRole.USER && (
+            <Link
+              href='/dashboard/cart'
+              className='relative flex items-center mx-2'
+            >
+              <ShoppingCart
+                size={24}
+                className='text-gray-700 dark:text-gray-200'
+              />
+              {count > 0 && (
+                <span className='absolute -top-2 -right-2 bg-primary-main text-white text-xs font-bold rounded-full px-1.5 py-0.5 min-w-[20px] text-center'>
+                  {count}
+                </span>
+              )}
+            </Link>
+          )}
 
           {/* Apps */}
           {/* <Apps isOpen={isOpen} setIsOpen={setIsOpen} /> */}

@@ -375,3 +375,58 @@ export interface DeleteTicketResponse {
     deleted: boolean;
   };
 }
+
+export interface TicketTierWithTicketAndProduct {
+  id: string;
+  ticket_id: string;
+  name: string;
+  description: string | null;
+  quantity: number | null;
+  remaining_quantity: number | null;
+  max_per_purchase: number | null;
+  default_view: boolean;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  currency: string;
+  amount: string;
+  original_amount: string;
+  ticket: {
+    id: string;
+    product_id: string;
+    event_time?: string;
+    event_start_date: string;
+    event_end_date: string;
+    event_location: string;
+    event_type: string;
+    auth_details: string | null;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+    product: {
+      id: string;
+      business_id: string;
+      category_id: string;
+      creator_id: string;
+      title: string;
+      description: string;
+      keywords: string | null;
+      metadata: any;
+      type: string;
+      status: string;
+      readiness_percent: number | null;
+      published_at: string;
+      archived_at: string | null;
+      price: string;
+      currency: string;
+      original_price: string | null;
+      multimedia_id: string;
+      created_at: string;
+      updated_at: string;
+      deleted_at: string | null;
+      business_info: BusinessInfo;
+      multimedia: Media;
+    };
+  };
+}

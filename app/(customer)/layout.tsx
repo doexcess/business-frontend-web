@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
 import { SocketProvider } from '@/context/SocketProvider';
+import useCart from '@/hooks/page/useCart';
 
 const RootLayout = ({
   children,

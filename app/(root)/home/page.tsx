@@ -51,6 +51,24 @@ const Home = () => {
     return <SelectOrgModal isOpen={true} organizations={orgs} />;
   }
 
+  useEffect(() => {
+    console.log(profile?.role);
+
+    // Redirect based on role
+    if (profile?.role?.role_id === SystemRole.USER) {
+      router.replace('/dashboard/home');
+    } else if (
+      profile?.role?.role_id === SystemRole.BUSINESS_ADMIN ||
+      profile?.role?.role_id === SystemRole.BUSINESS_SUPER_ADMIN
+    ) {
+      router.replace('/home');
+    }
+    // Show org selection modal if no org is selected
+    if (!org && orgs.length > 0) {
+      setShowOrgModal(true);
+    }
+  }, [profile?.role?.role_id, org, orgs, router]);
+
   // If no orgs exist at all, show a message to create one
   if (!org && orgs.length === 0) {
     return (

@@ -10,6 +10,8 @@ import subscriptionPlanReducer from './slices/subscriptionPlanSlice';
 import notificationReducer from './slices/notificationSlice';
 import productImportReducer from './slices/productImportSlice';
 import analyticsReducer from './slices/analyticsSlice';
+import productReducer from './slices/productSlice';
+import cartReducer from './slices/cartSlice';
 import storage from 'redux-persist/lib/storage'; // Uses localStorage
 import { persistReducer } from 'redux-persist';
 
@@ -17,7 +19,7 @@ import { persistReducer } from 'redux-persist';
 const persistConfig = {
   key: 'auth',
   storage,
-  whitelist: ['auth', 'org'], // Only persist the auth slice
+  whitelist: ['auth', 'org', 'cart'], // Only persist the auth slice
 };
 
 // Combine reducers
@@ -33,6 +35,8 @@ const rootReducer = combineReducers({
   notification: notificationReducer, // Not persisted
   productImport: productImportReducer,
   analytics: analyticsReducer,
+  products: productReducer,
+  cart: persistReducer(persistConfig, cartReducer),
 });
 
 export const store = configureStore({

@@ -332,3 +332,9 @@ body {
     @apply underline underline-offset-4;
   }
 }
+
+.paystack-overlay {
+  background: rgba(0, 0, 0, 0.2) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+}
