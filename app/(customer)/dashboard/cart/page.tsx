@@ -19,7 +19,6 @@ import {
   CreatePaymentPayload,
   PaymentPurchase,
 } from '@/lib/schema/payment.schema';
-import { usePaystackPayment } from 'react-paystack';
 import { useRouter } from 'next/navigation';
 
 const DashboardCart = () => {
@@ -60,23 +59,41 @@ const DashboardCart = () => {
   const [paystackConfig, setPaystackConfig] = useState<any | null>(null);
   const [shouldTriggerPayment, setShouldTriggerPayment] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [paystackPayment, setPaystackPayment] = useState<any>(null);
 
   // Ensure we're on client side before using Paystack
   React.useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const initializePayment = usePaystackPayment(
-    isClient ? paystackConfig || { publicKey } : { publicKey }
-  );
+  React.useEffect(() => {
+    // Only import on the client
+    import('react-paystack').then((mod) => {
+      setPaystackPayment(() => mod.usePaystackPayment);
+    });
+  }, []);
 
   // Effect to trigger payment when config is ready
   React.useEffect(() => {
-    if (shouldTriggerPayment && paystackConfig && isClient) {
+    if (
+      shouldTriggerPayment &&
+      paystackConfig &&
+      isClient &&
+      typeof paystackPayment === 'function'
+    ) {
+      const initializePayment = paystackPayment(
+        paystackConfig || { publicKey }
+      );
       initializePayment(paystackConfig);
       setShouldTriggerPayment(false);
     }
-  }, [shouldTriggerPayment, paystackConfig, initializePayment, isClient]);
+  }, [
+    shouldTriggerPayment,
+    paystackConfig,
+    paystackPayment,
+    isClient,
+    publicKey,
+  ]);
 
   const handleCheckout = async () => {
     if (!userEmail) {

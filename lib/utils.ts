@@ -384,12 +384,20 @@ export const OK = 200;
 // Utility to safely check if we're in a browser environment
 export const isBrowser = typeof window !== 'undefined';
 
-// Safe browser API access
+// Safe browser API access (make these lazy, not at module scope)
 export const safeBrowserAPI = {
-  location: isBrowser ? window.location : null,
-  localStorage: isBrowser ? window.localStorage : null,
-  sessionStorage: isBrowser ? window.sessionStorage : null,
-  navigator: isBrowser ? window.navigator : null,
+  get location() {
+    return isBrowser ? window.location : null;
+  },
+  get localStorage() {
+    return isBrowser ? window.localStorage : null;
+  },
+  get sessionStorage() {
+    return isBrowser ? window.sessionStorage : null;
+  },
+  get navigator() {
+    return isBrowser ? window.navigator : null;
+  },
 };
 
 // Safe redirect function

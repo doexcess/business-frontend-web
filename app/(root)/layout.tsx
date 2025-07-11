@@ -32,9 +32,31 @@ const RootLayout = ({
     console.log(profile);
   }, [token, user, loading, profile]);
 
-  if (!token) {
-    console.log('RootLayout: No token, redirecting to signin');
-    return router.push('/auth/signin');
+  // Remove direct router.push from render, use useEffect for redirect
+  const [isClient, setIsClient] = React.useState(false);
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  React.useEffect(() => {
+    if (isClient && !token) {
+      console.log('RootLayout: No token, redirecting to signin');
+      router.push('/auth/signin');
+    }
+  }, [token, isClient, router]);
+
+  if (!isClient || !token) {
+    return (
+      <main className='flex h-screen w-full font-gilroy bg-white dark:bg-gray-900'>
+        <div className='flex size-full flex-col'>
+          <div className='main-container'>
+            <div className='flex items-center justify-center h-screen'>
+              <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-primary-main'></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
   }
 
   console.log('RootLayout: Rendering with token, setting up SocketProvider');
