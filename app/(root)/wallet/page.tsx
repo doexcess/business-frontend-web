@@ -12,29 +12,25 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import usePayments from '@/hooks/page/usePayments';
 import PaymentList from '@/components/dashboard/payment/PaymentList';
+import useOrg from '@/hooks/page/useOrg';
 
 const Wallet = () => {
   const { org: organization } = useSelector((state: RootState) => state.org);
+  const { org } = useOrg(organization?.id!);
   const { profile } = useSelector((state: RootState) => state.auth);
 
   const { total_credit, total_debit, total_trx } = usePayments();
 
   const walletBalance = formatMoney(
-    +organization?.business_wallet?.balance! || 0,
-    organization?.business_wallet?.currency
+    +org?.business_wallet?.balance! || 0,
+    org?.business_wallet?.currency
   );
   const totalTransactions = formatMoney(
     total_trx,
-    organization?.business_wallet?.currency
+    org?.business_wallet?.currency
   );
-  const totalCredit = formatMoney(
-    total_credit,
-    organization?.business_wallet?.currency
-  );
-  const totalDebit = formatMoney(
-    total_debit,
-    organization?.business_wallet?.currency
-  );
+  const totalCredit = formatMoney(total_credit, org?.business_wallet?.currency);
+  const totalDebit = formatMoney(total_debit, org?.business_wallet?.currency);
 
   const [isWithdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');

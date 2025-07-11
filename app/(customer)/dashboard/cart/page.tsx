@@ -2,12 +2,17 @@
 
 import React, { useState } from 'react';
 import useCart from '@/hooks/page/useCart';
-import { formatMoney, ProductType } from '@/lib/utils';
+import {
+  formatMoney,
+  ProductType,
+  isBrowser,
+  safeRouterPush,
+} from '@/lib/utils';
 import PageHeading from '@/components/PageHeading';
 import toast from 'react-hot-toast';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/redux/store';
-import { fetchCart, removeCartItem } from '@/redux/slices/cartSlice';
+import { emptyCart, fetchCart, removeCartItem } from '@/redux/slices/cartSlice';
 import { Modal } from '@/components/ui/Modal';
 import { createPayment, verifyPayment } from '@/redux/slices/paymentSlice';
 import {
@@ -53,6 +58,25 @@ const DashboardCart = () => {
 
   // Payment logic for checkout CTA
   const [paystackConfig, setPaystackConfig] = useState<any | null>(null);
+  const [shouldTriggerPayment, setShouldTriggerPayment] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Ensure we're on client side before using Paystack
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const initializePayment = usePaystackPayment(
+    isClient ? paystackConfig || { publicKey } : { publicKey }
+  );
+
+  // Effect to trigger payment when config is ready
+  React.useEffect(() => {
+    if (shouldTriggerPayment && paystackConfig && isClient) {
+      initializePayment(paystackConfig);
+      setShouldTriggerPayment(false);
+    }
+  }, [shouldTriggerPayment, paystackConfig, initializePayment, isClient]);
 
   const handleCheckout = async () => {
     if (!userEmail) {
@@ -104,13 +128,13 @@ const DashboardCart = () => {
       const reference = createRes.data.payment_id;
       setPaystackRef(reference);
       // 3. Set up Paystack config and trigger inline payment
-      const paystackConfig = {
+      const config = {
         reference,
         email: userEmail,
         amount: totalSum * 100, // Paystack expects amount in kobo
         publicKey,
         onSuccess: async (response: any) => {
-          router.push('/dashboard/orders');
+          safeRouterPush(router, '/dashboard/orders');
           setIsPaying(false);
         },
         onClose: () => {
@@ -119,9 +143,8 @@ const DashboardCart = () => {
         },
       };
 
-      const initializePayment = usePaystackPayment(paystackConfig);
-      // 4. Trigger Paystack inline with all parameters present
-      initializePayment(paystackConfig);
+      setPaystackConfig(config);
+      setShouldTriggerPayment(true);
     } catch (error: any) {
       toast.error(error.message || 'Payment failed.');
       setIsPaying(false);

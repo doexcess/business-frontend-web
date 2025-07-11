@@ -380,3 +380,28 @@ export const reformatText = (text: string, separator: string) => {
 };
 
 export const OK = 200;
+
+// Utility to safely check if we're in a browser environment
+export const isBrowser = typeof window !== 'undefined';
+
+// Safe browser API access
+export const safeBrowserAPI = {
+  location: isBrowser ? window.location : null,
+  localStorage: isBrowser ? window.localStorage : null,
+  sessionStorage: isBrowser ? window.sessionStorage : null,
+  navigator: isBrowser ? window.navigator : null,
+};
+
+// Safe redirect function
+export const safeRedirect = (url: string) => {
+  if (isBrowser) {
+    window.location.href = url;
+  }
+};
+
+// Safe router push (for Next.js router)
+export const safeRouterPush = (router: any, url: string) => {
+  if (isBrowser && router) {
+    router.push(url);
+  }
+};
