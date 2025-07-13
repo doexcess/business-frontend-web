@@ -107,7 +107,7 @@ export interface ProductDetails {
   keywords: string | null;
   metadata: any | null;
   status: ProductStatus;
-  interface: Productinterface;
+  type: Productinterface;
   published_at: string;
   archived_at: string | null;
   creator_id: string;

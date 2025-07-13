@@ -130,7 +130,9 @@ const ChatSidebar = () => {
     <Card
       className={cn(
         'w-full md:w-[35%] h-full bg-neutral-2 p-4 flex-col rounded-lg',
-        pathname === '/messages' ? 'flex' : 'hidden md:flex'
+        pathname === '/messages' || pathname === '/dashboard/messages'
+          ? 'flex'
+          : 'hidden md:flex'
       )}
     >
       {/* Header tabs */}

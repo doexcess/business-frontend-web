@@ -24,7 +24,7 @@ import {
 } from 'react-icons/io';
 import { uploadImage, uploadDocument } from '@/redux/slices/multimediaSlice';
 import Image from 'next/image';
-import { cn, getAvatar } from '@/lib/utils';
+import { cn, getAvatar, SystemRole } from '@/lib/utils';
 
 interface FileUploadOption {
   type: string;
@@ -584,7 +584,11 @@ export default function Chat({
             <div className='flex items-center'>
               {enabledBackButton && (
                 <Link
-                  href='/messages'
+                  href={
+                    profile?.role.role_id === SystemRole.USER
+                      ? '/dashboard/messages'
+                      : '/messages'
+                  }
                   className='flex md:hidden dark:invert dark:brightness-0'
                 >
                   <Icon url='/icons/clients/angle-left.svg' width={30} />

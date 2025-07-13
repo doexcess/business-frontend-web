@@ -122,7 +122,7 @@ const ViewPayment = () => {
                 <strong>Name:</strong> {payment?.user?.name}
               </div>
               <div>
-                <strong>Email:</strong> {maskedEmail(payment?.user.email!)}
+                <strong>Email:</strong> {payment?.user.email!}
               </div>
               <div>
                 <strong>Phone:</strong> {payment?.user?.phone || 'N/A'}

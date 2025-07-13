@@ -230,6 +230,44 @@ export const fetchPublicSubscriptionPlans = createAsyncThunk(
   }
 );
 
+// Fetch subscription plans by business ID for viewing
+export const fetchSubscriptionPlansByBusiness = createAsyncThunk(
+  'subscription-plan/view/:business_id',
+  async (
+    {
+      business_id,
+      page,
+      limit,
+      q,
+    }: {
+      business_id: string;
+      page?: number;
+      limit?: number;
+      q?: string;
+    },
+    { rejectWithValue }
+  ) => {
+    const params: Record<string, any> = {};
+    if (page !== undefined) params['pagination[page]'] = page;
+    if (limit !== undefined) params['pagination[limit]'] = limit;
+    if (q !== undefined) params.q = q;
+    try {
+      const { data } = await api.get<SubscriptionPlanResponse>(
+        `/subscription-plan/view/${business_id}`,
+        { params }
+      );
+      return {
+        subscription_plans: data.data,
+        count: data.count,
+      };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch subscription plans'
+      );
+    }
+  }
+);
+
 const subscriptionPlanSlice = createSlice({
   name: 'subscriptonPlan',
   initialState,
@@ -330,6 +368,19 @@ const subscriptionPlanSlice = createSlice({
         state.count = action.payload.count;
       })
       .addCase(fetchPublicSubscriptionPlans.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchSubscriptionPlansByBusiness.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchSubscriptionPlansByBusiness.fulfilled, (state, action) => {
+        state.loading = false;
+        state.subscription_plans = action.payload.subscription_plans;
+        state.count = action.payload.count;
+      })
+      .addCase(fetchSubscriptionPlansByBusiness.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

@@ -1,20 +1,30 @@
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/redux/store';
 import {
   fetchPublicSubscriptionPlans,
-  fetchSubscriptionPlans,
+  fetchSubscriptionPlansByBusiness,
 } from '@/redux/slices/subscriptionPlanSlice';
-import { AppDispatch, RootState } from '@/redux/store';
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import useQueryParams from '../useQueryParams';
 import { useSearchParams } from 'next/navigation';
+import useQueryParams from '../useQueryParams';
 
-const useSubscriptionPlansPublic = () => {
+interface UseSubscriptionPlansPublicProps {
+  business_id: string;
+  page?: number;
+  limit?: number;
+  useViewEndpoint?: boolean;
+}
+
+const useSubscriptionPlansPublic = ({
+  business_id,
+  page = 1,
+  limit = 10,
+  useViewEndpoint = false,
+}: UseSubscriptionPlansPublicProps) => {
   const dispatch = useDispatch<AppDispatch>();
-  const searchQuery = useSearchParams();
+  const searchParams = useSearchParams();
 
-  const { org } = useSelector((state: RootState) => state.org);
-
-  let { subscription_plans, loading, count } = useSelector(
+  const { subscription_plans, count, loading, error } = useSelector(
     (state: RootState) => state.subscriptionPlan
   );
 
@@ -28,34 +38,102 @@ const useSubscriptionPlansPublic = () => {
     onClickPrev,
     handleSearchSubmit,
     handleFilterByDateSubmit,
-    handleRefresh,
+    handleRefresh: queryParamsRefresh,
   } = useQueryParams(subscription_plans);
 
+  const [searchQuery, setSearchQuery] = useState(q || '');
+  const [filteredPlans, setFilteredPlans] = useState(subscription_plans);
+
+  // Filter plans when search query changes
   useEffect(() => {
-    dispatch(
-      fetchPublicSubscriptionPlans({
-        ...(searchQuery.get('id') && { id: searchQuery.get('id')! }),
-        page: currentPage,
-        limit: perPage,
-        ...(q && { q }),
-        business_id: org?.id as string,
-      })
-    ).unwrap();
-  }, [dispatch, currentPage, perPage, q, startDate, endDate, org]);
+    if (searchQuery.trim()) {
+      const filtered = subscription_plans.filter(
+        (plan) =>
+          plan.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          plan.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredPlans(filtered);
+    } else {
+      setFilteredPlans(subscription_plans);
+    }
+  }, [subscription_plans, searchQuery]);
+
+  useEffect(() => {
+    if (business_id) {
+      if (useViewEndpoint) {
+        dispatch(
+          fetchSubscriptionPlansByBusiness({
+            business_id,
+            page: currentPage,
+            limit,
+            q: searchQuery,
+          })
+        );
+      } else {
+        dispatch(
+          fetchPublicSubscriptionPlans({
+            business_id,
+            page: currentPage,
+            limit,
+            q: searchQuery,
+          })
+        );
+      }
+    }
+  }, [dispatch, business_id, currentPage, limit, searchQuery, useViewEndpoint]);
+
+  const handlePageChange = (newPage: number) => {
+    // This would need to be implemented if you want to change pages
+    // For now, we'll just log it
+    console.log('Page change requested:', newPage);
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    // Reset to first page when searching
+    // Note: This would need proper pagination implementation
+  };
+
+  const handleRefresh = () => {
+    if (business_id) {
+      if (useViewEndpoint) {
+        dispatch(
+          fetchSubscriptionPlansByBusiness({
+            business_id,
+            page: currentPage,
+            limit,
+            q: searchQuery,
+          })
+        );
+      } else {
+        dispatch(
+          fetchPublicSubscriptionPlans({
+            business_id,
+            page: currentPage,
+            limit,
+            q: searchQuery,
+          })
+        );
+      }
+    }
+  };
 
   return {
-    subscription_plans,
+    subscription_plans: filteredPlans, // Return filtered plans instead of all plans
+    count, // Return filtered count
     loading,
-    count,
+    error,
     currentPage,
-    q,
-    startDate,
-    endDate,
+    searchQuery,
+    handlePageChange,
+    handleSearch,
+    handleRefresh,
+    // Also return the original unfiltered data if needed
+    allSubscriptionPlans: subscription_plans,
+    totalCount: count,
+    // Add pagination methods
     onClickNext,
     onClickPrev,
-    handleSearchSubmit,
-    handleFilterByDateSubmit,
-    handleRefresh,
   };
 };
 

@@ -131,11 +131,13 @@ const Profile = ({
             </li>
           </ul>
 
-          {profile?.role.role_id === SystemRole.BUSINESS_SUPER_ADMIN && (
+          {
             <div>
               <div className='pt-3 px-4'>
                 <span className='block text-sm font-semibold text-gray-900 dark:text-white'>
-                  Switch Business Account
+                  {profile?.role.role_id === SystemRole.USER
+                    ? 'Switch Business Directory'
+                    : 'Switch Business Account'}
                 </span>
               </div>
               <ul className='py-1 text-gray-700 dark:text-gray-300'>
@@ -166,18 +168,23 @@ const Profile = ({
                     </li>
                   ))}
 
-                <li>
-                  <Link
-                    href='/settings?tab=business-account'
-                    className='flex items-center gap-2 py-2 px-4 text-sm font-medium text-primary-main hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-primary-faded dark:hover:text-white'
-                  >
-                    <IoIosAdd size={20} />
-                    Create New Business
-                  </Link>
-                </li>
+                {[
+                  SystemRole.BUSINESS_SUPER_ADMIN,
+                  SystemRole.BUSINESS_ADMIN,
+                ].includes(profile?.role.role_id as SystemRole) && (
+                  <li>
+                    <Link
+                      href='/settings?tab=business-account'
+                      className='flex items-center gap-2 py-2 px-4 text-sm font-medium text-primary-main hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-primary-faded dark:hover:text-white'
+                    >
+                      <IoIosAdd size={20} />
+                      Create New Business
+                    </Link>
+                  </li>
+                )}
               </ul>
             </div>
-          )}
+          }
         </div>
       )}
 

@@ -180,11 +180,15 @@ export const sidebarLinks = [
     route: '/messages',
     label: 'Messages',
     group: groups.ONE,
-    roleOptions: [
-      SystemRole.BUSINESS_SUPER_ADMIN,
-      SystemRole.BUSINESS_ADMIN,
-      SystemRole.USER,
-    ],
+    roleOptions: [SystemRole.BUSINESS_SUPER_ADMIN, SystemRole.BUSINESS_ADMIN],
+    activeIconColor: 'text-primary-main', // Add this
+  },
+  {
+    icon: IoMdChatboxes,
+    route: '/dashboard/messages',
+    label: 'Messages',
+    group: groups.ONE,
+    roleOptions: [SystemRole.USER],
     activeIconColor: 'text-primary-main', // Add this
   },
 

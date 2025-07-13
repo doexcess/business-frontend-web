@@ -73,6 +73,7 @@ export enum PurchaseItemType {
 export enum ProductType {
   COURSE = 'COURSE',
   TICKET = 'TICKET',
+  SUBSCRIPTION = 'SUBSCRIPTION',
 }
 
 export enum CouponType {

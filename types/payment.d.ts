@@ -154,3 +154,8 @@ export interface PaymentInitResponse {
   message: string;
   data: PaymentInitData;
 }
+
+export interface VerifyPaymentResponse {
+  statusCode: number;
+  message: string;
+}

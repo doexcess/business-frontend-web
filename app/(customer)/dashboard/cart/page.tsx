@@ -20,6 +20,12 @@ import {
   PaymentPurchase,
 } from '@/lib/schema/payment.schema';
 import { useRouter } from 'next/navigation';
+import {
+  ShoppingCart,
+  ShoppingBag,
+  CheckCircle,
+  HelpCircle,
+} from 'lucide-react';
 
 const DashboardCart = () => {
   const router = useRouter();
@@ -151,8 +157,24 @@ const DashboardCart = () => {
         amount: totalSum * 100, // Paystack expects amount in kobo
         publicKey,
         onSuccess: async (response: any) => {
-          safeRouterPush(router, '/dashboard/orders');
-          setIsPaying(false);
+          try {
+            // Verify payment using Redux
+
+            await dispatch(verifyPayment(response.reference)).unwrap();
+
+            // Empty cart after successful payment
+            dispatch(emptyCart());
+
+            // Show success message
+            toast.success('Payment successful! Your order has been placed.');
+
+            // Redirect to orders page
+            safeRouterPush(router, '/dashboard/orders');
+          } catch (error: any) {
+            toast.error(error.message || 'Payment verification failed');
+          } finally {
+            setIsPaying(false);
+          }
         },
         onClose: () => {
           setIsPaying(false);
@@ -185,8 +207,52 @@ const DashboardCart = () => {
           ) : error ? (
             <div className='text-center py-12 text-red-500'>{error}</div>
           ) : items.length === 0 ? (
-            <div className='text-center py-12 text-gray-400'>
-              Your cart is empty.
+            <div className='flex flex-col items-center justify-center py-16 px-4'>
+              <div className='w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6'>
+                <ShoppingCart className='w-12 h-12 text-gray-400 dark:text-gray-500' />
+              </div>
+
+              <h3 className='text-xl font-semibold text-gray-900 dark:text-white mb-2'>
+                Your cart is empty
+              </h3>
+
+              <p className='text-gray-600 dark:text-gray-400 text-center mb-8 max-w-md'>
+                Looks like you haven't added any items to your cart yet. Start
+                shopping to discover amazing products!
+              </p>
+
+              <div className='flex flex-col sm:flex-row gap-3'>
+                <button
+                  onClick={() => router.push('/dashboard/products')}
+                  className='inline-flex items-center justify-center px-6 py-3 bg-primary-main text-white font-medium rounded-lg hover:bg-primary-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-main focus:ring-offset-2'
+                >
+                  <ShoppingBag className='w-5 h-5 mr-2' />
+                  Browse Products
+                </button>
+
+                <button
+                  onClick={() =>
+                    router.push('/dashboard/products/subscription-plans')
+                  }
+                  className='inline-flex items-center justify-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2'
+                >
+                  <CheckCircle className='w-5 h-5 mr-2' />
+                  View Subscriptions
+                </button>
+              </div>
+
+              <div className='mt-8 text-sm text-gray-500 dark:text-gray-400'>
+                <p className='inline-flex items-center'>
+                  <HelpCircle className='w-4 h-4 mr-1' />
+                  Need help?{' '}
+                  <a
+                    href='/support'
+                    className='text-primary-main hover:underline ml-1'
+                  >
+                    Contact support
+                  </a>
+                </p>
+              </div>
             </div>
           ) : (
             <div className='flex flex-col gap-6'>

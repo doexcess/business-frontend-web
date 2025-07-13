@@ -36,7 +36,7 @@ const RootLayout = ({
   const [isClient, setIsClient] = React.useState(false);
   React.useEffect(() => {
     setIsClient(true);
-  }, []);
+  }, [isClient]);
 
   React.useEffect(() => {
     if (isClient && !token) {

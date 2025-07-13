@@ -1,13 +1,14 @@
 import Icon from '@/components/ui/Icon';
-import { getAvatar } from '@/lib/utils';
-import { AppDispatch } from '@/redux/store';
+import { getAvatar, SystemRole } from '@/lib/utils';
+import { AppDispatch, RootState } from '@/redux/store';
 import { Chat } from '@/types/chat';
 import clsx from 'clsx';
+import { stat } from 'fs';
 import moment from 'moment';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 interface MessageListContentProps {
   index: number;
@@ -48,12 +49,17 @@ const MessageListContent = ({
   };
 
   const router = useRouter();
+  const { profile } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch<AppDispatch>();
 
   const { id: chatId }: { id: string } = useParams();
 
   const openChat = () => {
-    router.push(`/messages/${chat.id}/chat/${chat.chat_buddy.id}`);
+    const url =
+      profile?.role.role_id === SystemRole.USER
+        ? `/dashboard/messages/${chat.id}/chat/${chat.chat_buddy.id}`
+        : `/messages/${chat.id}/chat/${chat.chat_buddy.id}`;
+    router.push(url);
   };
 
   return (

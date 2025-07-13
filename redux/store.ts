@@ -7,6 +7,7 @@ import orgReducer from './slices/orgSlice';
 import paymentReducer from './slices/paymentSlice';
 import couponReducer from './slices/couponSlice';
 import subscriptionPlanReducer from './slices/subscriptionPlanSlice';
+import subscriptionReducer from './slices/subscriptionSlice';
 import notificationReducer from './slices/notificationSlice';
 import productImportReducer from './slices/productImportSlice';
 import analyticsReducer from './slices/analyticsSlice';
@@ -32,6 +33,7 @@ const rootReducer = combineReducers({
   payment: paymentReducer,
   coupon: couponReducer, // Not persisted
   subscriptionPlan: subscriptionPlanReducer, // Not persisted
+  subscription: subscriptionReducer, // Not persisted
   notification: notificationReducer, // Not persisted
   productImport: productImportReducer,
   analytics: analyticsReducer,

@@ -8,8 +8,6 @@ export default function Page() {
   const router = useRouter();
   const { profile } = useProfile();
 
-  console.log(profile);
-
   if (profile) {
     if (profile.role.role_id === SystemRole.USER) {
       return router.push('/dashboard/home');

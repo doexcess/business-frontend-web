@@ -64,6 +64,7 @@ const DashboardHome = () => {
     }
   }, [profile?.role?.role_id, org, orgs, router]);
 
+  // Early return after all hooks are called
   if (!org && orgs.length > 0) {
     return <SelectOrgModal isOpen={true} organizations={orgs} />;
   }

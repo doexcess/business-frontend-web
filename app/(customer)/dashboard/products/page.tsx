@@ -17,6 +17,8 @@ import { addToCart, fetchCart } from '@/redux/slices/cartSlice';
 import { ProductType } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import Icon from '@/components/ui/Icon';
+import { ProductDetails } from '@/types/product';
+import NotFound from '@/components/ui/NotFound';
 
 const Products = () => {
   const [search, setSearch] = useState('');
@@ -69,55 +71,72 @@ const Products = () => {
             handleRefresh={handleRefresh}
           />
           <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-2'>
-            {loading
-              ? Array.from({ length: 8 }).map((_, idx) => (
-                  <ProductGridItemSkeleton key={idx} />
-                ))
-              : products.map((product: any) => (
-                  <div
-                    key={product.id}
-                    className='bg-white dark:bg-gray-900 rounded-xl shadow-md overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-200 border border-gray-100 dark:border-gray-800'
-                  >
-                    <div className='relative'>
-                      <img
-                        className='w-full h-44 object-cover rounded-t-xl'
-                        src={
-                          product.multimedia?.url ||
-                          '/images/course/course1.png'
-                        }
-                        alt={product.title}
-                      />
-                    </div>
-                    <div className='p-4 flex-1 flex flex-col'>
-                      <h3 className='text-lg font-bold mb-1 truncate'>
-                        {product.title}
-                      </h3>
-                      <div className='text-primary font-semibold mb-2'>
-                        {product.price
-                          ? formatMoney(Number(product.price), product.currency)
-                          : 'Free'}
-                      </div>
-                      <div
-                        className='flex-1 mb-2 text-gray-700 dark:text-gray-300 text-sm line-clamp-2'
-                        dangerouslySetInnerHTML={{
-                          __html: product.description || '',
-                        }}
-                      />
-                      <Button
-                        variant='primary'
-                        className='mt-auto w-full flex items-center justify-center gap-2 py-2 rounded-lg text-base font-semibold shadow hover:scale-[1.03] transition-transform duration-150'
-                        onClick={() =>
-                          handleOpenModal(
-                            product.id,
-                            product.interface || product.type
-                          )
-                        }
-                      >
-                        <EyeIcon size={18} /> View
-                      </Button>
-                    </div>
+            {loading ? (
+              Array.from({ length: 8 }).map((_, idx) => (
+                <ProductGridItemSkeleton key={idx} />
+              ))
+            ) : products.length === 0 ? (
+              <NotFound
+                title='No Tickets Found'
+                description='No tickets are currently available. Check back later or try searching for different tickets.'
+                searchPlaceholder='Search for tickets...'
+              />
+            ) : (
+              products.map((product: ProductDetails) => (
+                <div
+                  key={product.id}
+                  className='bg-white dark:bg-gray-900 rounded-xl shadow-md overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-200 border border-gray-100 dark:border-gray-800'
+                >
+                  <div className='relative'>
+                    <img
+                      className='w-full h-44 object-cover rounded-t-xl'
+                      src={
+                        product.multimedia?.url || '/images/course/course1.png'
+                      }
+                      alt={product.title}
+                    />
                   </div>
-                ))}
+                  <div className='p-4 flex-1 flex flex-col'>
+                    <h3 className='text-lg font-bold mb-1 truncate'>
+                      {product.title}
+                    </h3>
+                    <div className='text-primary font-semibold mb-2'>
+                      {product.type === 'TICKET' &&
+                      product.ticket?.ticket_tiers?.length > 0
+                        ? (() => {
+                            const lowestTier =
+                              product.ticket.ticket_tiers.reduce(
+                                (lowest: any, tier: any) =>
+                                  Number(tier.amount) < Number(lowest.amount)
+                                    ? tier
+                                    : lowest
+                              );
+                            return `${formatMoney(
+                              Number(lowestTier.amount),
+                              lowestTier.currency
+                            )}+`;
+                          })()
+                        : product.price
+                        ? formatMoney(Number(product.price), product.currency)
+                        : 'Free'}
+                    </div>
+                    <div
+                      className='flex-1 mb-2 text-gray-700 dark:text-gray-300 text-sm line-clamp-2'
+                      dangerouslySetInnerHTML={{
+                        __html: product.description || '',
+                      }}
+                    />
+                    <Button
+                      variant='primary'
+                      className='mt-auto w-full flex items-center justify-center gap-2 py-2 rounded-lg text-base font-semibold shadow hover:scale-[1.03] transition-transform duration-150'
+                      onClick={() => handleOpenModal(product.id, product.type)}
+                    >
+                      <EyeIcon size={18} /> View
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
           {/* Modal for viewing product details */}
           <Modal

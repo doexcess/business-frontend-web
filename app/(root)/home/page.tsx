@@ -46,11 +46,6 @@ const Home = () => {
     }
   }, [dispatch, org]);
 
-  // If no org is selected and there are orgs available, show only the org selection modal
-  if (!org && orgs.length > 0) {
-    return <SelectOrgModal isOpen={true} organizations={orgs} />;
-  }
-
   useEffect(() => {
     console.log(profile?.role);
 
@@ -68,6 +63,11 @@ const Home = () => {
       setShowOrgModal(true);
     }
   }, [profile?.role?.role_id, org, orgs, router]);
+
+  // Early returns after all hooks are called
+  if (!org && orgs.length > 0) {
+    return <SelectOrgModal isOpen={true} organizations={orgs} />;
+  }
 
   // If no orgs exist at all, show a message to create one
   if (!org && orgs.length === 0) {

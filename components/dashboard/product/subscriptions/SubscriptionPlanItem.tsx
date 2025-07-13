@@ -78,7 +78,7 @@ const SubscriptionPlanItem = ({
           {subscription_plan.name}
         </td>
         <td className='px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white font-bold'>
-          {subscription_plan.creator.name}
+          {subscription_plan.creator?.name}
         </td>
         <td className='px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white font-bold'>
           {pricing}

@@ -19,6 +19,7 @@ import { ProductType } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { ProductDetails, TicketTier } from '@/types/product';
+import NotFound from '@/components/ui/NotFound';
 
 const Tickets = () => {
   const [search, setSearch] = useState('');
@@ -71,49 +72,59 @@ const Tickets = () => {
             handleSearchSubmit={setSearch}
             handleRefresh={handleRefresh}
           />
-          <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
-            {loading
-              ? Array.from({ length: 6 }).map((_, idx) => (
-                  <ProductGridItemSkeleton key={idx} />
-                ))
-              : products.map((ticket: ProductDetails) => {
-                  return (
-                    <div
-                      key={ticket.id}
-                      className='bg-white dark:bg-gray-900 rounded-xl shadow-md overflow-hidden flex flex-col'
-                    >
-                      <div className='relative'>
-                        <img
-                          className='w-full h-48 object-cover rounded-t-xl'
-                          src={
-                            ticket.multimedia?.url ||
-                            '/images/course/course1.png'
-                          }
-                          alt={ticket.title}
-                        />
-                      </div>
-                      <div className='p-4 flex-1 flex flex-col'>
-                        <h3 className='text-lg font-bold mb-2 text-gray-900 dark:text-white'>
-                          {ticket.title}
-                        </h3>
-                        <div
-                          className='mb-2 text-gray-700 dark:text-gray-300 line-clamp-3'
-                          dangerouslySetInnerHTML={{
-                            __html: ticket.description || '',
-                          }}
-                        />
-                        <Button
-                          variant='primary'
-                          className='mt-auto w-full flex items-center justify-center gap-2 py-2 rounded-lg text-base font-semibold shadow hover:scale-[1.03] transition-transform duration-150'
-                          onClick={() => setModalOpenId(ticket.id)}
-                        >
-                          <EyeIcon size={18} /> View
-                        </Button>
-                      </div>
+          {loading ? (
+            <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <ProductGridItemSkeleton key={idx} />
+              ))}
+            </div>
+          ) : products.length === 0 ? (
+            <NotFound
+              title='No Tickets Found'
+              description='No tickets are currently available. Check back later or try searching for different tickets.'
+              searchPlaceholder='Search for tickets...'
+              onSearch={handleSearchSubmit}
+            />
+          ) : (
+            <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
+              {products.map((ticket: ProductDetails) => {
+                return (
+                  <div
+                    key={ticket.id}
+                    className='bg-white dark:bg-gray-900 rounded-xl shadow-md overflow-hidden flex flex-col'
+                  >
+                    <div className='relative'>
+                      <img
+                        className='w-full h-48 object-cover rounded-t-xl'
+                        src={
+                          ticket.multimedia?.url || '/images/course/course1.png'
+                        }
+                        alt={ticket.title}
+                      />
                     </div>
-                  );
-                })}
-          </div>
+                    <div className='p-4 flex-1 flex flex-col'>
+                      <h3 className='text-lg font-bold mb-2 text-gray-900 dark:text-white'>
+                        {ticket.title}
+                      </h3>
+                      <div
+                        className='mb-2 text-gray-700 dark:text-gray-300 line-clamp-3'
+                        dangerouslySetInnerHTML={{
+                          __html: ticket.description || '',
+                        }}
+                      />
+                      <Button
+                        variant='primary'
+                        className='mt-auto w-full flex items-center justify-center gap-2 py-2 rounded-lg text-base font-semibold shadow hover:scale-[1.03] transition-transform duration-150'
+                        onClick={() => setModalOpenId(ticket.id)}
+                      >
+                        <EyeIcon size={18} /> View
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           {/* Modal for viewing ticket details */}
           <Modal
             isOpen={!!modalOpenId}

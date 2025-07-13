@@ -5,6 +5,7 @@ import {
   PaymentDetailsResponse,
   PaymentInitResponse,
   PaymentsResponse,
+  VerifyPaymentResponse,
 } from '@/types/payment';
 
 interface PaymentState {
@@ -125,7 +126,9 @@ export const verifyPayment = createAsyncThunk(
   'payment/verify',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await api.post(`/payment/verify/${id}`);
+      const response = await api.post<VerifyPaymentResponse>(
+        `/payment/verify/${id}`
+      );
       return response.data;
     } catch (err: any) {
       return rejectWithValue(
