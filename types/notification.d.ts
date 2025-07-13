@@ -156,6 +156,7 @@ export interface Customer {
   updated_at: string; // ISO string
   role: Role;
   profile: Profile | null;
+  total_expenses: number;
 }
 
 export interface CustomersResponse {

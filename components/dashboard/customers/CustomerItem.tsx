@@ -27,9 +27,7 @@ const CustomerItem = ({ customer }: CustomerItemProps) => {
   let total_expenses;
 
   if (customer.payments) {
-    total_expenses = formatMoney(
-      customer.payments.reduce((acc, cur) => acc + (+cur.amount || 0), 0)
-    );
+    total_expenses = formatMoney(customer.total_expenses);
   } else {
     total_expenses = formatMoney(0);
   }
