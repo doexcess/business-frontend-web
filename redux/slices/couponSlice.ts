@@ -5,6 +5,7 @@ import {
   CreateCouponProps,
   UpdateCouponProps,
 } from '@/lib/schema/coupon.schema';
+import { GenericResponse } from '@/types';
 
 interface CouponState {
   coupons: Coupon[];

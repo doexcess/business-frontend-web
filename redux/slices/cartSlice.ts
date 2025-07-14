@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import api from '@/lib/api';
 import { ProductType } from '@/lib/utils';
 import { Cart, CartResponse } from '@/types/cart';
+import { GenericResponse } from '@/types';
 
 interface CartState {
   cart: Cart | null;
