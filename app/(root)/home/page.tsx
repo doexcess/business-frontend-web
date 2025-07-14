@@ -295,7 +295,7 @@ const Home = () => {
                   {
                     label: 'Active Subscriptions',
                     value:
-                      analytics.stats.active_subscriptions.statistics.total,
+                      analytics.stats.active_subscriptions.statistics.active,
                     change: '',
                     icon: <Icon url='/icons/landing/terminal.svg' />,
                   },

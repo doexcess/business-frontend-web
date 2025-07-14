@@ -166,7 +166,7 @@ const Products = () => {
                 <div className='flex items-center gap-2 mb-2'>
                   <CreditCard className='w-5 h-5 text-primary-600 dark:text-primary-400' />
                   <h4 className='text-gray-600 dark:text-gray-300'>
-                    Active Subscriptions
+                    Subscriptions plans
                   </h4>
                 </div>
                 <p className='text-2xl font-bold'>{subscriptionsCount}</p>
@@ -177,7 +177,7 @@ const Products = () => {
                 <div className='flex items-center gap-2 mb-2'>
                   <BookOpen className='w-5 h-5 text-primary-600 dark:text-primary-400' />
                   <h4 className='text-gray-600 dark:text-gray-300'>
-                    Published Courses
+                    Available Courses
                   </h4>
                 </div>
                 <p className='text-2xl font-bold'>{coursesCount}</p>
@@ -188,7 +188,7 @@ const Products = () => {
                 <div className='flex items-center gap-2 mb-2'>
                   <Calendar className='w-5 h-5 text-primary-600 dark:text-primary-400' />
                   <h4 className='text-gray-600 dark:text-gray-300'>
-                    Upcoming Events
+                    Events Tickets
                   </h4>
                 </div>
                 <p className='text-2xl font-bold'>{ticketsCount}</p>
