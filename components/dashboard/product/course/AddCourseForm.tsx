@@ -25,6 +25,7 @@ import { useRouter } from 'next/navigation';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
 import useOrg from '@/hooks/page/useOrg';
 import { createCourse } from '@/redux/slices/courseSlice';
+import { setOnboardingStep } from '@/redux/slices/orgSlice';
 
 const defaultValue = {
   title: '',
@@ -130,6 +131,11 @@ const AddCourseForm = () => {
         throw new Error(response.payload.message);
       }
 
+      if (org?.onboarding_status?.current_step! < 4) {
+        // Update the onboarding current step
+        dispatch(setOnboardingStep(4));
+      }
+
       toast.success('Course created successfully!');
       router.push(`/products/courses/${response.payload.data.id}/contents`);
     } catch (error: any) {
@@ -148,7 +154,7 @@ const AddCourseForm = () => {
     body.multimedia_id;
 
   return (
-    <ThemeDiv className='mt-6'>
+    <ThemeDiv className='mt-6 p-6'>
       <form className='space-y-6' onSubmit={handleSubmit}>
         <Input
           type='text'

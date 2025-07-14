@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
 import { capitalize } from 'lodash';
 import React from 'react';
+import type { SelectProps } from '@/types';
 
 const Select = ({
   name,

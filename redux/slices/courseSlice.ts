@@ -12,6 +12,8 @@ import {
   ModuleResponse,
   UpdateCourseResponse,
   ViewContentProps,
+  EnrolledCourseResponse,
+  EnrolledCourseData,
 } from '@/types/product';
 import {
   CreateCourseProps,
@@ -19,6 +21,7 @@ import {
   UpdateCourseProps,
   UpdateModulesProps,
 } from '@/lib/schema/product.schema';
+import { GenericResponse } from '@/types';
 
 interface CourseState {
   courses: Course[];
@@ -37,6 +40,7 @@ interface CourseState {
   modulesLoading: boolean;
   error: string | null;
   currentPage: number;
+  enrolledCourse: EnrolledCourseData | null;
 }
 
 // Initial state
@@ -57,6 +61,7 @@ const initialState: CourseState = {
   modulesLoading: false,
   error: null,
   currentPage: 1,
+  enrolledCourse: null,
 };
 
 // Async thunk to fetch paginated categories
@@ -182,6 +187,20 @@ export const fetchCourse = createAsyncThunk(
         params,
         headers,
       }
+    );
+
+    return {
+      course: data.data,
+    };
+  }
+);
+
+// Async thunk to fetch enrolled course
+export const fetchEnrolledCourse = createAsyncThunk(
+  'enrolled-course/:id',
+  async ({ id }: { id: string }) => {
+    const { data } = await api.get<EnrolledCourseResponse>(
+      `/enrolled-course/${id}`
     );
 
     return {
@@ -462,6 +481,19 @@ const courseSlice = createSlice({
       .addCase(fetchCourse.rejected, (state, action) => {
         state.courseDetailsLoading = false;
         state.error = action.error.message || 'Failed to fetch course details';
+      })
+      .addCase(fetchEnrolledCourse.pending, (state) => {
+        state.courseDetailsLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchEnrolledCourse.fulfilled, (state, action) => {
+        state.courseDetailsLoading = false;
+        state.enrolledCourse = action.payload.course;
+      })
+      .addCase(fetchEnrolledCourse.rejected, (state, action) => {
+        state.courseDetailsLoading = false;
+        state.error =
+          action.error.message || 'Failed to fetch enrolled course details';
       })
       .addCase(createBulkModule.pending, (state) => {
         state.loading = true;

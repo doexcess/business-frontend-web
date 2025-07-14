@@ -1,13 +1,13 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
-const useQueryParams = <T>(items: T[]) => {
+const useQueryParams = <T>(items: T[], limit?: number) => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryParams = new URLSearchParams(searchParams.toString());
 
   const currentPage = Number(searchParams.get('page')) || 1;
-  const perPage = Number(searchParams.get('limit')) || 10;
+  const perPage = Number(searchParams.get('limit')) || limit || 10;
   const [q, setQ] = useState(searchParams.get('q') || '');
   const [startDate, setStartDate] = useState(
     searchParams.get('startDate') || ''

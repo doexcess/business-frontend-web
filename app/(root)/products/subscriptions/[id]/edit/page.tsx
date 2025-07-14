@@ -18,6 +18,7 @@ const EditSubscription = () => {
           title='Edit Subscription'
           enableBreadCrumb={true}
           layer2='Products'
+          layer2Link='/products'
           layer3='Subscription'
           enableBackButton={true}
           ctaButtons={

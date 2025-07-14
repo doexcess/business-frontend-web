@@ -9,8 +9,13 @@ import { Switch } from '@/components/ui/switch';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/redux/store';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import { updatePassword } from '@/redux/slices/authSlice';
+import {
+  updatePassword,
+  deleteAccount,
+  logout,
+} from '@/redux/slices/authSlice';
 import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 const defaultValue = {
   current_password: '',
@@ -175,8 +180,111 @@ const SecuritySettings = () => {
             )}
           </Button>
         </div>
+
+        {/* Destructive Action: Delete Account */}
+        <Card className='border-destructive dark:border-red-700 mt-8'>
+          <CardHeader>
+            <CardTitle className='text-destructive'>Delete Account</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className='flex flex-col gap-4'>
+              <p className='text-sm text-destructive'>
+                This action is{' '}
+                <span className='font-semibold'>irreversible</span>. Deleting
+                your account will permanently remove all your data. Please
+                proceed with caution.
+              </p>
+              <DeleteAccountButton />
+            </div>
+          </CardContent>
+        </Card>
       </form>
     </div>
+  );
+};
+
+// DeleteAccountButton component for destructive action
+const DeleteAccountButton = () => {
+  const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+
+  const handleDelete = async () => {
+    setIsLoading(true);
+    try {
+      const response: any = await dispatch(deleteAccount());
+      if (response.type === 'auth/delete-account/rejected') {
+        throw new Error(
+          response.payload?.message || 'Failed to delete account'
+        );
+      }
+      toast.success(
+        response.payload?.message || 'Account deleted successfully'
+      );
+      await dispatch(logout());
+      router.push('/auth/signin');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete account');
+    } finally {
+      setIsLoading(false);
+      setOpen(false);
+    }
+  };
+
+  return (
+    <>
+      <Button
+        type='button'
+        variant='red'
+        className='w-fit'
+        onClick={() => setOpen(true)}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 size={18} className='animate-spin' /> &nbsp; Deleting...
+          </>
+        ) : (
+          'Delete Account'
+        )}
+      </Button>
+      {open && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm'>
+          <div className='bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 max-w-sm w-full'>
+            <h3 className='text-lg font-semibold text-destructive mb-2'>
+              Confirm Account Deletion
+            </h3>
+            <p className='text-sm mb-4'>
+              Are you sure you want to delete your account? This action cannot
+              be undone.
+            </p>
+            <div className='flex justify-end gap-2'>
+              <Button
+                type='button'
+                variant='outline'
+                onClick={() => setOpen(false)}
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type='button'
+                variant='red'
+                onClick={handleDelete}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 size={16} className='animate-spin' />
+                ) : (
+                  'Yes, Delete'
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

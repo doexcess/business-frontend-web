@@ -6,7 +6,7 @@ import { AppDispatch } from '@/redux/store';
 import { useRouter } from 'next/navigation';
 import { LoginFormSchema, LoginProps } from '@/lib/schema/auth.schema';
 import { login } from '@/redux/slices/authSlice';
-import { encryptInput } from '@/lib/utils';
+import { encryptInput, SystemRole } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import LoadingIcon from '../ui/icons/LoadingIcon';
 import { Eye, EyeOff } from 'lucide-react';
@@ -82,7 +82,7 @@ const SigninForm = () => {
               <Input
                 type='text'
                 name='email'
-                placeholder='Enter your business email address'
+                placeholder='Enter your email address'
                 className='w-full rounded-lg text-gray-900'
                 value={body.email}
                 required={true}
@@ -131,7 +131,7 @@ const SigninForm = () => {
         <button
           type='submit'
           disabled={!isFormValid || isSubmitting}
-          className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all ${
+          className={`w-full text-sm py-3 px-4 rounded-lg font-medium text-white transition-all ${
             isFormValid
               ? 'bg-primary-main hover:bg-primary-800'
               : 'bg-primary-faded cursor-not-allowed'

@@ -1,6 +1,7 @@
 import api from '@/lib/api';
 import { ScheduleEmailProps } from '@/lib/schema/notification.schema';
 import { NotificationType } from '@/lib/utils';
+import { GenericResponse } from '@/types';
 import {
   InstantNotification,
   InstantNotificationResponse,

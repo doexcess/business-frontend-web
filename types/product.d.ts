@@ -107,7 +107,7 @@ export interface ProductDetails {
   keywords: string | null;
   metadata: any | null;
   status: ProductStatus;
-  interface: Productinterface;
+  type: Productinterface;
   published_at: string;
   archived_at: string | null;
   creator_id: string;
@@ -202,15 +202,65 @@ export interface CourseDetailsResponse {
   data: CourseDetails;
 }
 
+export interface EnrolledCourse extends Course {
+  modules: EnrolledModule[];
+  total_duration: string;
+}
+
+export interface EnrolledCourseData {
+  id: string;
+  enrolled_at: string;
+  completed_lessons: number;
+  total_lessons: number;
+  progress: number;
+  status: string;
+  course_id: string;
+  created_at: string;
+  updated_at: string;
+  course: {
+    id: string;
+    business_id: string;
+    title: string;
+    price: string;
+    description: string;
+    keywords: string | null;
+    metadata: any | null;
+    status: ProductStatus;
+    published_at: string | null;
+    archived_at: string | null;
+    creator_id: string;
+    multimedia_id: string;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+    modules: Module[];
+    creator: {
+      id: string;
+      name: string;
+      business_info: Array<{
+        id: string;
+        business_name: string;
+      }>;
+    };
+  };
+}
+
+export interface EnrolledCourseResponse {
+  statusCode: number;
+  data: EnrolledCourseData;
+}
+
 export interface Module {
   id: string;
   title: string;
   position: number;
   course_id: string;
   creator_id: string;
+  business_id: string;
   created_at: string;
   updated_at: string;
-  creator: {
+  deleted_at: string | null;
+  creator?: {
     id: string;
     name: string;
     role: {
@@ -218,7 +268,7 @@ export interface Module {
       role_id: string;
     };
   };
-  course: {
+  course?: {
     id: string;
     business_id: string;
     category_id: string;
@@ -242,6 +292,12 @@ export interface Module {
   contents: ModuleContent[];
 }
 
+export interface EnrolledModule extends Module {
+  is_completed: boolean;
+  description?: string;
+  duration?: string;
+}
+
 export interface ModuleContent {
   id: string;
   title: string;
@@ -249,11 +305,12 @@ export interface ModuleContent {
   creator_id: string;
   business_id: string;
   multimedia_id: string;
-  multimedia: Media;
+  multimedia?: Media;
   position: number;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  progress: any[]; // Array of progress data
 }
 
 export interface ModuleResponse {
@@ -373,5 +430,60 @@ export interface DeleteTicketResponse {
   data: {
     id: string;
     deleted: boolean;
+  };
+}
+
+export interface TicketTierWithTicketAndProduct {
+  id: string;
+  ticket_id: string;
+  name: string;
+  description: string | null;
+  quantity: number | null;
+  remaining_quantity: number | null;
+  max_per_purchase: number | null;
+  default_view: boolean;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  currency: string;
+  amount: string;
+  original_amount: string;
+  ticket: {
+    id: string;
+    product_id: string;
+    event_time?: string;
+    event_start_date: string;
+    event_end_date: string;
+    event_location: string;
+    event_type: string;
+    auth_details: string | null;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+    product: {
+      id: string;
+      business_id: string;
+      category_id: string;
+      creator_id: string;
+      title: string;
+      description: string;
+      keywords: string | null;
+      metadata: any;
+      type: string;
+      status: string;
+      readiness_percent: number | null;
+      published_at: string;
+      archived_at: string | null;
+      price: string;
+      currency: string;
+      original_price: string | null;
+      multimedia_id: string;
+      created_at: string;
+      updated_at: string;
+      deleted_at: string | null;
+      business_info: BusinessInfo;
+      multimedia: Media;
+    };
   };
 }

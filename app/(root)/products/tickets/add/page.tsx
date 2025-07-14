@@ -28,9 +28,10 @@ const AddTicket = () => {
           title='Add Ticket'
           enableBreadCrumb={true}
           layer2={BREADCRUMB_LAYERS[0].title}
+          layer2Link={BREADCRUMB_LAYERS[0].href}
           layer3={BREADCRUMB_LAYERS[1].title}
-          layer4={BREADCRUMB_LAYERS[2].title}
           layer3Link={BREADCRUMB_LAYERS[1].href}
+          layer4={BREADCRUMB_LAYERS[2].title}
           enableBackButton={true}
         />
 

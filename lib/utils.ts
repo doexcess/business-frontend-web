@@ -73,6 +73,7 @@ export enum PurchaseItemType {
 export enum ProductType {
   COURSE = 'COURSE',
   TICKET = 'TICKET',
+  SUBSCRIPTION = 'SUBSCRIPTION',
 }
 
 export enum CouponType {
@@ -116,6 +117,11 @@ export enum SystemRole {
   BUSINESS_ADMIN = 'business-administrator',
 }
 
+export enum BusinessOwnerOrgRole {
+  USER = 'user',
+  BUSINESS_ADMIN = 'business-administrator',
+}
+
 export enum SignupRole {
   CUSTOMER = 'customer',
   BUSINESS_OWNER = 'business-owner',
@@ -139,8 +145,9 @@ export enum EventType {
 
 export enum ContactInviteStatus {
   ACTIVE = 'active',
-  INACTIVE = 'inactive',
+  SUSPENDED = 'suspended',
   PENDING = 'pending',
+  EXPIRED = 'expired',
 }
 
 export const NotificationStatusTypes = [
@@ -190,7 +197,7 @@ export const emailSplit = (email: string) => {
 export const getColor = (status: string) => {
   const details = badgeColors?.find(
     (badge: { color: string; for: Array<string> }) =>
-      badge.for.includes(status.toLowerCase())
+      badge.for.includes(status?.toLowerCase())
   );
 
   return details?.color;
@@ -206,6 +213,15 @@ export const formatMoney = (amount: number, currency = 'NGN'): string => {
     currency: currency,
     minimumFractionDigits: 2,
   }).format(amount);
+};
+
+export const formatCurrency = (amount: string, currency = 'NGN'): string => {
+  const numericAmount = parseFloat(amount);
+  return new Intl.NumberFormat('en-NG', {
+    style: 'currency',
+    currency: currency,
+    minimumFractionDigits: 2,
+  }).format(numericAmount);
 };
 
 const algorithm = 'aes-256-cbc';
@@ -278,7 +294,7 @@ export enum NotificationType {
   EMAIL = 'EMAIL',
 }
 
-export const actualRole = (role: SignupRole): SystemRole | string => {
+export const actualRole = (role: SignupRole | string): SystemRole | string => {
   let roleName = '';
   if (role === SignupRole.CUSTOMER) {
     roleName = SystemRole.USER;
@@ -316,3 +332,85 @@ export enum RefundType {
   REFUND = 'REFUND',
   CHARGEBACK = 'CHARGEBACK',
 }
+
+export const getPurchaseTypeLabel = (type: string) => {
+  switch (type) {
+    case 'COURSE':
+      return 'Course';
+    case 'TICKET':
+      return 'Event Ticket';
+    case 'SUBSCRIPTION':
+      return 'Subscription';
+    default:
+      return 'Purchase';
+  }
+};
+
+export const BUSINESS_INDUSTRIES = [
+  'Technology',
+  'Healthcare',
+  'Finance',
+  'Education',
+  'Retail',
+  'Manufacturing',
+  'Real Estate',
+  'Hospitality',
+  'Transportation',
+  'Construction',
+  'Media & Entertainment',
+  'Professional Services',
+  'Agriculture',
+  'Energy',
+  'Telecommunications',
+  'Food & Beverage',
+  'Automotive',
+  'Fashion & Apparel',
+  'Sports & Fitness',
+  'Arts & Crafts',
+  'Legal Services',
+  'Consulting',
+  'Marketing & Advertising',
+  'Non-Profit',
+  'Other',
+];
+
+export type BusinessIndustry = (typeof BUSINESS_INDUSTRIES)[number];
+
+export const reformatText = (text: string, separator: string) => {
+  return text.split(separator).join(' ');
+};
+
+export const OK = 200;
+
+// Utility to safely check if we're in a browser environment
+export const isBrowser = typeof window !== 'undefined';
+
+// Safe browser API access (make these lazy, not at module scope)
+export const safeBrowserAPI = {
+  get location() {
+    return isBrowser ? window.location : null;
+  },
+  get localStorage() {
+    return isBrowser ? window.localStorage : null;
+  },
+  get sessionStorage() {
+    return isBrowser ? window.sessionStorage : null;
+  },
+  get navigator() {
+    return isBrowser ? window.navigator : null;
+  },
+};
+
+// Safe redirect function
+export const safeRedirect = (url: string) => {
+  if (isBrowser) {
+    window.location.href = url;
+  }
+};
+
+// Safe router push (for Next.js router)
+export const safeRouterPush = (router: any, url: string) => {
+  if (isBrowser && router) {
+    router.push(url);
+  }
+};

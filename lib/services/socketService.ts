@@ -56,7 +56,7 @@ class SocketService {
     const payload = JSON.parse(atob(token.split('.')[1]));
     const userId = payload.id;
 
-    this.socket = io('http://localhost:3001', {
+    this.socket = io(process.env.NEXT_PUBLIC_API_URL, {
       auth: { token, userId } as SocketAuth,
       transports: ['websocket'],
     });

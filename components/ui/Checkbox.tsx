@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import React from 'react';
+import type { InputProps } from '@/types';
 
 const Checkbox = ({
   type = 'checkbox',

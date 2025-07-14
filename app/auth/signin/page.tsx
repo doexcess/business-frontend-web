@@ -1,12 +1,9 @@
 'use client';
 
-import SigninForm from '@/components/auth/SigninForm';
-import { Button } from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import SigninForm from '@/components/auth/SigninForm';
 
 const Signin = () => {
   return (
@@ -36,8 +33,7 @@ const Signin = () => {
           </h1>
 
           <p className='text-sm sm:text-base text-gray-600 text-center mb-6 max-w-md'>
-            Log in to explore courses, events and the businesses you've
-            subscribed to.
+            Log in to stay connected and explore your experience.
           </p>
 
           <SigninForm />

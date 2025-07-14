@@ -29,6 +29,15 @@ const initialState: ChatState = {
   onlineUsers: new Set(),
 };
 
+// Helper function to sort chats by last message date (most recent first)
+const sortChatsByLastMessage = (chats: Chat[]): Chat[] => {
+  return [...chats].sort((a, b) => {
+    const aDate = new Date(a.messages[0]?.updated_at || a.created_at);
+    const bDate = new Date(b.messages[0]?.updated_at || b.created_at);
+    return bDate.getTime() - aDate.getTime();
+  });
+};
+
 export const retrieveChats = createAsyncThunk(
   'chat/retrieveChats',
   async (payload: RetrieveChatsProps, { rejectWithValue }) => {
@@ -63,7 +72,7 @@ const chatSlice = createSlice({
   initialState,
   reducers: {
     chatsRetrieved: (state, action: PayloadAction<Chat[]>) => {
-      state.chats = action.payload;
+      state.chats = sortChatsByLastMessage(action.payload);
     },
     messagesRetrieved: (
       state,
@@ -86,29 +95,33 @@ const chatSlice = createSlice({
     messagesSent: (state, action: PayloadAction<Message>) => {
       state.messages.push(action.payload);
       state.latestMessage = action.payload;
-      state.chats = state.chats.map((chat) => {
-        if (chat.id === action.payload.chat_id) {
-          return {
-            ...chat,
-            last_message: action.payload.message,
-            created_at: action.payload.created_at,
-          };
-        }
-        return chat;
-      });
+      state.chats = sortChatsByLastMessage(
+        state.chats.map((chat) => {
+          if (chat.id === action.payload.chat_id) {
+            return {
+              ...chat,
+              last_message: action.payload.message,
+              created_at: action.payload.created_at,
+            };
+          }
+          return chat;
+        })
+      );
     },
     recentChatRetrieved: (state, action: PayloadAction<Chat>) => {
-      state.chats = state.chats.map((chat) => {
-        if (chat.id === action.payload.id) {
-          return {
-            ...chat,
-            last_message: action.payload.last_message,
-            messages: action.payload.messages,
-            created_at: action.payload.created_at,
-          };
-        }
-        return chat;
-      });
+      state.chats = sortChatsByLastMessage(
+        state.chats.map((chat) => {
+          if (chat.id === action.payload.id) {
+            return {
+              ...chat,
+              last_message: action.payload.last_message,
+              messages: action.payload.messages,
+              created_at: action.payload.created_at,
+            };
+          }
+          return chat;
+        })
+      );
     },
     updateMessageStatus: (
       state,

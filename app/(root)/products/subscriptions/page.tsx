@@ -19,6 +19,7 @@ const Subscription = () => {
           brief='Create and manage your subscriptions with ease'
           enableBreadCrumb={true}
           layer2='Products'
+          layer2Link='/products'
           layer3='Subscriptions'
           ctaButtons={
             <div className='flex-shrink-0 self-start'>

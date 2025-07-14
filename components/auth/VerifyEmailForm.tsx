@@ -1,5 +1,5 @@
 import { VerifyEmailFormSchema } from '@/lib/schema/auth.schema';
-import { decryptInput, isEncrypted } from '@/lib/utils';
+import { decryptInput, isEncrypted, SystemRole } from '@/lib/utils';
 import { verifyEmail } from '@/redux/slices/authSlice';
 import { AppDispatch } from '@/redux/store';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -53,7 +53,14 @@ const VerifyEmailForm = ({ email }: VerifyEmailFormProps) => {
         throw new Error(response.payload.message);
       }
 
-      router.push(`/onboard/email-verified`);
+      if (response?.payload?.token) {
+        if (response?.payload?.data?.role === SystemRole.USER) {
+          return router.push('/dashboard/home');
+        }
+        return router.push('/home');
+      } else {
+        router.push(`/onboard/email-verified`);
+      }
     } catch (error: any) {
       console.error('Email verified failed:', error);
       toast.error(error.message);

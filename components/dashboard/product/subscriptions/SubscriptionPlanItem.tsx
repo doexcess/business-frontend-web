@@ -5,7 +5,7 @@ import moment from 'moment'; // Import moment.js
 
 import { SubscriptionPlan } from '@/types/subscription-plan';
 import { capitalize } from 'lodash';
-import { VerifiedIcon } from 'lucide-react';
+import { PencilIcon, VerifiedIcon } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import UpdateSubscriptionPlanForm from './UpdateSubscriptionPlanForm';
 import { Button } from '@/components/ui/Button';
@@ -68,17 +68,17 @@ const SubscriptionPlanItem = ({
           <Button
             variant='link'
             onClick={handleOpenSubscription}
-            className='hover:text-primary-400 p-0'
+            className='hover:text-primary-400 p-0 underline flex items-center gap-1'
             title={subscription_plan.id}
           >
-            {shortenId(subscription_plan.id)}
+            {shortenId(subscription_plan.id)} <PencilIcon size='13' />
           </Button>
         </td>
         <td className='px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white font-bold'>
           {subscription_plan.name}
         </td>
         <td className='px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white font-bold'>
-          {subscription_plan.creator.name}
+          {subscription_plan.creator?.name}
         </td>
         <td className='px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white font-bold'>
           {pricing}

@@ -140,3 +140,22 @@ export interface PaymentDetailsResponse {
   statusCode: number;
   data: Payment;
 }
+
+// Payment initialization response types
+
+export interface PaymentInitData {
+  authorization_url: string;
+  payment_id: string;
+  access_code: string;
+}
+
+export interface PaymentInitResponse {
+  statusCode: number;
+  message: string;
+  data: PaymentInitData;
+}
+
+export interface VerifyPaymentResponse {
+  statusCode: number;
+  message: string;
+}

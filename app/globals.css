@@ -111,6 +111,10 @@ body {
     color: #5c5f63;
   }
 
+  .div {
+    @apply text-gray-600 dark:text-gray-300;
+  }
+
   .section-container {
     @apply p-4 md:ml-64 h-auto pt-10;
   }
@@ -323,4 +327,14 @@ body {
       transform: translateX(100%);
     }
   }
+
+  .underline-offset {
+    @apply underline underline-offset-4;
+  }
+}
+
+.paystack-overlay {
+  background: rgba(0, 0, 0, 0.2) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
 }

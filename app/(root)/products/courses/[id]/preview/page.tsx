@@ -241,7 +241,10 @@ const CoursePreview = () => {
                       />
                     )}
                     {mediaType === 'video' && selectedLesson.mediaPreview && (
-                      <VideoPlayer src={selectedLesson.mediaPreview} />
+                      <VideoPlayer
+                        title={selectedLesson.title}
+                        src={selectedLesson.mediaPreview}
+                      />
                     )}
                     {mediaType === 'none' && <p>No media preview available.</p>}
                   </div>

@@ -1,10 +1,10 @@
 'use client';
 
-import Pagination from '@/components/Pagination';
 import TableEndRecord from '@/components/ui/TableEndRecord';
 import { cn, ContactInviteStatus, getAvatar } from '@/lib/utils';
 import { RootState } from '@/redux/store';
 import { capitalize } from 'lodash';
+import { PencilIcon } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 import { MdOutlineAdminPanelSettings } from 'react-icons/md';
@@ -53,7 +53,7 @@ const TeamList = () => {
                     member.user?.id === profile?.id ? '' : `team/${member.id}`
                   }
                   className={cn(
-                    'flex items-center gap-3 ',
+                    'flex items-center gap-3 pr-3',
                     member.user?.id === profile?.id && 'cursor-default'
                   )}
                 >
@@ -67,9 +67,21 @@ const TeamList = () => {
                       className='w-8 h-8 rounded-full object-cover'
                     />
                   )}
-                  <span className='font-medium text-gray-800 dark:text-gray-100 truncate'>
-                    {member.name || '-'}
-                  </span>
+                  <div
+                    className={cn(
+                      'flex items-center gap-1 underline underline-offset-4 dark:text-gray-200',
+                      member.user?.id === profile?.id && 'no-underline'
+                    )}
+                  >
+                    <span className='font-medium text-gray-800 dark:text-gray-100 truncate'>
+                      {member.user?.id === profile?.id
+                        ? 'You'
+                        : member.name || '-'}
+                    </span>
+                    {member.user?.id !== profile?.id && (
+                      <PencilIcon size='13' />
+                    )}
+                  </div>
                 </Link>
               </td>
               <td className='px-4 py-2 text-gray-600 dark:text-gray-300 truncate max-w-[200px]'>

@@ -1,4 +1,5 @@
 import { NotificationType } from '@/lib/utils';
+import { Payment } from './payment';
 
 export interface Business {
   id: string;
@@ -127,6 +128,21 @@ export interface ScheduledNotificationResponse {
   count: number;
 }
 
+export interface BusinessContactDetails {
+  id: boolean;
+  business_id: boolean;
+  is_owner: boolean;
+  joined_at: boolean;
+  joined_via: string;
+  status: boolean;
+  role: boolean;
+  created_at: boolean;
+  business: {
+    id: string;
+    business_name: string;
+  };
+}
+
 export interface Customer {
   id: string;
   name: string;
@@ -135,10 +151,12 @@ export interface Customer {
   is_email_verified: boolean;
   is_phone_verified: boolean;
   payments: Payment[];
+  business_contacts: BusinessContactDetails[];
   created_at: string; // ISO string
   updated_at: string; // ISO string
   role: Role;
   profile: Profile | null;
+  total_expenses: number;
 }
 
 export interface CustomersResponse {

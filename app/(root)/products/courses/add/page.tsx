@@ -11,8 +11,11 @@ const AddCourse = () => {
           title='Add Course'
           enableBreadCrumb={true}
           layer2='Products'
+          layer2Link='/products'
           layer3='Courses'
+          layer3Link='/products/course'
           layer4='Add Course'
+          layer4Link='/products/course/add'
           enableBackButton={true}
         />
 

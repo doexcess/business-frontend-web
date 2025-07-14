@@ -2,16 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 import OTPInput from '../ui/OtpInput';
-import Link from 'next/link';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/redux/store';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { decryptInput } from '@/lib/utils';
-import { LoginProps, VerifyLoginFormSchema } from '@/lib/schema/auth.schema';
+import { VerifyLoginFormSchema } from '@/lib/schema/auth.schema';
 import { verifyLogin } from '@/redux/slices/authSlice';
 import toast from 'react-hot-toast';
 import ResendEmailOtp from './ResendEmailOtp';
 import LoadingIcon from '../ui/icons/LoadingIcon';
+import { SystemRole } from '@/lib/utils';
 
 const defaultValue = {
   email: '',
@@ -25,18 +24,11 @@ interface VerifySigninFormProps {
 const VerifySigninForm = ({ email }: VerifySigninFormProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const params = useSearchParams();
 
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [body, setBody] = useState({ ...defaultValue, email });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleContinue = () => {
-    if (selectedRole) {
-      console.log(`Selected role: ${selectedRole}`);
-    }
-  };
 
   const handleOTPComplete = (otp: string) => {
     setBody({ ...body, otp });
@@ -66,7 +58,14 @@ const VerifySigninForm = ({ email }: VerifySigninFormProps) => {
 
       toast.success(response.payload.message);
 
-      router.push(`/home`);
+      const route = [
+        SystemRole.BUSINESS_SUPER_ADMIN,
+        SystemRole.BUSINESS_ADMIN,
+      ].includes(response.payload.data.role)
+        ? '/home'
+        : '/dashboard/home';
+
+      router.push(route);
     } catch (error: any) {
       console.error('Signin verification failed:', error);
       toast.error(error.message);
@@ -83,7 +82,7 @@ const VerifySigninForm = ({ email }: VerifySigninFormProps) => {
             <OTPInput
               onComplete={handleOTPComplete}
               allowDarkMode={false}
-              className='w-[50px] h-[50px]'
+              className='w-[40px] h-[40px] md:w-[50px] md:h-[50px]'
             />
           </div>
         </div>
@@ -93,7 +92,7 @@ const VerifySigninForm = ({ email }: VerifySigninFormProps) => {
         <button
           type='submit'
           disabled={!isFormValid || isSubmitting}
-          className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all ${
+          className={`w-full text-sm sm:text-base py-3 px-4 rounded-lg font-medium text-white transition-all ${
             isFormValid
               ? 'bg-primary-main hover:bg-primary-800'
               : 'bg-primary-faded cursor-not-allowed'

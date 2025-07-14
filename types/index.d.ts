@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 
-declare type InputProps = {
+export type InputProps = {
   id?: string;
   type?: string;
   name: string;
@@ -15,7 +15,7 @@ declare type InputProps = {
   checked?: boolean;
 };
 
-declare type SelectProps = {
+export type SelectProps = {
   name: string;
   defaultValue?: string;
   className?: string;
@@ -26,7 +26,7 @@ declare type SelectProps = {
   multiple?: boolean;
 };
 
-declare interface DoughnutChartProps {
+export interface DoughnutChartProps {
   title: string;
   data: {
     type: string;
@@ -35,14 +35,17 @@ declare interface DoughnutChartProps {
   }[];
 }
 
-declare interface signInProps {
+export interface signInProps {
   email: string;
   password: string;
   environment: string;
   timezone: string;
 }
 
-declare interface GenericResponse {
+export interface GenericResponse {
   statusCode: number;
   message: string;
 }
+
+// Export order types
+export * from './order';

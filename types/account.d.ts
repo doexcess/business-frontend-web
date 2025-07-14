@@ -1,5 +1,47 @@
 import { Gender } from '@/lib/utils';
 
+// Business Interface
+export interface Business {
+  id: string;
+  business_name: string;
+  industry: string;
+  logo_url: string;
+  created_at: string;
+}
+
+// Subscription Plan Interface
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  description: string;
+  business: Business;
+}
+
+// Active Subscription Interface
+export interface ActiveSubscription {
+  id: string;
+  plan_name: string;
+  plan_price: string;
+  start_date: string;
+  end_date: string;
+  auto_renew: boolean;
+  days_until_expiry: number;
+  is_expiring_soon: boolean;
+  status: string;
+  subscription_plan: SubscriptionPlan;
+}
+
+// Accessible Business Interface
+export interface AccessibleBusiness {
+  business_id: string;
+  access_type: 'subscription' | 'contact';
+  access_date: string;
+  purchase_type?: 'PRODUCT';
+  active_subscription?: ActiveSubscription;
+  business: Business;
+  role?: string;
+}
+
 export interface Profile {
   id: string;
   name: string;
@@ -20,6 +62,7 @@ export interface Profile {
     gender: Gender;
     date_of_birth: string; // ISO 8601 format
   };
+  accessible_businesses?: AccessibleBusiness[];
 }
 
 export interface UserProfile {
@@ -36,6 +79,7 @@ export interface UserProfile {
   country: string;
   state?: string | null;
   country_code: string;
+  accessible_businesses?: AccessibleBusiness[];
 }
 
 export interface ProfileResponse {
@@ -110,4 +154,23 @@ export interface CreateTransferRecipientResponse {
 export interface ResolveAccountResponse {
   statusCode: number;
   data: CreateTransferRecipientResponse;
+}
+
+export interface RegisterDetails {
+  is_first_signup: boolean;
+  user_id: string;
+  email: string;
+}
+export interface RegisterResponse {
+  statusCode: number;
+  message: string;
+  data: RegisterDetails;
+}
+export interface VerifyEmailResponse {
+  statusCode: number;
+  message: string;
+  accessToken?: string;
+  data: {
+    role: string;
+  };
 }

@@ -1,13 +1,14 @@
 import Icon from '@/components/ui/Icon';
-import { getAvatar } from '@/lib/utils';
-import { AppDispatch } from '@/redux/store';
+import { getAvatar, SystemRole } from '@/lib/utils';
+import { AppDispatch, RootState } from '@/redux/store';
 import { Chat } from '@/types/chat';
 import clsx from 'clsx';
+import { stat } from 'fs';
 import moment from 'moment';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 interface MessageListContentProps {
   index: number;
@@ -19,13 +20,46 @@ const MessageListContent = ({
   chat,
   chats,
 }: MessageListContentProps) => {
+  // Format last message time with proper fallback
+  const formatLastMessageTime = (timestamp?: string) => {
+    if (!timestamp) return '';
+
+    try {
+      const messageDate = new Date(timestamp);
+      const now = new Date();
+
+      // Check if date is valid
+      if (isNaN(messageDate.getTime())) return '';
+
+      const diffInMinutes =
+        (now.getTime() - messageDate.getTime()) / (1000 * 60);
+      const diffInHours = diffInMinutes / 60;
+      const diffInDays = diffInHours / 24;
+
+      if (diffInMinutes < 1) return 'Just now';
+      if (diffInMinutes < 60) return `${Math.floor(diffInMinutes)}m ago`;
+      if (diffInHours < 24) return `${Math.floor(diffInHours)}h ago`;
+      if (diffInDays < 7) return `${Math.floor(diffInDays)}d ago`;
+      if (diffInDays < 30) return `${Math.floor(diffInDays / 7)}w ago`;
+      if (diffInDays < 365) return `${Math.floor(diffInDays / 30)}mo ago`;
+      return `${Math.floor(diffInDays / 365)}y ago`;
+    } catch (error) {
+      return '';
+    }
+  };
+
   const router = useRouter();
+  const { profile } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch<AppDispatch>();
 
   const { id: chatId }: { id: string } = useParams();
 
   const openChat = () => {
-    router.push(`/messages/${chat.id}/chat/${chat.chat_buddy.id}`);
+    const url =
+      profile?.role.role_id === SystemRole.USER
+        ? `/dashboard/messages/${chat.id}/chat/${chat.chat_buddy.id}`
+        : `/messages/${chat.id}/chat/${chat.chat_buddy.id}`;
+    router.push(url);
   };
 
   return (
@@ -61,7 +95,7 @@ const MessageListContent = ({
             {chat.chat_buddy.name}
           </p>
           <span className={clsx('text-xs font-medium')}>
-            {moment(chat.messages[0].created_at).fromNow()}
+            {formatLastMessageTime(chat.messages[0]?.updated_at)}
           </span>
         </div>
         <div className='flex justify-between items-center'>
@@ -75,7 +109,7 @@ const MessageListContent = ({
               {chat.unread}
             </span>
           )}
-          {chat.messages[0].read && <Icon url='/icons/chat/check.svg' />}
+          {chat.messages[0]?.read && <Icon url='/icons/chat/check.svg' />}
         </div>
       </div>
     </div>

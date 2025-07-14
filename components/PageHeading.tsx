@@ -4,7 +4,10 @@ import Link from 'next/link';
 import { Button } from './ui/Button';
 import { IoIosArrowBack } from 'react-icons/io';
 import { useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
+import { cn, SystemRole } from '@/lib/utils';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
+import OnboardingAlert from './OnboardingAlert';
 
 export interface BreadcrumbLayer {
   title: string;
@@ -37,10 +40,12 @@ const PageHeading = ({
   layer3Link?: string;
   layer4Link?: string;
   enableBackButton?: boolean;
-  ctaButtons?: JSX.Element;
+  ctaButtons?: JSX.Element | undefined;
   enableBreadCrumbStyle?: false;
 }) => {
   const router = useRouter();
+  const { org } = useSelector((state: RootState) => state.org);
+  const { profile } = useSelector((state: RootState) => state.auth);
 
   const goBack = () => {
     router.back();
@@ -48,6 +53,10 @@ const PageHeading = ({
 
   return (
     <>
+      {/* Onboarding Alert */}
+      {org && profile?.role.role_id !== SystemRole.USER && (
+        <OnboardingAlert org={org} />
+      )}
       <div
         className={cn(
           '',
@@ -60,7 +69,11 @@ const PageHeading = ({
               {layer1 && (
                 <li className='inline-flex items-center'>
                   <Link
-                    href={`/`}
+                    href={
+                      profile?.role.role_id === SystemRole.USER
+                        ? '/dashboard/home'
+                        : '/home'
+                    }
                     className='inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-main dark:text-gray-400 dark:hover:text-white'
                   >
                     <svg

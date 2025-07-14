@@ -9,7 +9,7 @@ import useCourses from '@/hooks/page/useCourses';
 import { ProductStatus } from '@/lib/utils';
 import ProductGridItemSkeleton from '../ProductGridItemSkeleton';
 
-const RecentCourses = () => {
+const CoursesComp = () => {
   const {
     courses,
     count,
@@ -101,4 +101,4 @@ const RecentCourses = () => {
   );
 };
 
-export default RecentCourses;
+export default CoursesComp;
