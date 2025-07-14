@@ -396,11 +396,11 @@ const CourseContent = () => {
 
                     <div className='mb-2'>
                       <label className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
-                        Upload Media (Video, Image, PDF)
+                        Upload Media (Video, Image)
                       </label>
                       <Input
                         type='file'
-                        accept='video/*,image/*,application/pdf'
+                        accept='video/*,image/*'
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           handleMediaChange(
                             mIndex,

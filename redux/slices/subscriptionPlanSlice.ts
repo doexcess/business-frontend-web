@@ -10,6 +10,7 @@ import {
   CreateSubscriptionPlanProps,
   UpdateSubscriptionPlanProps,
 } from '@/lib/schema/subscription.schema';
+import { GenericResponse } from '@/types';
 
 interface SubscriptionPlanState {
   subscription_plans: SubscriptionPlan[];

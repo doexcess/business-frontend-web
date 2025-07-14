@@ -138,6 +138,44 @@ export const verifyPayment = createAsyncThunk(
   }
 );
 
+// Async thunk to fetch client payments
+export const fetchClientPayments = createAsyncThunk(
+  'payment/fetchClient',
+  async ({
+    page,
+    limit,
+    q,
+    startDate,
+    endDate,
+  }: {
+    page?: number;
+    limit?: number;
+    q?: string;
+    startDate?: string;
+    endDate?: string;
+  }) => {
+    const params: Record<string, any> = {};
+
+    if (page !== undefined) params['pagination[page]'] = page;
+    if (limit !== undefined) params['pagination[limit]'] = limit;
+    if (q !== undefined) params.q = q;
+    if (startDate !== undefined) params.startDate = startDate;
+    if (endDate !== undefined) params.endDate = endDate;
+
+    const { data } = await api.get<PaymentsResponse>('/payment/client/fetch', {
+      params,
+    });
+
+    return {
+      payments: data.data,
+      count: data.count,
+      total_credit: data.total_credit,
+      total_debit: data.total_debit,
+      total_trx: data.total_trx,
+    };
+  }
+);
+
 const paymentSlice = createSlice({
   name: 'payment',
   initialState,
@@ -195,6 +233,22 @@ const paymentSlice = createSlice({
       .addCase(verifyPayment.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(fetchClientPayments.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchClientPayments.fulfilled, (state, action) => {
+        state.loading = false;
+        state.payments = action.payload.payments;
+        state.count = action.payload.count;
+        state.total_credit = action.payload.total_credit;
+        state.total_debit = action.payload.total_debit;
+        state.total_trx = action.payload.total_trx;
+      })
+      .addCase(fetchClientPayments.rejected, (state, action) => {
+        state.error = action.error.message || 'Failed to fetch client payments';
+        state.loading = false;
       });
   },
 });

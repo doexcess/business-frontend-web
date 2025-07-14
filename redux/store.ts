@@ -13,6 +13,7 @@ import productImportReducer from './slices/productImportSlice';
 import analyticsReducer from './slices/analyticsSlice';
 import productReducer from './slices/productSlice';
 import cartReducer from './slices/cartSlice';
+import orderReducer from './slices/orderSlice';
 import storage from 'redux-persist/lib/storage'; // Uses localStorage
 import { persistReducer } from 'redux-persist';
 
@@ -39,6 +40,7 @@ const rootReducer = combineReducers({
   analytics: analyticsReducer,
   products: productReducer,
   cart: persistReducer(persistConfig, cartReducer),
+  order: orderReducer, // Not persisted
 });
 
 export const store = configureStore({

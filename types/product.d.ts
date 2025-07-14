@@ -202,15 +202,65 @@ export interface CourseDetailsResponse {
   data: CourseDetails;
 }
 
+export interface EnrolledCourse extends Course {
+  modules: EnrolledModule[];
+  total_duration: string;
+}
+
+export interface EnrolledCourseData {
+  id: string;
+  enrolled_at: string;
+  completed_lessons: number;
+  total_lessons: number;
+  progress: number;
+  status: string;
+  course_id: string;
+  created_at: string;
+  updated_at: string;
+  course: {
+    id: string;
+    business_id: string;
+    title: string;
+    price: string;
+    description: string;
+    keywords: string | null;
+    metadata: any | null;
+    status: ProductStatus;
+    published_at: string | null;
+    archived_at: string | null;
+    creator_id: string;
+    multimedia_id: string;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+    modules: Module[];
+    creator: {
+      id: string;
+      name: string;
+      business_info: Array<{
+        id: string;
+        business_name: string;
+      }>;
+    };
+  };
+}
+
+export interface EnrolledCourseResponse {
+  statusCode: number;
+  data: EnrolledCourseData;
+}
+
 export interface Module {
   id: string;
   title: string;
   position: number;
   course_id: string;
   creator_id: string;
+  business_id: string;
   created_at: string;
   updated_at: string;
-  creator: {
+  deleted_at: string | null;
+  creator?: {
     id: string;
     name: string;
     role: {
@@ -218,7 +268,7 @@ export interface Module {
       role_id: string;
     };
   };
-  course: {
+  course?: {
     id: string;
     business_id: string;
     category_id: string;
@@ -242,6 +292,12 @@ export interface Module {
   contents: ModuleContent[];
 }
 
+export interface EnrolledModule extends Module {
+  is_completed: boolean;
+  description?: string;
+  duration?: string;
+}
+
 export interface ModuleContent {
   id: string;
   title: string;
@@ -249,11 +305,12 @@ export interface ModuleContent {
   creator_id: string;
   business_id: string;
   multimedia_id: string;
-  multimedia: Media;
+  multimedia?: Media;
   position: number;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  progress: any[]; // Array of progress data
 }
 
 export interface ModuleResponse {
