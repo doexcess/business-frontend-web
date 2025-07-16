@@ -155,9 +155,9 @@ const CustomersList = () => {
           stringValue = `+${phoneString}`;
           return stringValue;
         }
-        console.log(1234);
+        // console.log(1234);
 
-        console.log(stringValue);
+        // console.log(stringValue);
       } catch (error) {
         // If conversion fails, return original value
         return stringValue;

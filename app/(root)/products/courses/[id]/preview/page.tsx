@@ -123,7 +123,7 @@ const CoursePreview = () => {
           : 'Course moved to draft successfully.';
       toast.success(msg);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
 
       console.error('Publish error:', error);
       toast.error('Failed to publish course');

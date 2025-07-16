@@ -418,7 +418,7 @@ export default function Chat({
       );
     } catch (error: any) {
       if (error.name === 'AbortError') {
-        console.log('Upload cancelled');
+        // console.log('Upload cancelled');
       } else {
         console.error('File upload error:', error);
       }

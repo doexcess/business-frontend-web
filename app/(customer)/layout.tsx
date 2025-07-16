@@ -30,19 +30,19 @@ const RootLayout = ({
   // Log auth state for debugging
   useEffect(() => {
     if (isClient) {
-      console.log('RootLayout: Auth state changed', {
-        hasToken: !!token,
-        tokenLength: token?.length,
-        hasUser: !!user,
-        loading,
-      });
+      // console.log('RootLayout: Auth state changed', {
+      //   hasToken: !!token,
+      //   tokenLength: token?.length,
+      //   hasUser: !!user,
+      //   loading,
+      // });
     }
   }, [token, user, loading, isClient]);
 
   // Handle redirect on client side only
   useEffect(() => {
     if (isClient && !token) {
-      console.log('RootLayout: No token, redirecting to signin');
+      // console.log('RootLayout: No token, redirecting to signin');
       safeRouterPush(router, '/auth/signin');
     }
   }, [token, isClient, router]);
@@ -77,7 +77,7 @@ const RootLayout = ({
     );
   }
 
-  console.log('RootLayout: Rendering with token, setting up SocketProvider');
+  // console.log('RootLayout: Rendering with token, setting up SocketProvider');
 
   return (
     <SocketProvider>

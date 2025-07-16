@@ -25,7 +25,7 @@ const useInvite = () => {
           throw new Error(response.payload.message);
         }
       } catch (error: any) {
-        console.log(error);
+        // console.log(error);
         setErrorMsg(error.message);
       }
     }

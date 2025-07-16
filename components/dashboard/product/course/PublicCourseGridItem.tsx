@@ -44,7 +44,7 @@ const PublicCourseGridItem: React.FC<PublicCourseGridItemProps> = ({
 
   const handleView = () => {
     setModalOpen(true);
-    console.log(product);
+    // console.log(product);
     onView();
   };
 

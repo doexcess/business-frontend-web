@@ -158,7 +158,7 @@ const ComposeEmailFormContent = ({
       toast.success(response?.payload?.message);
       router.back();
     } catch (err: any) {
-      console.log(err);
+      // console.log(err);
       toast.error(err.message);
     } finally {
       setIsLoading(false);

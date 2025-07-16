@@ -85,7 +85,7 @@ const useSubscriptionPlansPublic = ({
   const handlePageChange = (newPage: number) => {
     // This would need to be implemented if you want to change pages
     // For now, we'll just log it
-    console.log('Page change requested:', newPage);
+    // console.log('Page change requested:', newPage);
   };
 
   const handleSearch = (query: string) => {

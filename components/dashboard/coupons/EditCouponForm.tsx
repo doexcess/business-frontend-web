@@ -68,7 +68,7 @@ const EditCouponForm = () => {
     try {
       setIsSubmitting(true);
 
-      console.log(body);
+      // console.log(body);
 
       const { error, value } = updateCouponSchema.validate(body);
       if (error) throw new Error(error.details[0].message);

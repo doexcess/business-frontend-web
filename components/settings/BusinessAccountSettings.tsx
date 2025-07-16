@@ -23,9 +23,10 @@ import Avatar from '../ui/Avatar';
 import Link from 'next/link';
 import OnboardingAlert from '../OnboardingAlert';
 
-const BUSINESS_SIZES = ['Small', 'Medium', 'Large'];
+const BUSINESS_SIZES = ['Select Business Size', 'Small', 'Medium', 'Large'];
 
 const COUNTRIES = [
+  'Select Country',
   'Afghanistan',
   'Albania',
   'Algeria',
@@ -877,8 +878,8 @@ const BusinessAccountSettings = () => {
         industry: '',
         business_size: '',
         location: '',
-        state: defaultStates.length > 0 ? defaultStates[0] : '',
-        country: COUNTRIES[0],
+        state: '',
+        country: '',
         logo_url: '',
       });
       setLogoFile(null);
@@ -960,7 +961,7 @@ const BusinessAccountSettings = () => {
         industry: formData.industry,
       };
 
-      console.log(businessData);
+      // console.log(businessData);
 
       // Validate form data
       const { error } = businessSchema.validate(businessData);
@@ -1006,8 +1007,8 @@ const BusinessAccountSettings = () => {
         industry: '',
         business_size: '',
         location: '',
-        state: defaultStates.length > 0 ? defaultStates[0] : '',
-        country: COUNTRIES[0],
+        state: '',
+        country: '',
         logo_url: '',
       });
       setLogoFile(null);
@@ -1160,14 +1161,19 @@ const BusinessAccountSettings = () => {
                 name='industry'
                 className='w-full'
                 data={BUSINESS_INDUSTRIES}
-                value={formData.industry || BUSINESS_INDUSTRIES[0]}
+                value={formData.industry}
                 onChange={(e: any) =>
                   setFormData({
                     ...formData,
-                    industry: e.target.value,
+                    industry:
+                      e.target.value === BUSINESS_INDUSTRIES[0]
+                        ? ''
+                        : e.target.value,
                   })
                 }
+                defaultValue='Select Industry'
                 required
+                placeholder='Select Industry'
               />
             </div>
             <div>
@@ -1178,14 +1184,19 @@ const BusinessAccountSettings = () => {
                 name='business_size'
                 className='w-full'
                 data={BUSINESS_SIZES}
-                value={formData.business_size || BUSINESS_SIZES[0]}
+                value={formData.business_size}
                 onChange={(e: any) =>
                   setFormData({
                     ...formData,
-                    business_size: e.target.value,
+                    business_size:
+                      e.target.value === BUSINESS_SIZES[0]
+                        ? ''
+                        : e.target.value,
                   })
                 }
+                defaultValue='Select Business Size'
                 required
+                placeholder='Select Business Size'
               />
             </div>
 
@@ -1195,14 +1206,17 @@ const BusinessAccountSettings = () => {
                 name='country'
                 className='w-full'
                 data={COUNTRIES}
-                value={formData.country || COUNTRIES[0]}
+                value={formData.country}
                 onChange={(e: any) =>
                   setFormData({
                     ...formData,
-                    country: e.target.value,
+                    country:
+                      e.target.value === COUNTRIES[0] ? '' : e.target.value,
                   })
                 }
+                defaultValue='Select Country'
                 required
+                placeholder='Select Country'
               />
             </div>
             <div>
@@ -1214,14 +1228,16 @@ const BusinessAccountSettings = () => {
                   name='state'
                   className='w-full'
                   data={availableStates}
-                  value={formData.state || availableStates[0]}
+                  value={formData.state}
                   onChange={(e: any) =>
                     setFormData({
                       ...formData,
                       state: e.target.value,
                     })
                   }
+                  defaultValue=''
                   required
+                  placeholder='Select State/Province'
                 />
               ) : (
                 <Input
