@@ -22,14 +22,13 @@ const RootLayout = ({
 
   // Log auth state for debugging
   useEffect(() => {
-    console.log('RootLayout: Auth state changed', {
-      hasToken: !!token,
-      tokenLength: token?.length,
-      hasUser: !!user,
-      loading,
-    });
-
-    console.log(profile);
+    // console.log('RootLayout: Auth state changed', {
+    //   hasToken: !!token,
+    //   tokenLength: token?.length,
+    //   hasUser: !!user,
+    //   loading,
+    // });
+    // console.log(profile);
   }, [token, user, loading, profile]);
 
   // Remove direct router.push from render, use useEffect for redirect
@@ -40,7 +39,7 @@ const RootLayout = ({
 
   React.useEffect(() => {
     if (isClient && !token) {
-      console.log('RootLayout: No token, redirecting to signin');
+      // console.log('RootLayout: No token, redirecting to signin');
       router.push('/auth/signin');
     }
   }, [token, isClient, router]);
@@ -59,7 +58,7 @@ const RootLayout = ({
     );
   }
 
-  console.log('RootLayout: Rendering with token, setting up SocketProvider');
+  // console.log('RootLayout: Rendering with token, setting up SocketProvider');
 
   return (
     <SocketProvider>

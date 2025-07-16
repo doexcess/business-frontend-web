@@ -347,6 +347,7 @@ export const getPurchaseTypeLabel = (type: string) => {
 };
 
 export const BUSINESS_INDUSTRIES = [
+  'Select Industry',
   'Technology',
   'Healthcare',
   'Finance',

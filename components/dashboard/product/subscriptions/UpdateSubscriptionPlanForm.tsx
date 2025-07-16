@@ -84,7 +84,7 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
   ) => {
     const updated = [...(body?.subscription_plan_prices || [])];
     if (key === 'price') {
-      console.log(value);
+      // console.log(value);
 
       updated[index].price = value;
     } else {

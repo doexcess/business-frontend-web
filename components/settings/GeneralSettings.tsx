@@ -85,7 +85,7 @@ const GeneralSettings = () => {
             profile_picture: response.payload.multimedia.url,
           });
         } catch (error: any) {
-          console.log(error);
+          // console.log(error);
           toast.error(error.message);
         }
       }

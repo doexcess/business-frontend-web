@@ -137,7 +137,7 @@ const ImportProducts = () => {
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-          console.log(jsonData);
+          // console.log(jsonData);
 
           resolve(jsonData);
         } catch (error) {

@@ -124,7 +124,7 @@ class SocketService {
     // Chat-specific listeners
     this.socket?.on(`chatsRetrieved:${user_id}`, (response: ChatResponse) => {
       if (response.status === 'success') {
-        console.log(response.data);
+        // console.log(response.data);
 
         store.dispatch(chatsRetrieved(response.data.result));
       }

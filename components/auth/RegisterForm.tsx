@@ -16,7 +16,7 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/redux/store';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { register } from '@/redux/slices/authSlice';
-import { actualRole, encryptInput, SignupRole } from '@/lib/utils';
+import { actualRole, encryptInput, SignupRole, SystemRole } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import LoadingIcon from '../ui/icons/LoadingIcon';
 
@@ -163,7 +163,9 @@ const RegisterForm = ({ role }: RegisterFormCompProps) => {
               htmlFor='email'
               className='block mb-2 text-sm font-bold text-gray-900'
             >
-              Email
+              {body.role === SystemRole.BUSINESS_SUPER_ADMIN
+                ? 'Business Email'
+                : 'Email'}
             </label>
             <Input
               type='email'

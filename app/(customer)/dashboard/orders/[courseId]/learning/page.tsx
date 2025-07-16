@@ -130,32 +130,32 @@ const CourseLearningPage = () => {
   };
 
   // When switching content, update contentType and progress
-  // const handleContentClick = async (contentIdx: any) => {
-  //   setSelectedContent(contentIdx);
+  const handleContentClick = async (contentIdx: any) => {
+    setSelectedContent(contentIdx);
 
-  //   // Update progress when user manually selects content
-  //   const selectedContentObj = contents[contentIdx];
-  //   if (selectedContentObj?.id) {
-  //     try {
-  //       await dispatch(
-  //         updateCourseProgress({ content_id: selectedContentObj.id })
-  //       ).unwrap();
+    // Update progress when user manually selects content
+    const selectedContentObj = contents[contentIdx];
+    if (selectedContentObj?.id) {
+      try {
+        await dispatch(
+          updateCourseProgress({ content_id: selectedContentObj.id })
+        ).unwrap();
 
-  //       // Update the selected content's progress
-  //       // if (selectedContentObj) {
-  //       //   selectedContentObj.progress = [
-  //       //     {
-  //       //       id: Date.now().toString(),
-  //       //       completed_at: new Date().toISOString(),
-  //       //     },
-  //       //   ];
-  //       // }
-  //     } catch (error) {
-  //       console.error('Failed to update progress:', error);
-  //       // Silent fail for manual selection
-  //     }
-  //   }
-  // };
+        // Update the selected content's progress
+        // if (selectedContentObj) {
+        //   selectedContentObj.progress = [
+        //     {
+        //       id: Date.now().toString(),
+        //       completed_at: new Date().toISOString(),
+        //     },
+        //   ];
+        // }
+      } catch (error) {
+        console.error('Failed to update progress:', error);
+        // Silent fail for manual selection
+      }
+    }
+  };
 
   // Auto-advance to next content on video complete
   const handleVideoComplete = async () => {
@@ -222,9 +222,9 @@ const CourseLearningPage = () => {
             ? Math.round((completedLessonsCount / totalLessons) * 100)
             : 0;
 
-        console.log(completedLessonsCount);
+        // console.log(completedLessonsCount);
 
-        console.log(newProgress);
+        // console.log(newProgress);
 
         // Update the course progress using Redux reducer
         if (course.progress !== newProgress) {
@@ -238,8 +238,6 @@ const CourseLearningPage = () => {
         }
         // dispatch()
       }
-
-      console.log(course);
 
       toast.success(
         isCompleted ? 'Lesson completed!' : 'Lesson marked as incomplete'

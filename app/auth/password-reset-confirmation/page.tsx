@@ -21,7 +21,7 @@ const PasswordResetConfirmation = () => {
 
   const handleContinue = () => {
     if (selectedRole) {
-      console.log(`Selected role: ${selectedRole}`);
+      // console.log(`Selected role: ${selectedRole}`);
     }
   };
 

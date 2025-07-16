@@ -47,7 +47,7 @@ const Home = () => {
   }, [dispatch, org]);
 
   useEffect(() => {
-    console.log(profile?.role);
+    // console.log(profile?.role);
 
     // Redirect based on role
     if (profile?.role?.role_id === SystemRole.USER) {
