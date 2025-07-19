@@ -18,6 +18,7 @@ import { MultimediaType } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import { HiDocumentText, HiPaperAirplane } from 'react-icons/hi';
+import { MdPublish } from 'react-icons/md';
 
 type Lesson = {
   id?: string;
@@ -43,6 +44,8 @@ const CoursePreview = () => {
     modules: existingModules,
     modulesLoading: loading,
     course: currentCourse, // Assuming this contains course status from Redux
+    base_readiness_percent,
+    readiness_delta,
   } = useSelector((state: RootState) => state.course);
 
   const [modules, setModules] = useState<Module[]>([]);
@@ -139,6 +142,8 @@ const CoursePreview = () => {
   };
 
   const mediaType = getMediaType(selectedLesson!);
+  const readinessPercent =
+    (base_readiness_percent || 0) + (readiness_delta || 0);
 
   return (
     <main className='min-h-screen'>
@@ -183,6 +188,7 @@ const CoursePreview = () => {
                   )}
                 </Button>
               )}
+
               {currentCourse?.status === ProductStatus.DRAFT &&
                 currentCourse.readiness_percent === 100 && (
                   <Button
@@ -198,7 +204,7 @@ const CoursePreview = () => {
                       </span>
                     ) : (
                       <span className='flex gap-1 items-center'>
-                        <HiPaperAirplane />
+                        <MdPublish />
                         Publish
                       </span>
                     )}
@@ -224,29 +230,46 @@ const CoursePreview = () => {
                     {selectedLesson.title}
                   </h2>
                   <p className='text-sm mb-4'>{selectedLesson.content}</p>
-
-                  <div className='rounded-lg overflow-hidden'>
-                    {mediaType === 'pdf' && (
-                      <iframe
-                        src={selectedLesson.mediaPreview}
-                        title='PDF Preview'
-                        className='w-full h-[300px] md:h-[500px]'
-                      />
+                  <div className='rounded-lg overflow-hidden min-h-[200px] flex items-center justify-center'>
+                    {/* Preloader if media is not ready */}
+                    {(mediaType === 'video' ||
+                      mediaType === 'image' ||
+                      mediaType === 'pdf') &&
+                    !selectedLesson.mediaPreview ? (
+                      <div className='flex flex-col items-center justify-center w-full h-[300px]'>
+                        <LoadingIcon className='w-10 h-10 text-primary-main animate-spin mb-2' />
+                        <span className='text-xs text-gray-400'>
+                          Loading preview...
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        {mediaType === 'pdf' && (
+                          <iframe
+                            src={selectedLesson.mediaPreview}
+                            title='PDF Preview'
+                            className='w-full h-[300px] md:h-[500px]'
+                          />
+                        )}
+                        {mediaType === 'image' && (
+                          <img
+                            src={selectedLesson.mediaPreview}
+                            alt='Lesson Media'
+                            className='w-full max-h-[300px] md:max-h-[500px] object-contain'
+                          />
+                        )}
+                        {mediaType === 'video' &&
+                          selectedLesson.mediaPreview && (
+                            <VideoPlayer
+                              title={selectedLesson.title}
+                              src={selectedLesson.mediaPreview}
+                            />
+                          )}
+                        {mediaType === 'none' && (
+                          <p>No media preview available.</p>
+                        )}
+                      </>
                     )}
-                    {mediaType === 'image' && (
-                      <img
-                        src={selectedLesson.mediaPreview}
-                        alt='Lesson Media'
-                        className='w-full max-h-[300px] md:max-h-[500px] object-contain'
-                      />
-                    )}
-                    {mediaType === 'video' && selectedLesson.mediaPreview && (
-                      <VideoPlayer
-                        title={selectedLesson.title}
-                        src={selectedLesson.mediaPreview}
-                      />
-                    )}
-                    {mediaType === 'none' && <p>No media preview available.</p>}
                   </div>
                 </>
               ) : (

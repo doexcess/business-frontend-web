@@ -26,6 +26,8 @@ import { GenericResponse } from '@/types';
 interface CourseState {
   courses: Course[];
   course: Course | null;
+  base_readiness_percent: number; // API value
+  readiness_delta: number; // Local adjustment
   categories: CategoryWithCreator[];
   modules: Module[];
   content: ModuleContent | null;
@@ -47,6 +49,8 @@ interface CourseState {
 const initialState: CourseState = {
   courses: [],
   course: null,
+  base_readiness_percent: 0,
+  readiness_delta: 0,
   categories: [],
   categoriesCount: 0,
   modules: [],
@@ -63,6 +67,36 @@ const initialState: CourseState = {
   currentPage: 1,
   enrolledCourse: null,
 };
+
+// Helper to calculate readiness_percent
+function calculateReadinessPercent(
+  course: Course | null,
+  modules: Module[]
+): number {
+  if (!course) return 0;
+  const totalLessons = modules.reduce(
+    (sum, module) => sum + (module.contents?.length || 0),
+    0
+  );
+  const baseLessons = course.metadata?.planned_lessons || 1;
+  return Math.round((totalLessons / baseLessons) * 100);
+}
+
+// Helper to calculate readiness_delta
+function calculateReadinessDelta(
+  course: Course | null,
+  modules: Module[],
+  base: number
+): number {
+  if (!course) return 0;
+  const totalLessons = modules.reduce(
+    (sum, module) => sum + (module.contents?.length || 0),
+    0
+  );
+  const baseLessons = course.metadata?.planned_lessons || 1;
+  const currentPercent = Math.round((totalLessons / baseLessons) * 100);
+  return currentPercent - base;
+}
 
 // Async thunk to fetch paginated categories
 export const fetchCategories = createAsyncThunk(
@@ -406,6 +440,102 @@ const courseSlice = createSlice({
     clearContent: (state) => {
       state.content = null;
     },
+    addModule: (state, action: PayloadAction<Module>) => {
+      state.modules.push(action.payload);
+      if (state.course) {
+        state.readiness_delta = calculateReadinessDelta(
+          state.course,
+          state.modules,
+          state.base_readiness_percent
+        );
+      }
+    },
+    updateModule: (state, action: PayloadAction<Module>) => {
+      const idx = state.modules.findIndex((m) => m.id === action.payload.id);
+      if (idx !== -1) {
+        state.modules[idx] = action.payload;
+        if (state.course) {
+          state.readiness_delta = calculateReadinessDelta(
+            state.course,
+            state.modules,
+            state.base_readiness_percent
+          );
+        }
+      }
+    },
+    removeModule: (state, action: PayloadAction<string>) => {
+      state.modules = state.modules.filter((m) => m.id !== action.payload);
+      if (state.course) {
+        state.readiness_delta = calculateReadinessDelta(
+          state.course,
+          state.modules,
+          state.base_readiness_percent
+        );
+      }
+    },
+    addContentToModule: (
+      state,
+      action: PayloadAction<{ moduleId: string; content: ModuleContent }>
+    ) => {
+      const module = state.modules.find(
+        (m) => m.id === action.payload.moduleId
+      );
+      if (module) {
+        module.contents = module.contents
+          ? [...module.contents, action.payload.content]
+          : [action.payload.content];
+        if (state.course) {
+          state.readiness_delta = calculateReadinessDelta(
+            state.course,
+            state.modules,
+            state.base_readiness_percent
+          );
+        }
+      }
+    },
+    updateContentInModule: (
+      state,
+      action: PayloadAction<{ moduleId: string; content: ModuleContent }>
+    ) => {
+      const module = state.modules.find(
+        (m) => m.id === action.payload.moduleId
+      );
+      if (module && module.contents) {
+        const idx = module.contents.findIndex(
+          (c) => c.id === action.payload.content.id
+        );
+        if (idx !== -1) {
+          module.contents[idx] = action.payload.content;
+          if (state.course) {
+            state.readiness_delta = calculateReadinessDelta(
+              state.course,
+              state.modules,
+              state.base_readiness_percent
+            );
+          }
+        }
+      }
+    },
+    removeContentFromModule: (
+      state,
+      action: PayloadAction<{ moduleId: string; contentId: string }>
+    ) => {
+      const module = state.modules.find(
+        (m) => m.id === action.payload.moduleId
+      );
+      if (module && module.contents) {
+        module.contents = module.contents.filter(
+          (c) => c.id !== action.payload.contentId
+        );
+        if (state.course) {
+          state.readiness_delta = calculateReadinessDelta(
+            state.course,
+            state.modules,
+            state.base_readiness_percent
+          );
+        }
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -477,6 +607,9 @@ const courseSlice = createSlice({
       .addCase(fetchCourse.fulfilled, (state, action) => {
         state.courseDetailsLoading = false;
         state.course = action.payload.course;
+        state.base_readiness_percent =
+          action.payload.course.readiness_percent || 0;
+        state.readiness_delta = 0;
       })
       .addCase(fetchCourse.rejected, (state, action) => {
         state.courseDetailsLoading = false;
@@ -513,6 +646,13 @@ const courseSlice = createSlice({
         state.modulesLoading = false;
         state.modules = action.payload.modules;
         state.modulesCount = action.payload.count;
+        if (state.course) {
+          state.readiness_delta = calculateReadinessDelta(
+            state.course,
+            state.modules,
+            state.base_readiness_percent
+          );
+        }
       })
       .addCase(fetchModules.rejected, (state, action) => {
         state.modulesLoading = false;
@@ -523,6 +663,13 @@ const courseSlice = createSlice({
       })
       .addCase(updateBulkModule.fulfilled, (state, action) => {
         state.loading = false;
+        if (state.course) {
+          state.readiness_delta = calculateReadinessDelta(
+            state.course,
+            state.modules,
+            state.base_readiness_percent
+          );
+        }
       })
       .addCase(updateBulkModule.rejected, (state, action) => {
         state.loading = false;
@@ -531,6 +678,16 @@ const courseSlice = createSlice({
   },
 });
 
-export const { setPage, setPerPage, viewContent, clearContent } =
-  courseSlice.actions;
+export const {
+  setPage,
+  setPerPage,
+  viewContent,
+  clearContent,
+  addModule,
+  updateModule,
+  removeModule,
+  addContentToModule,
+  updateContentInModule,
+  removeContentFromModule,
+} = courseSlice.actions;
 export default courseSlice.reducer;

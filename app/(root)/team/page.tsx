@@ -24,9 +24,11 @@ import {
 } from '@/redux/slices/orgSlice';
 import toast from 'react-hot-toast';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
+import { BusinessOwnerOrgRole } from '@/lib/utils';
 
 const defaultValue: InviteContactProps = {
   email: '',
+  name: '',
   business_id: '',
 };
 
@@ -45,21 +47,16 @@ const Team = () => {
   const [members, setMembers] = useState<ContactInvite[]>([]);
   const [isInviteOpen, setInviteOpen] = useState(false);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setBody((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setBody((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleRemove = (email: string) => {
     setMembers(members.filter((m) => m.email !== email));
   };
 
-  const isFormValid = body.email && body.business_id;
+  const isFormValid = body.email.trim() !== '' && body.name.trim() !== '';
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,6 +92,7 @@ const Team = () => {
       // Fetch
       dispatch(
         fetchInvites({
+          role: BusinessOwnerOrgRole.BUSINESS_ADMIN,
           ...(org?.id && { business_id: org.id }),
         })
       ).unwrap();
@@ -146,6 +144,18 @@ const Team = () => {
           title='Invite Team Member'
         >
           <form className='space-y-4' onSubmit={handleAddMember}>
+            <div>
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
+                Name
+              </label>
+              <Input
+                type='text'
+                name='name'
+                placeholder='Enter name'
+                value={body.name}
+                onChange={handleChange}
+              />
+            </div>
             <div>
               <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
                 Email Address

@@ -175,7 +175,7 @@ const EditCourseForm = () => {
           type='text'
           name='title'
           placeholder='Your Course Title Goes Here'
-          className='w-full border rounded-md px-4 text-3xl text-gray-600 dark:text-white placeholder-gray-400 border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 font-bold'
+          className='w-full border rounded-md px-4 lg:text-3xl text-gray-600 dark:text-white placeholder-gray-400 border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 font-bold'
           value={body.title}
           onChange={handleChange}
           required
