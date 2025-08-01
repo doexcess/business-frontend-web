@@ -129,15 +129,17 @@ const Team = () => {
           }
         />
 
-        {loading ? <LoadingSkeleton /> : <TeamList />}
+        <TeamList loading={loading} />
 
-        <Pagination
-          paddingRequired={false}
-          total={count}
-          onClickNext={onClickNext}
-          onClickPrev={onClickPrev}
-          noMoreNextPage={invites.length === 0}
-        />
+        {!loading && (
+          <Pagination
+            paddingRequired={false}
+            total={count}
+            onClickNext={onClickNext}
+            onClickPrev={onClickPrev}
+            noMoreNextPage={invites.length === 0}
+          />
+        )}
 
         {/* Invite Modal */}
         <Modal

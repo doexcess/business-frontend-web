@@ -22,7 +22,6 @@ const CouponsList = () => {
     handleRefresh,
   } = useCoupons();
   const searchParams = useSearchParams();
-  if (loading) return <LoadingSkeleton />;
 
   const noFoundText =
     !searchParams.has('page') || searchParams.has('q')
@@ -65,26 +64,39 @@ const CouponsList = () => {
                 ))}
               </tr>
             </thead>
-            <tbody>
-              {coupons.map((coupon) => (
-                <CouponItem coupon={coupon} />
-              ))}
 
-              {!coupons.length && (
-                <TableEndRecord colspan={9} text={noFoundText} />
-              )}
-            </tbody>
+            {loading ? (
+
+              <LoadingSkeleton length={12} columns={9} />
+
+            ) : (
+
+              <tbody>
+                {coupons.map((coupon) => (
+                  <CouponItem coupon={coupon} />
+                ))}
+
+                {!coupons.length && (
+                  <TableEndRecord colspan={9} text={noFoundText} />
+                )}
+              </tbody>
+
+            )}
+
           </table>
         </div>
 
         {/* Pagination */}
-        <Pagination
-          total={count}
-          currentPage={currentPage}
-          onClickNext={onClickNext}
-          onClickPrev={onClickPrev}
-          noMoreNextPage={coupons.length === 0}
-        />
+        {!loading && (
+          <Pagination
+            total={count}
+            currentPage={currentPage}
+            onClickNext={onClickNext}
+            onClickPrev={onClickPrev}
+            noMoreNextPage={coupons.length === 0}
+          />
+        )}
+
       </section>
     </>
   );

@@ -24,8 +24,6 @@ const InstantNotificationsList = () => {
     handleRefresh,
   } = useInstantNotification();
 
-  if (loading) return <LoadingSkeleton />;
-
   const noFoundText =
     !searchParams.has('page') || searchParams.has('q')
       ? 'No record found.'
@@ -70,26 +68,41 @@ const InstantNotificationsList = () => {
                 )}
               </tr>
             </thead>
-            <tbody>
-              {notifications.map((notification) => (
-                <InstantNotificationItem notification={notification} />
-              ))}
 
-              {!notifications.length && (
-                <TableEndRecord colspan={8} text={noFoundText} />
-              )}
-            </tbody>
+            {loading ? (
+
+              <LoadingSkeleton length={12} columns={5} />
+
+            ) : (
+
+              <tbody>
+
+                {notifications.map((notification) => (
+                  <InstantNotificationItem notification={notification} />
+                ))}
+
+                {!notifications.length && (
+                  <TableEndRecord colspan={8} text={noFoundText} />
+                )}
+              </tbody>
+
+            )}
+
           </table>
         </div>
         {/* Pagination */}
-        <Pagination
-          total={count}
-          paddingRequired={false}
-          currentPage={currentPage}
-          onClickNext={onClickNext}
-          onClickPrev={onClickPrev}
-          noMoreNextPage={notifications.length === 0}
-        />
+
+        {!loading && (
+          <Pagination
+            total={count}
+            paddingRequired={false}
+            currentPage={currentPage}
+            onClickNext={onClickNext}
+            onClickPrev={onClickPrev}
+            noMoreNextPage={notifications.length === 0}
+          />
+        )}
+
       </section>
     </>
   );

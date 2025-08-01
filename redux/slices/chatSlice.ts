@@ -6,6 +6,7 @@ import {
   SendMessageProps,
 } from '@/lib/schema/chat.schema';
 import { Chat, Message, ChatResponse, MessagesResponse } from '@/types/chat';
+import api from '@/lib/api';
 
 interface ChatState {
   chats: Chat[];
@@ -14,8 +15,10 @@ interface ChatState {
   currentChat: string | null;
   chat: Chat | null;
   loading: boolean;
+  contactsLoading: boolean;
   error: string | null;
   onlineUsers: Set<string>;
+  contacts: any[];
 }
 
 const initialState: ChatState = {
@@ -25,9 +28,40 @@ const initialState: ChatState = {
   latestMessage: null,
   currentChat: null,
   loading: false,
+  contactsLoading: false,
   error: null,
   onlineUsers: new Set(),
+  contacts: [],
 };
+
+export const fetchContacts = createAsyncThunk(
+  'contacts/fetchContacts',
+  async (business_id: string, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/contact/fetch-contacts?business_id=${business_id}`);
+      return response.data.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch contacts'
+      );
+    }
+  }
+);
+
+export const fetchOrgContacts = createAsyncThunk(
+  'contacts/fetchOrgContacts',
+  async (business_id: string, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/contact/fetch-org-contacts?business_id=${business_id}`);
+      return response.data.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch org contacts'
+      );
+    }
+  }
+);
+
 
 // Helper function to sort chats by last message date (most recent first)
 const sortChatsByLastMessage = (chats: Chat[]): Chat[] => {
@@ -75,16 +109,27 @@ const chatSlice = createSlice({
       state.chats = sortChatsByLastMessage(action.payload);
     },
     messagesRetrieved: (
-      state,
+      state: any,
       action: PayloadAction<{
-        messages: Message[];
-        chatId?: string;
-        chat: Chat;
-      }>
+        messages: Message[]
+        chatId?: string
+        chat: Chat
+        page?: number
+        isInitialLoad?: boolean
+      }>,
     ) => {
-      state.messages = action.payload.messages;
-      state.chat = action.payload.chat;
-      state.currentChat = action.payload.chatId || null;
+      const { messages, chatId, chat, page, isInitialLoad } = action.payload
+
+      if (isInitialLoad) {
+        state.messages = messages
+      } else {
+        const existingMessageIds = new Set(state.messages.map((msg: Message) => msg.id))
+        const newMessages = messages.filter((msg) => !existingMessageIds.has(msg.id))
+        state.messages = [...newMessages, ...state.messages]
+      }
+
+      state.chat = chat
+      state.currentChat = chatId || null
     },
     userOnline: (state, action: PayloadAction<string>) => {
       state.onlineUsers.add(action.payload);
@@ -139,10 +184,53 @@ const chatSlice = createSlice({
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
+    // In your chatSlice.ts
+    updateMessagesReadStatus: (state, action: PayloadAction<{
+      chatId: string;
+      readBy: string;
+    }>) => {
+      const { chatId, readBy } = action.payload;
+      const chat = state.chats.find(c => c.id === chatId);
+
+      if (chat) {
+        chat.messages.forEach(msg => {
+          if (msg.initiator_id !== readBy) {
+            msg.read = true;
+          }
+        });
+
+        // Reset unread count
+        chat.unread = 0;
+      }
+    },
     clearChatState: () => initialState,
   },
   extraReducers: (builder) => {
     builder
+      .addCase(fetchContacts.pending, (state) => {
+        state.contactsLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchContacts.fulfilled, (state, action: PayloadAction<any[]>) => {
+        state.contactsLoading = false;
+        state.contacts = action.payload;
+      })
+      .addCase(fetchContacts.rejected, (state, action: PayloadAction<any>) => {
+        state.contactsLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchOrgContacts.pending, (state) => {
+        state.contactsLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrgContacts.fulfilled, (state, action: PayloadAction<any[]>) => {
+        state.contactsLoading = false;
+        state.contacts = action.payload;
+      })
+      .addCase(fetchOrgContacts.rejected, (state, action: PayloadAction<any>) => {
+        state.contactsLoading = false;
+        state.error = action.payload;
+      })
       .addMatcher(
         (action) => action.type.endsWith('/pending'),
         (state) => {
@@ -152,7 +240,7 @@ const chatSlice = createSlice({
       )
       .addMatcher(
         (action) => action.type.endsWith('/rejected'),
-        (state, action: PayloadAction<string>) => {
+        (state, action: PayloadAction<any>) => {
           state.loading = false;
           state.error = action.payload;
         }
@@ -175,6 +263,7 @@ export const {
   userOffline,
   updateMessageStatus,
   clearChatState,
+  updateMessagesReadStatus
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
