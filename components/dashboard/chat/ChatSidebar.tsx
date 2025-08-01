@@ -20,7 +20,7 @@ import { RecentChatRetrievedResponse } from '@/types/chat';
 import { useDebounce } from '@/hooks/use-debounce';
 import ContactLists from './ContactLists';
 
-const shimmerMessages = Array(7).fill({
+const shimmerMessages = Array(5).fill({
   id: '',
   name: '',
   message: '',
@@ -137,10 +137,10 @@ const ChatSidebar = () => {
     )}>
 
       {/* Header Tabs */}
-      <div className='flex space-x-4 mb-6'>
+      <div className='flex space-x-3 mb-6'>
         <button
           className={cn(
-            'flex-1 text-sm font-bold py-2',
+            'flex-1 text-xs font-bold py-2',
             chatTab === ChatTab.ALL && 'bg-primary-main rounded-lg text-white'
           )}
           onClick={() => fetchChats(ChatTab.ALL, searchQuery)}
@@ -149,7 +149,7 @@ const ChatSidebar = () => {
         </button>
         <button
           className={cn(
-            'flex-1 text-sm font-bold py-2',
+            'flex-1 text-xs font-bold py-2',
             chatTab === ChatTab.UNREAD && 'bg-primary-main rounded-lg text-white'
           )}
           onClick={() => fetchChats(ChatTab.UNREAD, searchQuery)}>
@@ -157,7 +157,7 @@ const ChatSidebar = () => {
         </button>
         <button
           className={cn(
-            'flex-1 text-sm font-bold py-2',
+            'flex-1 text-xs font-bold py-2',
             chatTab === ChatTab.CONTACTS && 'bg-primary-main rounded-lg text-white'
           )} onClick={() => setChatTab(ChatTab.CONTACTS)}>
           Contacts
