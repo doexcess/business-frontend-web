@@ -18,8 +18,9 @@ import {
 import { useSocket } from '@/context/SocketProvider';
 import { RecentChatRetrievedResponse } from '@/types/chat';
 import { useDebounce } from '@/hooks/use-debounce';
+import ContactLists from './ContactLists';
 
-const shimmerMessages = Array(7).fill({
+const shimmerMessages = Array(5).fill({
   id: '',
   name: '',
   message: '',
@@ -31,12 +32,14 @@ const shimmerMessages = Array(7).fill({
   isShimmer: true,
 });
 
-enum ChatTab {
+export enum ChatTab {
   ALL = 'all',
   UNREAD = 'unread',
+  CONTACTS = 'contacts',
 }
 
 const ChatSidebar = () => {
+
   const pathname = usePathname();
   const dispatch = useDispatch<AppDispatch>();
   const { chats } = useSelector((state: RootState) => state.chat);
@@ -45,7 +48,6 @@ const ChatSidebar = () => {
   const [chatTab, setChatTab] = useState(ChatTab.ALL);
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
-
   const { isConnected } = useSocket();
 
   const fetchChats = useCallback(
@@ -66,25 +68,32 @@ const ChatSidebar = () => {
     [token, dispatch]
   );
 
-  // Handle initial load and tab changes
+  // Fetch chats initially
   useEffect(() => {
-    fetchChats(chatTab);
-  }, [chatTab, fetchChats]);
+    if (token && profile?.id) {
+      fetchChats(chatTab);
+    }
+  }, [token, profile?.id, chatTab, fetchChats]);
 
-  // Handle debounced search
   useEffect(() => {
-    if (debouncedSearchQuery !== undefined) {
+    if (debouncedSearchQuery !== undefined && token && profile?.id) {
       fetchChats(chatTab, debouncedSearchQuery);
     }
-  }, [debouncedSearchQuery, chatTab, fetchChats]);
+  }, [debouncedSearchQuery, chatTab, fetchChats, token, profile?.id]);
 
-  // Socket event listeners
   useEffect(() => {
-    if (!isConnected || !token) return;
+    if (isConnected && token && profile?.id && chats.length === 0) {
+      fetchChats(chatTab);
+    }
+  }, [isConnected, token, profile?.id, chatTab, chats.length]);
+
+
+  useEffect(() => {
+    if (!isConnected || !token || !profile?.id) return;
+
+    const userId = profile.id;
 
     const handleChatRetrieved = (response: RecentChatRetrievedResponse) => {
-      // console.log(response);
-
       if (response.status === 'success') {
         dispatch(recentChatRetrieved(response.data));
       }
@@ -96,27 +105,20 @@ const ChatSidebar = () => {
       }
     };
 
-    socketService.on(`recentChatRetrieved:${profile?.id}`, handleChatRetrieved);
-    socketService.on(`chatsRetrieved:${profile?.id}`, handleChatsRetrieved);
+    socketService.on(`recentChatRetrieved:${userId}`, handleChatRetrieved);
+    socketService.on(`chatsRetrieved:${userId}`, handleChatsRetrieved);
 
     return () => {
-      socketService.off(
-        `recentChatRetrieved:${profile?.id}`,
-        handleChatRetrieved
-      );
-      socketService.off(`chatsRetrieved:${profile?.id}`, handleChatsRetrieved);
+      socketService.off(`recentChatRetrieved:${userId}`, handleChatRetrieved);
+      socketService.off(`chatsRetrieved:${userId}`, handleChatsRetrieved);
     };
-  }, [token, dispatch, isConnected, profile?.id]);
+  }, [isConnected, token, profile?.id, dispatch]);
 
   const ChatShimmer = shimmerMessages.map((shimmer, index) => (
-    <div
-      key={`shimmer-${index}`}
-      className={`flex items-center gap-3 p-4 ${
-        index !== chats.length - 1
-          ? 'border-b border-gray-100 dark:border-gray-700'
-          : ''
-      }`}
-    >
+    <div key={`shimmer-${index}`} className={`flex items-center gap-3 p-4 ${index !== shimmerMessages.length - 1
+      ? 'border-b border-gray-100 dark:border-gray-700'
+      : ''
+      }`}>
       <div className='relative h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-600 animate-pulse' />
       <div className='flex-1 space-y-2'>
         <div className='h-4 w-3/4 rounded bg-gray-200 dark:bg-gray-600 animate-pulse' />
@@ -127,19 +129,18 @@ const ChatSidebar = () => {
   ));
 
   return (
-    <Card
-      className={cn(
-        'w-full md:w-[35%] h-full bg-neutral-2 p-4 flex-col rounded-lg',
-        pathname === '/messages' || pathname === '/dashboard/messages'
-          ? 'flex'
-          : 'hidden md:flex'
-      )}
-    >
-      {/* Header tabs */}
-      <div className='flex space-x-4 mb-6'>
+    <Card className={cn(
+      'w-full md:w-[35%] h-full bg-neutral-2 p-4 flex-col rounded-lg',
+      pathname === '/messages' || pathname === '/dashboard/messages'
+        ? 'flex'
+        : 'hidden md:flex'
+    )}>
+
+      {/* Header Tabs */}
+      <div className='flex space-x-3 mb-6'>
         <button
           className={cn(
-            'flex-1 text-sm font-bold py-2',
+            'flex-1 text-xs font-bold py-2',
             chatTab === ChatTab.ALL && 'bg-primary-main rounded-lg text-white'
           )}
           onClick={() => fetchChats(ChatTab.ALL, searchQuery)}
@@ -148,17 +149,22 @@ const ChatSidebar = () => {
         </button>
         <button
           className={cn(
-            'flex-1 text-sm font-bold py-2',
-            chatTab === ChatTab.UNREAD &&
-              'bg-primary-main rounded-lg text-white'
+            'flex-1 text-xs font-bold py-2',
+            chatTab === ChatTab.UNREAD && 'bg-primary-main rounded-lg text-white'
           )}
-          onClick={() => fetchChats(ChatTab.UNREAD, searchQuery)}
-        >
+          onClick={() => fetchChats(ChatTab.UNREAD, searchQuery)}>
           Unread
+        </button>
+        <button
+          className={cn(
+            'flex-1 text-xs font-bold py-2',
+            chatTab === ChatTab.CONTACTS && 'bg-primary-main rounded-lg text-white'
+          )} onClick={() => setChatTab(ChatTab.CONTACTS)}>
+          Contacts
         </button>
       </div>
 
-      {/* Search bar */}
+      {/* Search Input */}
       <div className='relative mb-6'>
         <Input
           type='text'
@@ -184,7 +190,9 @@ const ChatSidebar = () => {
         </svg>
       </div>
 
-      {isLoading ? (
+      {chatTab === 'contacts' ? (
+        <ContactLists setChatTab={setChatTab} searchQuery={searchQuery} />
+      ) : isLoading ? (
         ChatShimmer
       ) : chats.length === 0 ? (
         <div className='h-[64vh] flex justify-center items-center'>
@@ -205,6 +213,8 @@ const ChatSidebar = () => {
           <MessageList chats={chats} />
         </main>
       )}
+
+
     </Card>
   );
 };

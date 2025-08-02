@@ -375,7 +375,7 @@ const SubscriptionPlans = () => {
           )}
 
           {/* Pagination */}
-          {count > 0 && (
+          {!loading && count > 0 && (
             <Pagination
               total={count}
               currentPage={currentPage}

@@ -23,7 +23,7 @@ const SubscriptionPlansList = () => {
     handleRefresh,
   } = useSubscriptionPlans();
 
-  if (loading) return <LoadingSkeleton />;
+  // if (!loading) return <LoadingSkeleton />;
 
   const noFoundText =
     !searchParams.has('page') || searchParams.has('q')
@@ -61,26 +61,35 @@ const SubscriptionPlansList = () => {
                 ))}
               </tr>
             </thead>
-            <tbody className='text-sm'>
-              {subscription_plans.map((subscription_plan) => (
-                <SubscriptionPlanItem subscription_plan={subscription_plan} />
-              ))}
 
-              {!subscription_plans.length && (
-                <TableEndRecord colspan={8} text={noFoundText} />
-              )}
-            </tbody>
+            {loading ? (
+              <LoadingSkeleton length={12} columns={7} />
+            ) : (
+              <tbody className='text-sm'>
+                {subscription_plans.map((subscription_plan) => (
+                  <SubscriptionPlanItem subscription_plan={subscription_plan} />
+                ))}
+
+                {!subscription_plans.length && (
+                  <TableEndRecord colspan={8} text={noFoundText} />
+                )}
+              </tbody>
+            )}
+
           </table>
         </div>
 
         {/* Pagination */}
-        <Pagination
-          total={count}
-          currentPage={currentPage}
-          onClickNext={onClickNext}
-          onClickPrev={onClickPrev}
-          noMoreNextPage={subscription_plans.length === 0}
-        />
+        {!loading && (
+          <Pagination
+            total={count}
+            currentPage={currentPage}
+            onClickNext={onClickNext}
+            onClickPrev={onClickPrev}
+            noMoreNextPage={subscription_plans.length === 0}
+          />
+        )}
+
       </section>
     </>
   );

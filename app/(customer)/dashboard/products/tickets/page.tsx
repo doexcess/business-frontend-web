@@ -251,7 +251,7 @@ const Tickets = () => {
               </div>
             )}
           </Modal>
-          {count > limit && (
+          {!loading && count > limit && (
             <Pagination
               currentPage={currentPage}
               total={count}
