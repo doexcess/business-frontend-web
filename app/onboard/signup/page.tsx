@@ -1,5 +1,6 @@
 'use client';
 
+import GoogleSignup from '@/components/auth/GoogleSignup';
 import RegisterForm from '@/components/auth/RegisterForm';
 import { SignupRole } from '@/lib/utils';
 import Head from 'next/head';
@@ -44,12 +45,15 @@ const SignupContent = () => {
           <RegisterForm role={role} />
         </>
 
+        <GoogleSignup role={role} />
+
         <div className='flex flex-wrap justify-center gap-1 sm:gap-2 mt-6 sm:mt-8 mb-4 text-sm sm:text-base'>
           <p>Already have an account?</p>
           <Link href='/auth/signin' className='text-primary-main font-bold'>
             Sign in
           </Link>
         </div>
+
       </div>
     </div>
   );

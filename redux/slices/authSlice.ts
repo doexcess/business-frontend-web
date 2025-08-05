@@ -107,7 +107,6 @@ export const login = createAsyncThunk(
       const { user, token, data, message } = response.data;
       return { user, token, data, message };
     } catch (error: any) {
-      // console.log(error);
       return rejectWithValue(error.response?.data || 'Login failed');
     }
   }
@@ -125,6 +124,23 @@ export const verifyLogin = createAsyncThunk(
     } catch (error: any) {
       // console.log(error);
       return rejectWithValue(error.response?.data || 'OTP verification failed');
+    }
+  }
+);
+
+// GOOGLE LOGIN
+export const googleLogin = createAsyncThunk(
+  'auth/google-login',
+  async (credentials: { token: string; provider: 'GOOGLE'; role?: string; action_type: 'SIGNIN' | 'SIGNUP' }, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/auth/sso', credentials);
+      const { accessToken: token, message, data } = response.data;
+
+      Cookies.set('token', token, { expires: 3 });
+
+      return { token, message, data };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Google login failed');
     }
   }
 );
@@ -236,7 +252,7 @@ export const updatePassword = createAsyncThunk(
 // Async Thunk to delete account
 export const deleteAccount = createAsyncThunk(
   'auth/delete-account',
-  async ({}, { rejectWithValue }) => {
+  async ({ }, { rejectWithValue }) => {
     try {
       const { data } = await api.delete('/auth/delete-account');
 
@@ -322,6 +338,18 @@ const authSlice = createSlice({
         state.token = action.payload.token;
       })
       .addCase(verifyLogin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(googleLogin.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(googleLogin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.token = action.payload.token;
+      })
+      .addCase(googleLogin.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
