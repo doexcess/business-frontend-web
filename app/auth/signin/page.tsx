@@ -4,6 +4,7 @@ import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 import SigninForm from '@/components/auth/SigninForm';
+import GoogleLogin from '@/components/auth/GoogleLogin';
 
 const Signin = () => {
   return (
@@ -39,6 +40,7 @@ const Signin = () => {
           <SigninForm />
 
           {/* Google login to be implemented later */}
+          <GoogleLogin />
 
           <div className='flex flex-wrap justify-center gap-1 sm:gap-2 mt-6 sm:mt-8 mb-4 text-sm sm:text-base'>
             <p>Don't have an account?</p>

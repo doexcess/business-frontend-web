@@ -1,8 +1,49 @@
 import React from 'react';
 import { Button } from '../ui/Button';
 import Image from 'next/image';
+import { useGoogleLogin } from '@/hooks/useGoogleLogin';
+import { googleLogin } from '@/redux/slices/authSlice';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '@/redux/store';
+import toast from 'react-hot-toast';
+import { SystemRole } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 const GoogleLogin = () => {
+
+  const router = useRouter()
+  const dispatch = useDispatch<AppDispatch>()
+  const { loginWithGoogle } = useGoogleLogin();
+
+  const handleLogin = () => {
+    loginWithGoogle({
+      onSuccess: async (token) => {
+
+        try {
+
+          const response: any = await dispatch(googleLogin({ token: token, provider: 'GOOGLE', action_type: 'SIGNIN' })).unwrap();
+          toast.success(response.message);
+
+          const route = [
+            SystemRole.BUSINESS_SUPER_ADMIN,
+            SystemRole.BUSINESS_ADMIN,
+          ].includes(response.data.role)
+            ? '/home'
+            : '/dashboard/home';
+
+          router.push(route);
+
+        } catch (error: any) {
+          toast.error(error?.message);
+        }
+
+      },
+      onError: (error) => {
+        console.error('Google Login Error:', error);
+      },
+    });
+  };
+
   return (
     <>
       <div className='relative w-full mt-6 sm:mt-8'>
@@ -17,9 +58,9 @@ const GoogleLogin = () => {
       </div>
 
       <Button
-        className='mt-6 sm:mt-8 text-primary-main w-full border-primary-main flex gap-2 hover:bg-primary-main hover:text-white'
-        variant={'outline'}
-      >
+        onClick={handleLogin}
+        className='mt-6 sm:mt-8 !text-primary-main w-full border-primary-main flex gap-2 hover:bg-primary-main hover:!text-white'
+        variant={'outline'}>
         <Image
           src={'/icons/auth/google.svg'}
           alt='google'

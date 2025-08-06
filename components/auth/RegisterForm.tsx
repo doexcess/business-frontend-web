@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Input from '../ui/Input';
-import Image from 'next/image';
 import Checkbox from '../ui/Checkbox';
 import Link from 'next/link';
 import Icon from '../ui/Icon';
@@ -40,6 +39,7 @@ interface RegisterFormCompProps {
   role: SignupRole | string;
 }
 const RegisterForm = ({ role }: RegisterFormCompProps) => {
+  
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
