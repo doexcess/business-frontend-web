@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '../ui/Button';
 import Image from 'next/image';
 import { useGoogleLogin } from '@/hooks/useGoogleLogin';
@@ -8,17 +8,22 @@ import { AppDispatch } from '@/redux/store';
 import toast from 'react-hot-toast';
 import { actualRole, SignupRole, SystemRole } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import LoadingIcon from '../ui/icons/LoadingIcon';
 
 const GoogleSignup = ({ role }: { role: SignupRole | string; }) => {
 
   const router = useRouter()
   const dispatch = useDispatch<AppDispatch>()
   const { loginWithGoogle } = useGoogleLogin();
+  const [isLoading, setIsLoading] = useState(false);
 
   // 🔁 Map role to loginRole
   const authRole = actualRole(role)
 
   const handleReg = () => {
+
+    setIsLoading(true)
+
     loginWithGoogle({
       onSuccess: async (token) => {
 
@@ -38,11 +43,14 @@ const GoogleSignup = ({ role }: { role: SignupRole | string; }) => {
 
         } catch (error: any) {
           toast.error(error?.message);
+        } finally {
+          setIsLoading(false)
         }
 
       },
       onError: (error) => {
-        console.error('Google Login Error:', error);
+        toast.error('Google sign-up failed.');
+        setIsLoading(false);
       },
     });
   };
@@ -62,17 +70,27 @@ const GoogleSignup = ({ role }: { role: SignupRole | string; }) => {
 
       <Button
         onClick={handleReg}
+        disabled={isLoading}
         className='mt-6 sm:mt-8 !text-primary-main w-full border-primary-main flex gap-2 hover:bg-primary-main hover:!text-white'
         variant={'outline'}
       >
-        <Image
-          src={'/icons/auth/google.svg'}
-          alt='google'
-          width={20}
-          height={20}
-          className='object-contain'
-        />
-        <span className='text-sm sm:text-base'>Sign up with Google</span>
+
+        {isLoading ? (
+          <LoadingIcon className='text-primary size-5' />
+        ) : (
+          <Image
+            src={'/icons/auth/google.svg'}
+            alt='google'
+            width={20}
+            height={20}
+            className='object-contain'
+          />
+        )}
+        <span className='text-sm sm:text-base'>
+          {isLoading ? 'Signing up...' : 'Sign up with Google'}
+        </span>
+
+
       </Button>
     </>
   );
