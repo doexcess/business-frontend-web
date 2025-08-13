@@ -23,12 +23,21 @@ const ContentPreview: React.FC<ContentPreviewProps> = ({
   onProgress,
   onComplete,
 }) => {
+  // Encode video URL to prevent it from being visible in browser inspection
+  const encodeVideoUrl = (url: string): string => {
+    try {
+      return btoa(url);
+    } catch {
+      return url; // Fallback to original if encoding fails
+    }
+  };
+
   const renderContent = () => {
     switch (contentType) {
       case 'video':
         return content.multimedia?.url ? (
           <VideoPlayer
-            src={content.multimedia.url}
+            src={encodeVideoUrl(content.multimedia.url)}
             title={content.title}
             // onProgress={onProgress}
             // onComplete={onComplete}

@@ -45,6 +45,7 @@ const AddCourseForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -79,8 +80,16 @@ const AddCourseForm = () => {
       reader.readAsDataURL(file);
 
       const response: any = await dispatch(
-        uploadImage({ form_data: formData, business_id: org?.id })
+        uploadImage({
+          form_data: formData,
+          business_id: org?.id,
+          onUploadProgress: (event) => {
+            const percent = Math.round((event.loaded * 100) / (event.total || 1));
+            setUploadProgress(percent);
+          }
+        })
       );
+
 
       if (response.type === 'multimedia-upload/image/rejected') {
         throw new Error(response.payload.message);
@@ -95,6 +104,7 @@ const AddCourseForm = () => {
     } catch (error) {
       toast.error('Failed to upload image');
     } finally {
+      setUploadProgress(0)
       setUploadingImage(false);
     }
   };
@@ -160,7 +170,7 @@ const AddCourseForm = () => {
           type='text'
           name='title'
           placeholder='Your Course Title Goes Here'
-          className='w-full border rounded-md px-4 text-2xl text-gray-600 dark:text-white placeholder-gray-400 border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 font-bold'
+          className='w-full border rounded-md px-4 lg:text-2xl text-gray-600 dark:text-white placeholder-gray-400 border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 font-bold'
           value={body.title}
           onChange={handleChange}
           required
@@ -168,11 +178,12 @@ const AddCourseForm = () => {
 
         {/* Upload Card */}
         <div
-          className='flex flex-col items-center justify-center w-full sm:w-64 h-56 rounded-md bg-primary-main text-white p-4 text-center cursor-pointer relative'
+          className='relative flex flex-col items-center justify-center w-full sm:w-64 h-56 rounded-md bg-primary-main text-white p-4 text-center cursor-pointer overflow-hidden'
           onClick={() => fileInputRef.current?.click()}
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
         >
+        
           {imagePreview ? (
             <img
               src={imagePreview}
@@ -186,14 +197,26 @@ const AddCourseForm = () => {
                 alt='upload icon'
                 className='mb-2 w-10 h-10'
               />
-              <p className='font-medium'>
-                {uploadingImage ? 'Uploading...' : 'Upload, Drag or drop image'}
-              </p>
-              <p className='text-xs'>
-                Supported Format: png, jpeg. Max size is 5MB
-              </p>
+              <p className='font-medium'>Upload, Drag or drop image</p>
+              <p className='text-xs'>Supported Format: png, jpeg. Max size is 5MB</p>
             </>
           )}
+
+          {/* Uploading Overlay */}
+          {uploadingImage && (
+            <div className='absolute inset-0 bg-[#000]/80 backdrop-blur-sm flex flex-col justify-center items-center z-10 px-4'>
+              <p className='font-semibold text-white text-sm mb-3'>
+                Uploading... {uploadProgress}%
+              </p>
+              <div className='w-full bg-white/30 rounded-full h-2'>
+                <div
+                  className='bg-white h-2 rounded-full transition-all duration-300'
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           <input
             type='file'
             accept='image/png, image/jpeg'
@@ -202,6 +225,8 @@ const AddCourseForm = () => {
             onChange={handleFileChange}
           />
         </div>
+
+
 
         {/* Category and Price Fields */}
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>

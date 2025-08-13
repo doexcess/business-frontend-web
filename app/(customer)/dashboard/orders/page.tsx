@@ -178,7 +178,7 @@ const Orders = () => {
           )}
 
           {/* Pagination */}
-          {count > 0 && (
+          {!loading && count > 0 && (
             <Pagination
               total={count}
               currentPage={currentPage}
@@ -188,6 +188,7 @@ const Orders = () => {
               paddingRequired={false}
             />
           )}
+
         </div>
       </div>
 

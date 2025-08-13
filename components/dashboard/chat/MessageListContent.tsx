@@ -104,8 +104,7 @@ const MessageListContent = ({
             <span
               className={clsx(
                 'ml-2 text-xs px-2 py-1 rounded-full bg-indigo-100 text-primary-main font-semibold'
-              )}
-            >
+              )}>
               {chat.unread}
             </span>
           )}

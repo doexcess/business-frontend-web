@@ -31,8 +31,6 @@ const PaymentList = ({ retrieve = RetrievalType.RECENT }: PaymentListProps) => {
     count,
   } = usePayments();
 
-  if (loading) return <LoadingSkeleton />;
-
   const noFoundText =
     !searchParams.has('page') || searchParams.has('q')
       ? 'No record found.'
@@ -45,7 +43,7 @@ const PaymentList = ({ retrieve = RetrievalType.RECENT }: PaymentListProps) => {
         className={cn(
           '',
           retrieve === RetrievalType.RECENT &&
-            'rounded-lg border bg-white dark:bg-gray-800 dark:border-gray-700 p-6 shadow-sm'
+          'rounded-lg border bg-white dark:bg-gray-800 dark:border-gray-700 p-6 shadow-sm'
         )}
       >
         {retrieve === RetrievalType.RECENT && (
@@ -89,18 +87,27 @@ const PaymentList = ({ retrieve = RetrievalType.RECENT }: PaymentListProps) => {
               </tr>
             </thead>
 
-            <tbody className='text-sm'>
-              {payments.map((txn, idx) => (
-                <PaymentItem txn={txn} idx={idx} />
-              ))}
-              {!payments.length && (
-                <TableEndRecord colspan={10} text={noFoundText} />
-              )}
-            </tbody>
+            {loading ? (
+
+              <LoadingSkeleton length={12} columns={6} />
+
+            ) : (
+
+              <tbody className='text-sm'>
+                {payments.map((txn, idx) => (
+                  <PaymentItem txn={txn} idx={idx} />
+                ))}
+                {!payments.length && (
+                  <TableEndRecord colspan={10} text={noFoundText} />
+                )}
+              </tbody>
+
+            )}
+
           </table>
         </div>
 
-        {retrieve === RetrievalType.ALL && (
+        {retrieve === RetrievalType.ALL && !loading && (
           <Pagination
             noMoreNextPage={payments.length === 0}
             total={count}
@@ -108,6 +115,8 @@ const PaymentList = ({ retrieve = RetrievalType.RECENT }: PaymentListProps) => {
             onClickPrev={onClickPrev}
           />
         )}
+
+
       </section>
     </>
   );

@@ -41,10 +41,12 @@ export interface SaveBankAccountProps {
 export const inviteContactSchema = Joi.object({
   business_id: Joi.string().required(),
   email: Joi.string().required(),
+  name: Joi.string().required(),
 });
 export interface InviteContactProps {
   business_id: string;
   email: string;
+  name: string;
 }
 
 export const acceptInviteSchema = Joi.object({

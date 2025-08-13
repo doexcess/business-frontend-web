@@ -36,7 +36,7 @@ class SocketService {
 
   private onlineUsers = new Set<string>();
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): SocketService {
     if (!SocketService.instance) {
@@ -59,9 +59,20 @@ class SocketService {
     this.socket = io(process.env.NEXT_PUBLIC_API_URL, {
       auth: { token, userId } as SocketAuth,
       transports: ['websocket'],
+      timeout: 5000,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 2000,
+      forceNew: true,
+      autoConnect: true,
+    });
+
+    this.socket.on('connect', () => {
+      console.log('✅ Socket connected');
     });
 
     // this.setupListeners();
+
 
     // Emit user online status when connecting
     this.socket.on('connect', () => {

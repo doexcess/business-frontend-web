@@ -5,6 +5,7 @@ import {
   MediaDetailsResponse,
   UploadMediaResponse,
 } from '@/types/multimedia';
+import { AxiosProgressEvent } from 'axios';
 
 interface MultimediaState {
   multimedia: MediaDetails[];
@@ -69,9 +70,11 @@ export const uploadImage = createAsyncThunk(
   async ({
     form_data,
     business_id,
+    onUploadProgress,
   }: {
     form_data: FormData;
     business_id?: string;
+    onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;
   }) => {
     const headers: Record<string, any> = {
       'Content-Type': 'multipart/form-data',
@@ -84,7 +87,10 @@ export const uploadImage = createAsyncThunk(
     const { data } = await api.post<UploadMediaResponse>(
       '/multimedia-upload/image',
       form_data,
-      { headers }
+      {
+        headers,
+        onUploadProgress, // ✅ correctly typed now
+      }
     );
 
     return {
@@ -92,6 +98,7 @@ export const uploadImage = createAsyncThunk(
     };
   }
 );
+
 
 export const uploadVideo = createAsyncThunk(
   'multimedia-upload/video',

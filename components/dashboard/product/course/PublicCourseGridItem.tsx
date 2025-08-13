@@ -5,15 +5,14 @@ import { Button } from '@/components/ui/Button';
 import Image from 'next/image';
 import Icon from '@/components/ui/Icon';
 import { EyeIcon } from 'lucide-react';
-import { formatMoney } from '@/lib/utils';
+import { formatMoney, ProductType } from '@/lib/utils';
 import { Modal } from '@/components/ui/Modal';
-import useProductById from '@/hooks/page/useProductById';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
 import { addToCart, fetchCart } from '@/redux/slices/cartSlice';
-import { ProductType } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+import api from '@/lib/api';
 
 interface PublicCourseGridItemProps {
   id: string;
@@ -33,23 +32,50 @@ const PublicCourseGridItem: React.FC<PublicCourseGridItemProps> = ({
   onBuy,
 }) => {
   const router = useRouter();
-  const [modalOpen, setModalOpen] = useState(false);
-
-  // Custom hook to fetch product details by id
-  const { product, loading } = useProductById(modalOpen ? id : undefined);
   const dispatch = useDispatch<AppDispatch>();
   const { count, loading: cartLoading } = useSelector(
     (state: RootState) => state.cart
   );
 
-  const handleView = () => {
-    setModalOpen(true);
-    // console.log(product);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleView = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get(`/product-general/public/${id}`);
+      setProduct(res.data?.data);
+      setModalOpen(true);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to load product');
+    } finally {
+      setLoading(false);
+    }
     onView();
+  };
+
+  const handleAddToCart = async () => {
+    if (!product) return;
+
+    if (!count) {
+      const response = await dispatch(
+        addToCart({
+          product_id: product.id,
+          quantity: 1,
+          product_type: ProductType.COURSE,
+        })
+      ).unwrap();
+      await dispatch(fetchCart());
+      toast.success(response.message);
+    } else {
+      router.push('/dashboard/cart');
+    }
   };
 
   return (
     <>
+
       <div className='shadow-md dark:shadow-none hover:shadow-lg transition-shadow duration-300 overflow-hidden mb-4 min-h-[320px] flex flex-col justify-between rounded-xl bg-black/80 dark:bg-transparent'>
         <div className='relative'>
           <img
@@ -73,75 +99,54 @@ const PublicCourseGridItem: React.FC<PublicCourseGridItemProps> = ({
               variant='outline'
               className='flex-1 flex items-center justify-center px-4 py-2 text-sm font-bold border border-primary-main rounded-md hover:bg-primary-main hover:text-white transition gap-2'
             >
-              <span role='img' aria-label='View'>
-                <EyeIcon size='18' />
-              </span>{' '}
-              View
+              <EyeIcon size='18' /> View
             </Button>
             <button
               onClick={onBuy}
               className='flex-1 flex items-center justify-center px-4 py-2 text-sm font-bold text-white bg-primary-main rounded-md hover:bg-blue-800 transition gap-2'
             >
-              <span role='img' aria-label='Buy'>
-                <Icon url='/icons/cart.svg' width={15} />
-              </span>{' '}
-              Buy
+              <Icon url='/icons/cart.svg' width={15} /> Buy
             </button>
           </div>
         </div>
       </div>
+
       <Modal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={product?.title || 'Course Details'}
-      >
-        {loading ? (
-          <div className='text-center py-8'>Loading...</div>
-        ) : product ? (
-          <div>
-            <img
-              src={product.multimedia?.url || imageSrc}
-              alt={product.title}
-              className='w-full h-40 object-cover rounded mb-4'
-            />
-            <h3 className='text-lg font-bold mb-2'>{product.title}</h3>
-            <p className='mb-2 text-gray-700 dark:text-gray-300'>
-              {product.description}
-            </p>
-            <div className='font-semibold text-primary-main mb-2'>
-              {formatMoney(+product?.price!, product.currency)}
-            </div>
-            <button
-              className='w-full bg-primary-main text-white font-bold py-2 px-4 rounded hover:bg-blue-800 transition mb-2'
-              onClick={async () => {
-                if (product && !count) {
-                  const response = await dispatch(
-                    addToCart({
-                      product_id: product.id,
-                      quantity: 1,
-                      product_type: ProductType.COURSE,
-                    })
-                  ).unwrap();
-                  await dispatch(fetchCart());
-                  toast.success(response.message);
-                } else if (count) {
-                  router.push('/dashboard/cart');
-                }
-              }}
-              disabled={cartLoading}
-            >
-              {count
-                ? 'View in Cart'
-                : cartLoading
-                ? 'Adding...'
-                : 'Add to Cart'}
-            </button>
-            {/* Add more details as needed */}
-          </div>
-        ) : (
-          <div className='text-center py-8 text-red-500'>Course not found.</div>
-        )}
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          title={product?.title || 'Course Details'}>
+            {loading ? (
+              <div className='text-center py-8'>Loading...</div>
+            ) : product ? (
+                <div>
+                    <img
+                      src={product.multimedia?.url || imageSrc}
+                      alt={product.title}
+                      className='w-full aspect-square object-cover rounded mb-4'
+                    />
+                    <h3 className='text-lg font-bold mb-2'>{product.title}</h3>
+                    <p className='mb-2 text-gray-700 dark:text-gray-300'>
+                      {product.description}
+                    </p>
+                    <div className='font-semibold text-primary-main mb-2'>
+                      {formatMoney(+product.price, product.currency)}
+                    </div>
+                    <button
+                      className='w-full bg-primary-main text-white font-bold py-2 px-4 rounded hover:bg-blue-800 transition mb-2'
+                      onClick={handleAddToCart}
+                      disabled={cartLoading}>
+                      {count
+                        ? 'View in Cart'
+                        : cartLoading
+                          ? 'Adding...'
+                          : 'Add to Cart'}
+                    </button>
+                </div>
+            ) : (
+              <div className='text-center py-8 text-red-500'>Course not found.</div>
+            )}
       </Modal>
+      
     </>
   );
 };

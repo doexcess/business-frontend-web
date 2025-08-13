@@ -26,8 +26,6 @@ const ScheduledNotificationsList = () => {
     handleRefresh,
   } = useScheduledNotification();
 
-  if (loading) return <LoadingSkeleton />;
-
   const noFoundText =
     !searchParams.has('page') || searchParams.has('q')
       ? 'No record found.'
@@ -76,26 +74,39 @@ const ScheduledNotificationsList = () => {
               ))}
             </tr>
           </thead>
-          <tbody>
-            {notifications.map((notification) => (
-              <ScheduledNotificationItem notification={notification} />
-            ))}
 
-            {!notifications.length && (
-              <TableEndRecord colspan={8} text={noFoundText} />
-            )}
-          </tbody>
+          {loading ? (
+
+            <LoadingSkeleton length={12} columns={4} />
+
+          ) : (
+
+            <tbody>
+              {notifications.map((notification: any) => (
+                <ScheduledNotificationItem notification={notification} />
+              ))}
+
+              {!notifications.length && (
+                <TableEndRecord colspan={8} text={noFoundText} />
+              )}
+            </tbody>
+
+          )}
+
         </table>
       </div>
       {/* Pagination */}
-      <Pagination
-        total={count}
-        paddingRequired={false}
-        currentPage={currentPage}
-        onClickNext={onClickNext}
-        onClickPrev={onClickPrev}
-        noMoreNextPage={notifications.length === 0}
-      />
+      {!loading && (
+        <Pagination
+          total={count}
+          paddingRequired={false}
+          currentPage={currentPage}
+          onClickNext={onClickNext}
+          onClickPrev={onClickPrev}
+          noMoreNextPage={notifications.length === 0}
+        />
+      )}
+
     </>
   );
 };

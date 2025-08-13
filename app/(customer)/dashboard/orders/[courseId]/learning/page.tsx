@@ -61,6 +61,9 @@ const CourseLearningPage = () => {
     new Set()
   );
 
+  // MOCK: Replace with real calculation or API value when available
+  const totalDuration = '8 hours';
+
   // Defensive: get current content
   const currentModuleObj = modules[selectedModule] || { contents: [] };
   const contents = currentModuleObj.contents || [];
@@ -86,6 +89,21 @@ const CourseLearningPage = () => {
   // Set progress from API
   useEffect(() => {
     if (course?.progress !== undefined) setProgress(course.progress);
+  }, [course]);
+
+  // Initialize completed lessons from course data
+  useEffect(() => {
+    if (course?.course?.modules) {
+      const completedContentIds = new Set<string>();
+      course.course.modules.forEach((module) => {
+        module.contents?.forEach((content) => {
+          if (content.progress && content.progress.length > 0) {
+            completedContentIds.add(content.id);
+          }
+        });
+      });
+      setCompletedLessons(completedContentIds);
+    }
   }, [course]);
 
   // Update progress when completed lessons change
@@ -166,15 +184,36 @@ const CourseLearningPage = () => {
           updateCourseProgress({ content_id: currentContentObj.id })
         ).unwrap();
 
-        // Update the current content's progress
-        if (currentContentObj) {
-          currentContentObj.progress = [
-            {
-              id: Date.now().toString(),
-              completed_at: new Date().toISOString(),
-            },
-          ];
-        }
+        // Update local completed lessons state immediately
+        setCompletedLessons((prev) => {
+          const newSet = new Set(prev);
+          newSet.add(currentContentObj.id);
+          return newSet;
+        });
+
+        // Calculate new progress based on updated local state
+        const totalLessons = modules.reduce(
+          (total, module) => total + (module.contents?.length || 0),
+          0
+        );
+
+        const updatedCompletedCount = completedLessons.size + 1;
+        const newProgress =
+          totalLessons > 0
+            ? Math.round((updatedCompletedCount / totalLessons) * 100)
+            : 0;
+
+        // Update local progress state immediately
+        setProgress(newProgress);
+
+        // Update the course progress using Redux reducer
+        dispatch(
+          updateCourseProgressValue({
+            progress: newProgress,
+            contentId: currentContentObj.id,
+            isCompleted: true,
+          })
+        );
 
         toast.success('Lesson completed!');
       } catch (error) {
@@ -197,47 +236,45 @@ const CourseLearningPage = () => {
     try {
       // Update progress on server
       await dispatch(updateCourseProgress({ content_id: contentId })).unwrap();
-      // await dispatch(fetchEnrolledCourse({ id: courseId })).unwrap();
-      // Update course progress value after successful API call
-      if (course) {
-        // Calculate new progress based on current state
-        const totalLessons = course.course.modules.reduce(
-          (total, module) => total + (module.contents?.length || 0),
-          0
-        );
 
-        // Find the current content and update its progress
-
-        // Recalculate overall course progress
-        const completedLessonsCount = course.course.modules.reduce(
-          (total, module) =>
-            total +
-            (module.contents?.filter((content) => content.progress?.length > 0)
-              .length || 0),
-          0
-        );
-
-        const newProgress =
-          totalLessons > 0
-            ? Math.round((completedLessonsCount / totalLessons) * 100)
-            : 0;
-
-        // console.log(completedLessonsCount);
-
-        // console.log(newProgress);
-
-        // Update the course progress using Redux reducer
-        if (course.progress !== newProgress) {
-          dispatch(
-            updateCourseProgressValue({
-              progress: newProgress,
-              contentId: contentId,
-              isCompleted: isCompleted,
-            })
-          );
+      // Update local completed lessons state immediately for real-time feedback
+      setCompletedLessons((prev) => {
+        const newSet = new Set(prev);
+        if (isCompleted) {
+          newSet.add(contentId);
+        } else {
+          newSet.delete(contentId);
         }
-        // dispatch()
-      }
+        return newSet;
+      });
+
+      // Calculate new progress based on updated local state
+      const totalLessons = modules.reduce(
+        (total, module) => total + (module.contents?.length || 0),
+        0
+      );
+
+      // Count completed lessons from local state for immediate accuracy
+      const updatedCompletedCount = isCompleted
+        ? completedLessons.size + 1
+        : completedLessons.size - 1;
+
+      const newProgress =
+        totalLessons > 0
+          ? Math.round((updatedCompletedCount / totalLessons) * 100)
+          : 0;
+
+      // Update local progress state immediately
+      setProgress(newProgress);
+
+      // Update the course progress using Redux reducer
+      dispatch(
+        updateCourseProgressValue({
+          progress: newProgress,
+          contentId: contentId,
+          isCompleted: isCompleted,
+        })
+      );
 
       toast.success(
         isCompleted ? 'Lesson completed!' : 'Lesson marked as incomplete'
@@ -459,7 +496,7 @@ const CourseLearningPage = () => {
                                 {moduleIdx === selectedModule ? (
                                   <Play className='w-4 h-4' />
                                 ) : (
-                                  <Lock className='w-4 h-4 text-gray-500 dark:text-gray-400' />
+                                  <BookOpen className='w-4 h-4 text-gray-500 dark:text-gray-400' />
                                 )}
                                 <div>
                                   <p
@@ -523,11 +560,15 @@ const CourseLearningPage = () => {
                                     key={content.id}
                                     className={`p-2.5 rounded-lg border transition-all duration-200 ${
                                       contentIdx === selectedContent
-                                        ? 'bg-gradient-to-r from-primary-light to-primary-500 text-white border-primary-light shadow-sm'
+                                        ? 'bg-primary-main text-white border-primary-main shadow-sm'
                                         : isCompleted
                                         ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 hover:bg-green-100 dark:hover:bg-green-900/30'
                                         : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
                                     }`}
+                                    onClick={() =>
+                                      handleContentClick(contentIdx)
+                                    }
+                                    style={{ cursor: 'pointer' }}
                                   >
                                     <div className='flex items-center justify-between'>
                                       <div className='flex items-center gap-2.5 flex-1 cursor-pointer'>
@@ -589,7 +630,7 @@ const CourseLearningPage = () => {
                     <div className='flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300'>
                       <span>Total Duration</span>
                       <span className='text-primary-main dark:text-primary-400'>
-                        8 hours
+                        {totalDuration}
                       </span>
                     </div>
                     <div className='flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300 mt-2'>

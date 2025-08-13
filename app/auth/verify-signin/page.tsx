@@ -55,6 +55,7 @@ const VerifySigninContent = () => {
           <VerifySigninForm email={emailData.full} />
 
           <BackToLoginLink />
+          
         </div>
       </div>
     </div>

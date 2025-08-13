@@ -4,10 +4,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchPublicProduct } from '@/redux/slices/productSlice';
 
 const useProductById = (id?: string) => {
+
   const dispatch = useDispatch<AppDispatch>();
-  const { product, loading, error } = useSelector(
-    (state: RootState) => state.products
-  );
+
+  const { product, loading, error } = useSelector((state: RootState) => state.products);
 
   useEffect(() => {
     if (id) {
@@ -16,6 +16,7 @@ const useProductById = (id?: string) => {
   }, [dispatch, id]);
 
   return { product, loading, error };
+
 };
 
 export default useProductById;

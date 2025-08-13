@@ -80,13 +80,14 @@ const Courses = () => {
                     '/images/course/course1.png'
                   }
                   price={course.price}
-                  onView={() => {}}
-                  onBuy={() => {}}
+                  onView={() => { }}
+                  onBuy={() => { }}
                 />
               ))}
             </div>
           )}
-          {count > limit && (
+          
+          {!loading && count > limit && (
             <Pagination
               currentPage={currentPage}
               total={count}
@@ -94,6 +95,7 @@ const Courses = () => {
               onClickPrev={onClickPrev}
             />
           )}
+
         </div>
       </div>
     </main>

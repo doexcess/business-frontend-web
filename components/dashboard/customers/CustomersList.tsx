@@ -324,8 +324,7 @@ const CustomersList = () => {
         // Validate required fields
         if (!rowData.name || !rowData.email) {
           throw new Error(
-            `Row ${
-              i + 1
+            `Row ${i + 1
             }: Missing required fields (name and email are required)`
           );
         }
@@ -470,8 +469,6 @@ const CustomersList = () => {
     }
   };
 
-  if (loading) return <LoadingSkeleton />;
-
   const noFoundText =
     !searchParams.has('page') || searchParams.has('q')
       ? 'No record found.'
@@ -479,6 +476,7 @@ const CustomersList = () => {
 
   return (
     <>
+
       <section>
         <Filter
           searchPlaceholder='Search customers'
@@ -541,26 +539,38 @@ const CustomersList = () => {
                 ))}
               </tr>
             </thead>
-            <tbody className='text-sm'>
-              {customers.map((customer: Customer) => (
-                <CustomerItem key={customer.id} customer={customer} />
-              ))}
 
-              {!customers.length && (
-                <TableEndRecord colspan={8} text={noFoundText} />
-              )}
-            </tbody>
+            {loading ? (
+
+              <LoadingSkeleton length={12} columns={7} />
+
+            ) : (
+
+              <tbody className='text-sm'>
+                {customers.map((customer: Customer) => (
+                  <CustomerItem key={customer.id} customer={customer} />
+                ))}
+
+                {!customers.length && (
+                  <TableEndRecord colspan={8} text={noFoundText} />
+                )}
+              </tbody>
+            )}
+
           </table>
         </div>
 
         {/* Pagination */}
-        <Pagination
-          total={count}
-          currentPage={currentPage}
-          onClickNext={onClickNext}
-          onClickPrev={onClickPrev}
-          noMoreNextPage={customers.length === 0}
-        />
+        {!loading && (
+          <Pagination
+            total={count}
+            currentPage={currentPage}
+            onClickNext={onClickNext}
+            onClickPrev={onClickPrev}
+            noMoreNextPage={customers.length === 0}
+          />
+        )}
+
       </section>
 
       {/* Export Modal */}
@@ -586,11 +596,10 @@ const CustomersList = () => {
                 <button
                   key={format}
                   onClick={() => setSelectedFormat(format)}
-                  className={`p-4 border-2 rounded-xl text-center transition-all duration-200 hover:scale-105 ${
-                    selectedFormat === format
-                      ? 'border-primary-main bg-primary-main/10 text-primary-main shadow-lg'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-primary-main/50 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
+                  className={`p-4 border-2 rounded-xl text-center transition-all duration-200 hover:scale-105 ${selectedFormat === format
+                    ? 'border-primary-main bg-primary-main/10 text-primary-main shadow-lg'
+                    : 'border-gray-200 dark:border-gray-600 hover:border-primary-main/50 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
                 >
                   <IoIosDocument className='text-3xl mx-auto mb-2' />
                   <span className='text-sm font-semibold uppercase tracking-wide'>

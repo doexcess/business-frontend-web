@@ -12,6 +12,7 @@ import {
   fetchModules,
   createBulkModule,
   updateBulkModule,
+  fetchCourse,
 } from '@/redux/slices/courseSlice';
 import {
   uploadImage,
@@ -27,6 +28,9 @@ import {
 } from '@/lib/schema/product.schema';
 import { MultimediaType } from '@/lib/utils';
 import { IoIosDocument, IoIosDownload } from 'react-icons/io';
+import CircularProgress from '@/components/CircularProgress';
+import api from '@/lib/api';
+import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 
 type Lesson = {
   id?: string;
@@ -37,6 +41,8 @@ type Lesson = {
   multimedia_id?: string;
   position?: number;
   isUploading?: boolean;
+  uploadProgress?: number; // 0-100
+  uploadError?: boolean;
 };
 
 type Module = {
@@ -54,11 +60,17 @@ const CourseContent = () => {
   const { modules: existingModules, modulesLoading: loading } = useSelector(
     (state: RootState) => state.course
   );
+  const { base_readiness_percent, readiness_delta, course } = useSelector(
+    (state: RootState) => state.course
+  );
+  const readinessPercent =
+    (base_readiness_percent || 0) + (readiness_delta || 0);
 
   const [modules, setModules] = useState<Module[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   const formatModules = (apiModules: ApiModule[]): Module[] => {
     return apiModules.map((module) => ({
@@ -82,7 +94,7 @@ const CourseContent = () => {
         fetchModules({ business_id: org.id, course_id: courseId as string })
       );
     }
-  }, [courseId, dispatch, org?.id]);
+  }, [courseId, dispatch, org?.id, course]);
 
   useEffect(() => {
     if (existingModules.length > 0) {
@@ -156,6 +168,8 @@ const CourseContent = () => {
       mediaType,
       mediaPreview: URL.createObjectURL(file),
       isUploading: true,
+      uploadProgress: 0,
+      uploadError: false,
     };
 
     updatedModules[moduleIndex].lessons = updatedLessons;
@@ -164,47 +178,64 @@ const CourseContent = () => {
     try {
       const formData = new FormData();
       formData.append(mediaType.toLowerCase(), file);
-
-      let response: any;
-      if (mediaType === MultimediaType.IMAGE) {
-        response = await dispatch(
-          uploadImage({ form_data: formData, business_id: org.id })
-        );
-      } else if (mediaType === MultimediaType.VIDEO) {
-        response = await dispatch(
-          uploadVideo({ form_data: formData, business_id: org.id })
-        );
-      } else {
-        response = await dispatch(
-          uploadDocument({ form_data: formData, business_id: org.id })
-        );
-      }
-
-      if (response.type.endsWith('/rejected')) {
-        throw new Error(response.payload?.message || 'Upload failed');
-      }
-
-      if (response.payload?.multimedia?.id) {
-        setModules((prevModules) => {
-          const newModules = [...prevModules];
-          newModules[moduleIndex].lessons[lessonIndex] = {
-            ...newModules[moduleIndex].lessons[lessonIndex],
-            multimedia_id: response.payload.multimedia.id,
-            isUploading: false,
-          };
-          return newModules;
-        });
-      }
-    } catch (error) {
-      toast.error('Failed to upload media');
-      console.error('Media upload error:', error);
+      let endpoint = '/multimedia-upload/document';
+      if (mediaType === MultimediaType.IMAGE)
+        endpoint = '/multimedia-upload/image';
+      if (mediaType === MultimediaType.VIDEO)
+        endpoint = '/multimedia-upload/video';
+      const headers: Record<string, any> = {
+        'Content-Type': 'multipart/form-data',
+        'Business-Id': org.id,
+      };
+      const response = await api.post(endpoint, formData, {
+        headers,
+        onUploadProgress: (event) => {
+          if (event.total) {
+            // Cap progress at 99% until the request is fully done
+            const percent = Math.min(
+              99,
+              Math.round((event.loaded / event.total) * 100)
+            );
+            setModules((prevModules) => {
+              const newModules = [...prevModules];
+              newModules[moduleIndex].lessons[lessonIndex] = {
+                ...newModules[moduleIndex].lessons[lessonIndex],
+                uploadProgress: percent,
+              };
+              return newModules;
+            });
+          }
+        },
+      });
+      // Set progress to 100% only after the upload is fully done
       setModules((prevModules) => {
         const newModules = [...prevModules];
-        newModules[moduleIndex].lessons[lessonIndex].isUploading = false;
+        newModules[moduleIndex].lessons[lessonIndex] = {
+          ...newModules[moduleIndex].lessons[lessonIndex],
+          multimedia_id:
+            response.data.data.id || response.data.data.multimedia?.id,
+          isUploading: false,
+          uploadProgress: 100,
+          uploadError: false,
+        };
         return newModules;
       });
-    } finally {
+    } catch (error) {
       setIsUploading(false);
+      setModules((prevModules) => {
+        const newModules = [...prevModules];
+        newModules[moduleIndex].lessons[lessonIndex] = {
+          ...newModules[moduleIndex].lessons[lessonIndex],
+          media: null,
+          mediaPreview: undefined,
+          multimedia_id: undefined,
+          isUploading: false,
+          uploadProgress: 0,
+          uploadError: true,
+        };
+        return newModules;
+      });
+      toast.error('Failed to upload media');
     }
   };
 
@@ -228,8 +259,34 @@ const CourseContent = () => {
     setModules(updatedModules);
   };
 
+  const validateForm = () => {
+    const errors: { [key: string]: string } = {};
+    modules.forEach((module, mIdx) => {
+      if (!module.title || module.title.trim() === '') {
+        errors[`module-title-${mIdx}`] = 'Module title is required.';
+      }
+      module.lessons.forEach((lesson, lIdx) => {
+        if (!lesson.title || lesson.title.trim() === '') {
+          errors[`lesson-title-${mIdx}-${lIdx}`] = 'Lesson title is required.';
+        }
+        // Require media file or multimedia_id
+        if (!lesson.media && !lesson.multimedia_id) {
+          errors[`lesson-media-${mIdx}-${lIdx}`] = 'Lesson media is required.';
+        }
+      });
+    });
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSave = async () => {
     if (!courseId || !org?.id) return;
+
+    // Validate form before submitting
+    if (!validateForm()) {
+      toast.error('Please fix the form errors before saving.');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -261,7 +318,11 @@ const CourseContent = () => {
       const response = await dispatch(action).unwrap();
 
       toast.success(response.message || 'Modules saved successfully');
-      dispatch(
+      // Sync with API
+      await dispatch(
+        fetchCourse({ id: courseId as string, business_id: org.id })
+      );
+      await dispatch(
         fetchModules({ business_id: org.id, course_id: courseId as string })
       );
       router.push(`/products/courses/${courseId}/preview`);
@@ -273,45 +334,75 @@ const CourseContent = () => {
     }
   };
 
-  const renderMediaPreview = (lesson: Lesson) => {
+  const renderMediaPreview = (
+    lesson: Lesson,
+    moduleIndex?: number,
+    lessonIndex?: number
+  ) => {
     if (lesson.isUploading) {
       return (
-        <div className='mt-2 text-sm text-gray-500'>Uploading file...</div>
+        <div className='mt-2 flex items-center justify-center w-48 h-48 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-inner'>
+          <div className='flex flex-col items-center w-full'>
+            <LoadingIcon className='w-8 h-8 text-primary-main mb-2 animate-spin' />
+            <span className='text-xs text-gray-400 mt-2'>Uploading...</span>
+          </div>
+        </div>
       );
     }
-
+    if (
+      lesson.uploadError &&
+      typeof moduleIndex === 'number' &&
+      typeof lessonIndex === 'number'
+    ) {
+      return (
+        <div className='mt-2 flex items-center gap-2'>
+          <span className='text-xs text-red-500'>Upload failed.</span>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => {
+              // Retry upload
+              const file = lesson.media;
+              if (file) handleMediaChange(moduleIndex, lessonIndex, file);
+            }}
+          >
+            Retry
+          </Button>
+        </div>
+      );
+    }
     if (!lesson.mediaPreview) return null;
 
     if (lesson.mediaType === MultimediaType.IMAGE) {
       return (
-        <div className='mt-2'>
+        <div className='mt-2 flex items-center justify-center w-48 h-48 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden'>
           <img
             src={lesson.mediaPreview}
             alt='Preview'
-            className='w-40 h-auto rounded-md border'
+            className='object-contain w-full h-full'
           />
         </div>
       );
     } else if (lesson.mediaType === MultimediaType.VIDEO) {
       return (
-        <div className='mt-2'>
+        <div className='mt-2 flex items-center justify-center w-48 h-48 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden'>
           <video
             controls
-            className='w-40 h-auto rounded-md border'
+            className='object-contain w-full h-full rounded-lg'
             src={lesson.mediaPreview}
           />
         </div>
       );
     } else if (lesson.mediaType === MultimediaType.DOCUMENT) {
       return (
-        <div className='mt-2 w-40 h-40 border rounded-md flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 p-2'>
-          <IoIosDocument className='text-5xl text-red-600' />
+        <div className='mt-2 flex flex-col items-center justify-center w-48 h-48 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-2'>
+          <IoIosDocument className='text-5xl text-red-600 mb-2' />
           <a
             href={lesson.mediaPreview}
             download
             target='_blank'
             rel='noopener noreferrer'
-            className='mt-2 text-xs text-primary-main hover:underline flex items-center gap-1'
+            className='text-xs text-primary-main hover:underline flex items-center gap-1'
           >
             <IoIosDownload />
             <span>Download PDF</span>
@@ -339,7 +430,7 @@ const CourseContent = () => {
               <Button
                 variant='primary'
                 className='dark:text-white hover:bg-primary-800 hover:text-white'
-                disabled={isSubmitting || loading || isUploading}
+                disabled={isSubmitting || loading}
               >
                 Next
               </Button>
@@ -350,7 +441,6 @@ const CourseContent = () => {
         <section className='mt-4'>
           <CourseProgressIndicator step={2} />
         </section>
-
         {loading ? (
           <div className='mt-6 text-center'>Loading modules...</div>
         ) : (
@@ -371,6 +461,11 @@ const CourseContent = () => {
                     handleModuleChange(mIndex, 'title', e.target.value)
                   }
                 />
+                {formErrors[`module-title-${mIndex}`] && (
+                  <div className='text-xs text-red-500 mb-2'>
+                    {formErrors[`module-title-${mIndex}`]}
+                  </div>
+                )}
 
                 {module.lessons.map((lesson, lIndex) => (
                   <div
@@ -393,6 +488,16 @@ const CourseContent = () => {
                         )
                       }
                     />
+                    {formErrors[`lesson-title-${mIndex}-${lIndex}`] && (
+                      <div className='text-xs text-red-500 mb-2'>
+                        {formErrors[`lesson-title-${mIndex}-${lIndex}`]}
+                      </div>
+                    )}
+                    {formErrors[`lesson-media-${mIndex}-${lIndex}`] && (
+                      <div className='text-xs text-red-500 mb-2'>
+                        {formErrors[`lesson-media-${mIndex}-${lIndex}`]}
+                      </div>
+                    )}
 
                     <div className='mb-2'>
                       <label className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
@@ -410,7 +515,7 @@ const CourseContent = () => {
                         }
                         disabled={lesson.isUploading}
                       />
-                      {renderMediaPreview(lesson)}
+                      {renderMediaPreview(lesson, mIndex, lIndex)}
                       {module.lessons.length > 1 && (
                         <Button
                           variant='ghost'
@@ -448,7 +553,7 @@ const CourseContent = () => {
               <Button
                 variant='primary'
                 onClick={addModule}
-                disabled={isSubmitting || loading || isUploading}
+                // Always enabled
               >
                 + Add Module
               </Button>
@@ -456,7 +561,7 @@ const CourseContent = () => {
                 variant='outline'
                 className='border border-primary-main hover:bg-primary-800 hover:text-white dark:border-gray-600 dark:hover:bg-white dark:text-white dark:hover:text-gray-900'
                 onClick={handleSave}
-                disabled={isSubmitting || loading || isUploading}
+                disabled={isSubmitting || loading}
               >
                 {isSubmitting ? 'Saving...' : 'Save'}
               </Button>
