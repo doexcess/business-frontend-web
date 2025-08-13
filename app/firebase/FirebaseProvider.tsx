@@ -11,6 +11,7 @@ import {
     onFirebaseMessageListener,
     requestFirebaseNotificationPermission,
 } from './notification';
+import Cookies from 'js-cookie';
 
 interface FirebaseNotificationContextType {
     token: string | null;
@@ -33,17 +34,25 @@ export default function FirebaseNotificationProvider({
         (state: RootState) => state.firebase.token
     );
 
+    const authToken =
+        useSelector((state: RootState) => state.auth.token) || Cookies.get('token');
+
     const [token, setToken] = useState<string | null>(null);
     const [message, setMessage] = useState<any>(null);
 
     useEffect(() => {
-        if (typeof window === 'undefined') return; // ⛔ skip on server
+        
+        if (typeof window === 'undefined') return;
+
+        if (!authToken) return;
 
         const initialize = async () => {
+
             await dispatch(fetchFirebaseToken());
 
             if (!firebaseToken) {
                 const fcmToken = await requestFirebaseNotificationPermission();
+
                 if (fcmToken) {
                     setToken(fcmToken);
                     dispatch(registerFirebaseToken(fcmToken));
@@ -51,15 +60,14 @@ export default function FirebaseNotificationProvider({
             } else {
                 setToken(firebaseToken);
             }
+
+            onFirebaseMessageListener().then((payload) => {
+                setMessage(payload);
+            });
         };
 
         initialize();
-
-        onFirebaseMessageListener().then((payload) => {
-            setMessage(payload);
-            console.log(payload);
-        });
-    }, [dispatch, firebaseToken]);
+    }, [dispatch, firebaseToken, authToken]);
 
     return (
         <FirebaseNotificationContext.Provider value={{ token, message }}>
