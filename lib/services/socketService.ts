@@ -6,6 +6,7 @@ import {
   updateMessageStatus,
   userOnline,
   userOffline,
+  recentChatRetrieved,
 } from '@/redux/slices/chatSlice';
 import {
   RetrieveChatsProps,
@@ -16,6 +17,7 @@ import {
   sendMessageSchema,
 } from '@/lib/schema/chat.schema';
 import {
+  Chat,
   ChatResponse,
   Message,
   MessagesResponse,
@@ -184,6 +186,28 @@ class SocketService {
             : reject(response.message);
         }
       );
+    });
+  }
+
+  public async createGroupChat(payload: {
+    token: string;
+    name: string;
+    description?: string;
+    multimedia_id: string;
+    members: { member_id: string }[];
+  }): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.socket?.emit('createGroupChat', payload, (response: any) => {
+        response.status === 'success'
+          ? resolve(response)
+          : reject(response.message);
+      });
+    });
+  }
+
+  public listenGroupChatCreated(userId: string) {
+    this.socket?.on(`groupChatCreated:${userId}`, (chat: Chat) => {
+      store.dispatch(recentChatRetrieved(chat));
     });
   }
 
