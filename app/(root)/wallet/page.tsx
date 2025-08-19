@@ -8,18 +8,26 @@ import { FaArrowDown, FaArrowUp, FaListUl, FaWallet } from 'react-icons/fa6';
 import { cn, formatMoney, SystemRole } from '@/lib/utils'; // optional utility for className handling
 import { Modal } from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '@/redux/store';
 import usePayments from '@/hooks/page/usePayments';
 import PaymentList from '@/components/dashboard/payment/PaymentList';
 import useOrg from '@/hooks/page/useOrg';
+import { createWithdrawal, fetchWithdrawals } from '@/redux/slices/withdrawalSlice';
+import toast from 'react-hot-toast';
+import LoadingIcon from '@/components/ui/icons/LoadingIcon';
+import WithdrawalList from '@/components/dashboard/withdrawal/WithdrawalList';
 
 const Wallet = () => {
+
+  const dispatch = useDispatch<AppDispatch>();
   const { org: organization } = useSelector((state: RootState) => state.org);
   const { org } = useOrg(organization?.id!);
   const { profile } = useSelector((state: RootState) => state.auth);
 
   const { total_credit, total_debit, total_trx } = usePayments();
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const walletBalance = formatMoney(
     +org?.business_wallet?.balance! || 0,
@@ -35,11 +43,38 @@ const Wallet = () => {
   const [isWithdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
 
-  const handleWithdraw = () => {
-    // Add actual withdraw logic here (API call)
-    alert(`Withdraw request of ₦${withdrawAmount} sent.`);
-    setWithdrawModalOpen(false);
-    setWithdrawAmount('');
+  const handleWithdraw = async () => {
+    if (!withdrawAmount || Number(withdrawAmount) <= 0) return;
+
+    const payload = {
+      amount: Number(withdrawAmount),
+      currency: org?.business_wallet?.currency || 'NGN',
+    };
+
+    setIsLoading(true);
+
+    try {
+      const resultAction = await dispatch(
+        createWithdrawal({
+          payload,
+          business_id: org?.id!,
+        })
+      );
+
+      if (resultAction.type === 'withdrawal/create/rejected') {
+        throw new Error(resultAction.payload as string);
+      }
+
+      toast.success('Withdrawal request created successfully');
+      dispatch(fetchWithdrawals({ page: 1, limit: 5 }));
+      setWithdrawAmount('');
+      setWithdrawModalOpen(false);
+
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -56,7 +91,7 @@ const Wallet = () => {
               className={cn(
                 'flex-shrink-0 self-start',
                 profile?.role?.role_id !== SystemRole.BUSINESS_SUPER_ADMIN &&
-                  'hidden'
+                'hidden'
               )}
             >
               <Button
@@ -129,6 +164,8 @@ const Wallet = () => {
 
         <PaymentList />
 
+        <WithdrawalList />
+
         {/* Withdraw Modal */}
         <Modal
           isOpen={isWithdrawModalOpen}
@@ -169,8 +206,8 @@ const Wallet = () => {
               <Button
                 disabled={!withdrawAmount || Number(withdrawAmount) <= 0}
                 onClick={handleWithdraw}
-                className='dark:text-white'
-              >
+                className='dark:text-white'>
+                {isLoading && <LoadingIcon />}
                 Submit
               </Button>
             </div>

@@ -5,6 +5,7 @@ import courseReducer from './slices/courseSlice';
 import ticketReducer from './slices/ticketSlice';
 import orgReducer from './slices/orgSlice';
 import paymentReducer from './slices/paymentSlice';
+import withdrawalReducer from './slices/withdrawalSlice';
 import couponReducer from './slices/couponSlice';
 import subscriptionPlanReducer from './slices/subscriptionPlanSlice';
 import subscriptionReducer from './slices/subscriptionSlice';
@@ -33,6 +34,7 @@ const rootReducer = combineReducers({
   ticket: ticketReducer,
   org: persistReducer(persistConfig, orgReducer),
   payment: paymentReducer,
+  withdrawal: withdrawalReducer,
   coupon: couponReducer, // Not persisted
   subscriptionPlan: subscriptionPlanReducer, // Not persisted
   subscription: subscriptionReducer, // Not persisted
