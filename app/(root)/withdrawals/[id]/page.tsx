@@ -74,9 +74,11 @@ const ViewWithdrawal = () => {
                       'px-2 py-1 rounded text-xs font-medium',
                       withdrawal.status === 'SUCCESS'
                         ? 'bg-green-100 text-green-800'
-                        : withdrawal.status === 'PENDING'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
+                        : withdrawal.status === 'APPROVED'
+                          ? 'bg-green-100 text-green-800'
+                          : withdrawal.status === 'PENDING'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
                     )}
                   >
                     {withdrawal.status}

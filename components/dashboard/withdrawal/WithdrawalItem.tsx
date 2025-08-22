@@ -53,15 +53,15 @@ const WithdrawalItem = ({ txn, idx }: WithdrawalItemProps) => {
                     className='flex items-center gap-3 underline-offset'>
 
                     {/* Avatar */}
-                    {displayAvatar && ( 
-                        <img src={getAvatar(profilePic!, user?.name)} alt={user?.name} className='size-8 rounded-full object-cover' /> 
+                    {displayAvatar && (
+                        <img src={getAvatar(profilePic!, user?.name)} alt={user?.name} className='size-8 rounded-full object-cover' />
                     )}
 
                     {/* Name + Icon */}
                     <div className={cn(
-                            'flex items-center gap-1 underline underline-offset-4 dark:text-gray-200',
-                            user?.id === profile?.id && 'no-underline'
-                        )}>
+                        'flex items-center gap-1 underline underline-offset-4 dark:text-gray-200',
+                        user?.id === profile?.id && 'no-underline'
+                    )}>
                         <span className='font-semibold truncate text-gray-800 dark:text-gray-100'>
                             {user?.id === profile?.id ? 'You' : user?.name || '-'}
                         </span>
@@ -75,17 +75,18 @@ const WithdrawalItem = ({ txn, idx }: WithdrawalItemProps) => {
 
 
             {/* Status */}
-            <td className='px-6 py-2'>
+            <td className="px-6 py-2">
                 <span
                     className={cn(
                         'inline-block px-3 py-1 rounded-full text-xs font-semibold',
                         txn.status === 'SUCCESS'
                             ? 'bg-green-100 text-green-800'
-                            : txn.status === 'PENDING'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-red-100 text-red-800'
-                    )}
-                >
+                            : txn.status === 'APPROVED'
+                                ? 'bg-green-100 text-green-800'
+                                : txn.status === 'PENDING'
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : 'bg-red-100 text-red-800'
+                    )}>
                     {txn.status}
                 </span>
             </td>

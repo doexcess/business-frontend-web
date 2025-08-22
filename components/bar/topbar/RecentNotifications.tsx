@@ -71,40 +71,42 @@ const RecentNotifications = () => {
         </Dropdown.Item>
       ) : (
         <>
-          {instantNotifications.map((notification: InstantNotification) => (
-            <Dropdown.Item
-              key={notification.id}
-              onClick={() => handleClickNotification(notification.id)}
-              className="flex items-start border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-600">
-              <Avatar
-                img={notification.icon_url || '/favicon.ico'}
-                alt="Notification"
-                className="mr-3"
-              />
-              <div className="flex-1">
-                <div className="text-gray-500 dark:text-gray-400 text-sm mb-1.5">
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {notification.title}
-                  </span>{' '}
-                  – {notification.message}
-                </div>
-                <div className="flex items-center gap-2 justify-between">
-                  <div className="text-xs font-medium text-primary-600 dark:text-primary-500">
-                    {moment(notification.created_at).fromNow()}
+
+          <div className="max-h-96 overflow-y-auto">
+            {instantNotifications.map((notification: InstantNotification) => (
+              <Dropdown.Item
+                key={notification.id}
+                onClick={() => handleClickNotification(notification.id)}
+                className="flex items-start border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-600 !text-left">
+                <Avatar
+                  img={notification.icon_url || '/favicon.ico'}
+                  alt="Notification"
+                  className="mr-3"
+                />
+                <div className="flex-1">
+                  <div className="text-gray-500 dark:text-gray-400 text-sm mb-1.5">
+                    <span className="font-semibold text-gray-900 dark:text-white">
+                      {notification.title}
+                    </span>{' '}
+                    – {notification.message}
                   </div>
-                  {!notification.read && (
-                    <div className="size-2 rounded-full bg-[#27BE69]"></div>
-                  )}
+                  <div className="flex items-center gap-2 justify-between">
+                    <div className="text-xs font-medium text-primary-600 dark:text-primary-500">
+                      {moment(notification.created_at).fromNow()}
+                    </div>
+                    {!notification.read && (
+                      <div className="size-2 rounded-full bg-[#27BE69]"></div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </Dropdown.Item>
-          ))}
+              </Dropdown.Item>
+            ))}
+          </div>
 
           <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-600 mt-4">
             <Dropdown.Item
               href="/notifications"
-              className="flex-1 text-sm font-medium text-center text-gray-900 hover:bg-gray-100 dark:text-white"
-            >
+              className="flex-1 text-sm font-medium text-center text-gray-900 hover:bg-gray-100 dark:text-white">
               View all
             </Dropdown.Item>
 
