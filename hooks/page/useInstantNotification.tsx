@@ -6,24 +6,35 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-const useInstantNotification = () => {
+type UseInstantNotificationProps = {
+  initialType?: string;
+  initialLimit?: number;
+};
+
+const useInstantNotification = ({
+  initialType = '',
+  initialLimit = 10,
+}: UseInstantNotificationProps = {}) => {
   const searchParams = useSearchParams();
   const params = useParams();
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const queryParams = new URLSearchParams(searchParams.toString());
 
-  // Get page from URL or default to 1
+  // query params first, then fall back to props
   const currentPage = Number(searchParams.get('page')) || 1;
-  const perPage = Number(searchParams.get('limit')) || 10;
-  const [q, setQ] = useState(searchParams.get('q'));
-  const [startDate, setStartDate] = useState(searchParams.get('startDate'));
-  const [endDate, setEndDate] = useState(searchParams.get('endDate'));
+  const perPage = Number(searchParams.get('limit')) || initialLimit;
 
-  let {
+  const [q, setQ] = useState(searchParams.get('q') || '');
+  const [startDate, setStartDate] = useState(searchParams.get('startDate') || '');
+  const [endDate, setEndDate] = useState(searchParams.get('endDate') || '');
+  const [type, setType] = useState(searchParams.get('type') || initialType);
+
+  const {
     instantNotificationLoading,
     instantNotifications,
     countInstantNotifications,
+    unreadInstantNotifications,
   } = useSelector((state: RootState) => state.notification);
 
   const { org } = useSelector((state: RootState) => state.org);
@@ -36,39 +47,38 @@ const useInstantNotification = () => {
         ...(q && { q }),
         ...(startDate && { startDate }),
         ...(endDate && { endDate }),
+        ...(type && { type }),
         ...(org?.id && { business_id: org?.id }),
       })
     );
-  }, [dispatch, currentPage, perPage, q, startDate, endDate]);
+  }, [dispatch, currentPage, perPage, q, startDate, endDate, type, org?.id]);
 
-  const onClickNext = async () => {
+  const onClickNext = () => {
     if (instantNotifications.length > 0) {
-      queryParams.set('page', encodeURIComponent(currentPage + 1));
+      queryParams.set('page', String(currentPage + 1));
       router.push(`?${queryParams}`);
     }
   };
 
-  const onClickPrev = async () => {
+  const onClickPrev = () => {
     if (currentPage - 1 > 0) {
-      queryParams.set('page', encodeURIComponent(currentPage - 1));
+      queryParams.set('page', String(currentPage - 1));
       router.push(`?${queryParams}`);
     }
   };
 
-  // Handle search submission
   const handleSearchSubmit = (input: string) => {
     setQ(input);
 
-    if (input!.trim()) {
-      queryParams.set('q', encodeURIComponent(input!));
+    if (input.trim()) {
+      queryParams.set('q', encodeURIComponent(input));
     } else {
-      queryParams.delete('q'); // Remove 'q' if input is empty
+      queryParams.delete('q');
     }
 
     router.push(`?${queryParams.toString()}`);
   };
 
-  // Handle filter by date submission
   const handleFilterByDateSubmit = (
     startDate: string,
     endDate: string,
@@ -76,32 +86,49 @@ const useInstantNotification = () => {
   ) => {
     setStartDate(startDate);
     setEndDate(endDate);
-
-    setOpenModal;
+    setOpenModal(false);
   };
 
-  // Handle Refresh
+  const handleFilterByType = (selectedType: string) => {
+    setType(selectedType);
+
+    if (selectedType) {
+      queryParams.set('type', encodeURIComponent(selectedType));
+    } else {
+      queryParams.delete('type');
+    }
+
+    router.push(`?${queryParams.toString()}`);
+  };
+
   const handleRefresh = () => {
     setStartDate('');
     setEndDate('');
     setQ('');
+    setType('');
     queryParams.delete('q');
     queryParams.delete('page');
+    queryParams.delete('type');
+    queryParams.delete('limit');
     router.push(`?${queryParams.toString()}`);
   };
 
   return {
     instantNotifications,
     instantNotificationLoading,
-    totalInstantNotifications: countInstantNotifications, // according to naming convention
+    totalInstantNotifications: countInstantNotifications,
+    unReadCount: unreadInstantNotifications,
     currentPage,
+    perPage,
     q,
     startDate,
     endDate,
+    type,
     onClickNext,
     onClickPrev,
     handleSearchSubmit,
     handleFilterByDateSubmit,
+    handleFilterByType,
     handleRefresh,
   };
 };

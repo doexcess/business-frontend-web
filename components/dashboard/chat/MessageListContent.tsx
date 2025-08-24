@@ -74,7 +74,7 @@ const MessageListContent = ({
       onClick={openChat}
     >
       {(chat?.chat_buddy?.profile?.profile_picture! ||
-        chat?.chat_buddy.name) && (
+        chat?.chat_buddy?.name) && (
         <img
           src={getAvatar(
             chat?.chat_buddy?.profile?.profile_picture!,
