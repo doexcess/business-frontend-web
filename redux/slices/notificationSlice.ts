@@ -23,6 +23,7 @@ interface EmailNotificationState {
   countScheduledNotifications: number;
   notification: NotificationDetails | null;
   notificationLoading: boolean;
+  unreadInstantNotifications: number;
 }
 
 const initialState: EmailNotificationState = {
@@ -36,6 +37,7 @@ const initialState: EmailNotificationState = {
   countScheduledNotifications: 0,
   notification: null,
   notificationLoading: false,
+  unreadInstantNotifications: 0,
 };
 
 // Async Thunk for a single email notification dispatch
@@ -76,6 +78,7 @@ export const fetchInstant = createAsyncThunk(
       q,
       startDate,
       endDate,
+      type,
       business_id,
     }: {
       page?: number;
@@ -83,6 +86,7 @@ export const fetchInstant = createAsyncThunk(
       q?: string;
       startDate?: string;
       endDate?: string;
+      type?: string;
       business_id?: string;
     },
     { rejectWithValue }
@@ -94,7 +98,7 @@ export const fetchInstant = createAsyncThunk(
     if (q !== undefined) params['q'] = q;
     if (startDate !== undefined) params['startDate'] = startDate;
     if (endDate !== undefined) params['endDate'] = endDate;
-
+    if (type !== undefined) params['type'] = type;
     try {
       const { data } = await api.get<InstantNotificationResponse>(
         `/notification-track/instant/${business_id}`,
@@ -106,15 +110,88 @@ export const fetchInstant = createAsyncThunk(
       return {
         notifications: data.data,
         count: data.count,
+        unread_count: data.unread_count,
       };
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message ||
-          'Failed to fetch all instant notifications'
+        'Failed to fetch all instant notifications'
       );
     }
   }
 );
+
+//  thunk for marking all as read
+export const markAllNotificationsRead = createAsyncThunk(
+  'notification-track/mark-all-read',
+  async (
+    { business_id }: { business_id?: string },
+    { rejectWithValue, dispatch }
+  ) => {
+    const headers: Record<string, any> = {};
+    if (business_id) headers['Business-Id'] = business_id;
+
+    try {
+      await api.patch(`/notification-track/mark-all-read`, {}, { headers });
+
+      if (business_id) {
+        dispatch(
+          fetchInstant({
+            business_id,
+            page: 1,
+            limit: 10,
+          })
+        );
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to mark all as read'
+      );
+    }
+  }
+);
+
+// thunk for marking a single notification as read
+export const markNotificationRead = createAsyncThunk(
+  'notification-track/mark-read/:id',
+  async (
+    {
+      id,
+      business_id,
+    }: {
+      id: string;
+      business_id?: string;
+    },
+    { rejectWithValue, dispatch }
+  ) => {
+    const headers: Record<string, any> = {};
+    if (business_id) headers['Business-Id'] = business_id;
+
+    try {
+      await api.patch(`/notification-track/mark-read/${id}`, {}, { headers });
+
+      // optionally refetch notifications for latest state
+      if (business_id) {
+        dispatch(
+          fetchInstant({
+            business_id,
+            page: 1,
+            limit: 10,
+          })
+        );
+      }
+
+      return { id };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to mark notification as read'
+      );
+    }
+  }
+);
+
 
 // Async Thunk for a scheduled email notification dispatch
 export const scheduleEmail = createAsyncThunk(
@@ -179,7 +256,7 @@ export const fetchScheduled = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message ||
-          'Failed to fetch all scheduled notifications'
+        'Failed to fetch all scheduled notifications'
       );
     }
   }
@@ -216,7 +293,7 @@ export const fetchSingleNotification = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message ||
-          'Failed to fetch single notification details'
+        'Failed to fetch single notification details'
       );
     }
   }
@@ -312,9 +389,44 @@ const notificationSlice = createSlice({
         state.instantNotificationLoading = false;
         state.instantNotifications = action.payload.notifications;
         state.countInstantNotifications = action.payload.count;
+        state.unreadInstantNotifications = action.payload.unread_count;
       })
       .addCase(fetchInstant.rejected, (state, action) => {
         state.instantNotificationLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(markAllNotificationsRead.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(markAllNotificationsRead.fulfilled, (state) => {
+        state.loading = false;
+        state.unreadInstantNotifications = 0;
+      })
+      .addCase(markAllNotificationsRead.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(markNotificationRead.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(markNotificationRead.fulfilled, (state, action) => {
+        state.loading = false;
+
+        // update local state without full refetch
+        const notificationId = action.payload.id;
+        const notif = state.instantNotifications.find(n => n.id === notificationId);
+        if (notif) {
+          notif.read = true; 
+        }
+        state.unreadInstantNotifications = Math.max(
+          state.unreadInstantNotifications - 1,
+          0
+        );
+      })
+      .addCase(markNotificationRead.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload as string;
       })
       .addCase(scheduleEmail.pending, (state) => {

@@ -12,6 +12,7 @@ import { MdOutlineAdminPanelSettings } from 'react-icons/md';
 import { useSelector } from 'react-redux';
 
 const TeamList = ({ loading }: { loading: boolean }) => {
+  
   const { invites, count } = useSelector((state: RootState) => state.org);
   const { profile } = useSelector((state: RootState) => state.auth);
 

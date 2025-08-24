@@ -20,6 +20,7 @@ interface PaymentListProps {
 }
 const PaymentList = ({ retrieve = RetrievalType.RECENT }: PaymentListProps) => {
   const searchParams = useSearchParams();
+  
   const {
     payments,
     loading,
@@ -95,7 +96,7 @@ const PaymentList = ({ retrieve = RetrievalType.RECENT }: PaymentListProps) => {
 
               <tbody className='text-sm'>
                 {payments.map((txn, idx) => (
-                  <PaymentItem txn={txn} idx={idx} />
+                  <PaymentItem key={idx} txn={txn} idx={idx} />
                 ))}
                 {!payments.length && (
                   <TableEndRecord colspan={10} text={noFoundText} />
