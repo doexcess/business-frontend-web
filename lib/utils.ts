@@ -103,6 +103,13 @@ export enum Gender {
   FEMALE = 'female',
 }
 
+export enum IdType {
+  SOLE_PROPRIETORSHIP = 'sole-proprietorship',
+  LIMITED_LIABILITY = 'limited-liability',
+  PARTNERSHIP = 'partnership',
+  INCORPORATED_TRUSTEE = 'incorporated-trustee',
+}
+
 export enum SubscriptionPeriod {
   FREE = 'free',
   MONTHLY = 'monthly',
