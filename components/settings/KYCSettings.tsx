@@ -3,22 +3,29 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { uploadImage } from "@/redux/slices/multimediaSlice";
 import { Button } from "../ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import Input from "@/components/ui/Input";
 import Select from "../Select";
-import { Loader2 } from "lucide-react";
+import { Loader2, EyeIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import { Country, State, City } from "country-state-city";
-import { IdType } from "@/lib/utils";
 import { submitKYC } from "@/redux/slices/authSlice";
 import useKYC from "@/hooks/page/useKYC";
+import FileUpload from "../FileUpload";
+import KYCPreview from "./KYCPreview";
+
+const ID_TYPES = [
+    "international-passport",
+    "national-identity-card-nin-slip",
+    "drivers-license",
+    "voters-card",
+    "residence-permit",
+];
 
 const KYCSettings = () => {
-    
-    const { kyc, loading } = useKYC();
+    const { kyc } = useKYC();
     const dispatch = useDispatch<AppDispatch>();
     const { org } = useSelector((state: RootState) => state.org);
     const [isLoading, setIsLoading] = useState(false);
@@ -39,7 +46,6 @@ const KYCSettings = () => {
     const [cities, setCities] = useState<any[]>([]);
     const [selectedCountryIso, setSelectedCountryIso] = useState("");
 
-    // Pre-populate KYC data when available
     useEffect(() => {
         if (kyc) {
             setFormData({
@@ -72,30 +78,6 @@ const KYCSettings = () => {
         }
     }, [kyc, countries, selectedCountryIso]);
 
-    // Handle file uploads
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            const fd = new FormData();
-            fd.append("image", file);
-
-            try {
-                const response: any = await dispatch(uploadImage({ form_data: fd }));
-                if (response.type.includes("rejected"))
-                    throw new Error(response.payload.message);
-
-                setFormData((prev) => ({
-                    ...prev,
-                    [field]: response.payload.multimedia.url,
-                }));
-                toast.success(`${field} uploaded`);
-            } catch (error: any) {
-                toast.error(error.message);
-            }
-        }
-    };
-
-    // Country → States
     const handleCountryChange = (countryName: string) => {
         const selected = countries.find((c) => c.name === countryName);
         if (!selected) return;
@@ -112,7 +94,6 @@ const KYCSettings = () => {
         }));
     };
 
-    // State → Cities
     const handleStateChange = (stateName: string) => {
         const selected = states.find((s) => s.name === stateName);
         if (!selected) return;
@@ -126,7 +107,6 @@ const KYCSettings = () => {
         }));
     };
 
-    // City
     const handleCityChange = (cityName: string) => {
         setFormData((prev) => ({ ...prev, city: cityName }));
     };
@@ -152,48 +132,80 @@ const KYCSettings = () => {
         }
     };
 
+    if (kyc?.is_approved) {
+        return (
+            <KYCPreview kyc={kyc} />
+        );
+    }
+
+    // Editable form
     return (
-        <div className="text-black dark:text-white">
+        <div className="text-black-1 dark:text-white">
             <form onSubmit={handleSubmit} className="space-y-6">
                 <Card className="dark:border-gray-600">
                     <CardHeader>
                         <CardTitle>KYC Upload</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-6">
                         <div>
-                            <Label>Document Front</Label>
-                            <Input
-                                type="file"
-                                accept="image/*,application/pdf"
-                                onChange={(e) => handleFileChange(e, "doc_front")}
+                            <Label>ID Type</Label>
+                            <Select
+                                required
+                                name="id_type"
+                                data={ID_TYPES}
+                                value={formData.id_type || ""}
+                                onChange={(e: any) =>
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        id_type: e.target.value,
+                                    }))
+                                }
                             />
-                            {formData.doc_front && (
-                                <p className="text-sm text-gray-500">Uploaded: {formData.doc_front}</p>
-                            )}
                         </div>
 
-                        <div>
-                            <Label>Document Back</Label>
-                            <Input
-                                type="file"
-                                accept="image/*,application/pdf"
-                                onChange={(e) => handleFileChange(e, "doc_back")}
-                            />
-                            {formData.doc_back && (
-                                <p className="text-sm text-gray-500">Uploaded: {formData.doc_back}</p>
-                            )}
-                        </div>
-
-                        <div>
-                            <Label>Utility Document</Label>
-                            <Input
-                                type="file"
-                                accept="image/*,application/pdf"
-                                onChange={(e) => handleFileChange(e, "utility_doc")}
-                            />
-                            {formData.utility_doc && (
-                                <p className="text-sm text-gray-500">Uploaded: {formData.utility_doc}</p>
-                            )}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <div>
+                                <Label>Document Front</Label>
+                                <FileUpload
+                                    label="Upload Front"
+                                    accept="image/*,.pdf"
+                                    fileUrl={kyc?.doc_front}
+                                    onUploaded={(res) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            doc_front: res.multimedia.url,
+                                        }))
+                                    }
+                                />
+                            </div>
+                            <div>
+                                <Label>Document Back</Label>
+                                <FileUpload
+                                    label="Upload Back"
+                                    accept="image/*,.pdf"
+                                    fileUrl={kyc?.doc_back}
+                                    onUploaded={(res) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            doc_back: res.multimedia.url,
+                                        }))
+                                    }
+                                />
+                            </div>
+                            <div>
+                                <Label>Utility Document</Label>
+                                <FileUpload
+                                    label="Upload Utility"
+                                    accept="image/*,.pdf"
+                                    fileUrl={kyc?.utility_doc}
+                                    onUploaded={(res) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            utility_doc: res.multimedia.url,
+                                        }))
+                                    }
+                                />
+                            </div>
                         </div>
 
                         <div>
@@ -242,22 +254,6 @@ const KYCSettings = () => {
                                 data={cities.map((c) => c.name)}
                                 value={formData.city}
                                 onChange={(e: any) => handleCityChange(e.target.value)}
-                            />
-                        </div>
-
-                        <div>
-                            <Label>ID Type</Label>
-                            <Select
-                                required
-                                name="id_type"
-                                data={Object.values(IdType)}
-                                value={formData.id_type || ""}
-                                onChange={(e: any) =>
-                                    setFormData((prev) => ({
-                                        ...prev,
-                                        id_type: e.target.value as IdType,
-                                    }))
-                                }
                             />
                         </div>
                     </CardContent>
