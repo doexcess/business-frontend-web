@@ -48,7 +48,7 @@ const OnboardingModal = ({ isOpen, setIsOpen }: OnboardingModalProps) => {
       icon: <FaCheckCircle className='w-6 h-6 text-indigo-500' />,
       action: 'Verify KYC',
       path: '/settings?tab=kyc',
-      isCompleted: !!(org?.kyc && org?.kyc.length > 0),
+      isCompleted: org?.onboarding_status?.current_step! >= 2,
     },
     {
       id: 3,
@@ -112,8 +112,8 @@ const OnboardingModal = ({ isOpen, setIsOpen }: OnboardingModalProps) => {
             <div
               key={step.id}
               className={`p-3 sm:p-4 rounded-lg cursor-pointer transition-all ${step.isCompleted
-                  ? 'bg-green-50 dark:bg-green-900/20'
-                  : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                ? 'bg-green-50 dark:bg-green-900/20'
+                : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
                 }`}
               onClick={() => handleStepClick(step)}
             >

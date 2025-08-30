@@ -104,11 +104,13 @@ export enum Gender {
 }
 
 export enum IdType {
-  SOLE_PROPRIETORSHIP = 'sole-proprietorship',
-  LIMITED_LIABILITY = 'limited-liability',
-  PARTNERSHIP = 'partnership',
-  INCORPORATED_TRUSTEE = 'incorporated-trustee',
+  INTERNATIONAL_PASSPORT = "international-passport",
+  NATIONAL_IDENTITY_CARD_NIN_SLIP = "national-identity-card-nin-slip",
+  DRIVERS_LICENSE = "drivers-license",
+  VOTERS_CARD = "voters-card",
+  RESIDENCE_PERMIT = "residence-permit",
 }
+
 
 export enum SubscriptionPeriod {
   FREE = 'free',

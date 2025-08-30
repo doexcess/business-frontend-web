@@ -130,26 +130,31 @@ export const uploadVideo = createAsyncThunk(
 );
 
 export const uploadDocument = createAsyncThunk(
-  'multimedia-upload/document',
+  "multimedia-upload/document",
   async ({
     form_data,
     business_id,
+    onUploadProgress,
   }: {
     form_data: FormData;
     business_id?: string;
+    onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;
   }) => {
     const headers: Record<string, any> = {
-      'Content-Type': 'multipart/form-data',
+      "Content-Type": "multipart/form-data",
     };
 
     if (business_id !== undefined) {
-      headers['Business-Id'] = business_id;
+      headers["Business-Id"] = business_id;
     }
 
     const { data } = await api.post<UploadMediaResponse>(
-      '/multimedia-upload/document',
+      "/multimedia-upload/document",
       form_data,
-      { headers }
+      {
+        headers,
+        onUploadProgress,
+      }
     );
 
     return {
