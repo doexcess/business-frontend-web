@@ -179,3 +179,16 @@ export interface VerifyEmailResponse {
     role: string;
   };
 }
+
+export interface VerificationTokenDetails {
+  expires_at: string;
+  is_verified: boolean;
+  created_at: string;
+  email: string;
+}
+
+export interface VerifyEmailByTokenResponse {
+  statusCode: number;
+  message: string;
+  data?: VerificationTokenDetails;
+}

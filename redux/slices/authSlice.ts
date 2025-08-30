@@ -3,18 +3,23 @@ import {
   KYCProps,
   LoginProps,
   RegisterFormProps,
+  RequestPasswordCreationProps,
   RequestPasswordResetProps,
   ResendEmailProps,
   ResetPasswordProps,
+  SavePasswordByTokenProps,
+  TokenProps,
   UpdatePasswordProps,
   UserProfileProps,
   VerifyEmailFormProps,
   VerifyPasswordTokenProps,
 } from '@/lib/schema/auth.schema';
+import { GenericResponse } from '@/types';
 import {
   Profile,
   ProfileResponse,
   RegisterResponse,
+  VerifyEmailByTokenResponse,
   VerifyEmailResponse,
 } from '@/types/account';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
@@ -132,7 +137,15 @@ export const verifyLogin = createAsyncThunk(
 // GOOGLE LOGIN
 export const googleLogin = createAsyncThunk(
   'auth/google-login',
-  async (credentials: { token: string; provider: 'GOOGLE'; role?: string; action_type: 'SIGNIN' | 'SIGNUP' }, { rejectWithValue }) => {
+  async (
+    credentials: {
+      token: string;
+      provider: 'GOOGLE';
+      role?: string;
+      action_type: 'SIGNIN' | 'SIGNUP';
+    },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await api.post('/auth/sso', credentials);
       const { accessToken: token, message, data } = response.data;
@@ -165,7 +178,26 @@ export const requestPasswordReset = createAsyncThunk(
   }
 );
 
-// Async Thunk to verify password token
+// Async thunk for set password by token
+export const setPasswordByToken = createAsyncThunk(
+  'auth/verify-email-save-password',
+  async (credentials: SavePasswordByTokenProps, { rejectWithValue }) => {
+    try {
+      const response = await api.post(
+        '/auth/verify-email-save-password',
+        credentials
+      );
+      const { message } = response.data;
+      return { message };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || 'Verify email save password failed'
+      );
+    }
+  }
+);
+
+// Async thunk to verify email token
 export const verifyPasswordToken = createAsyncThunk(
   'auth/verify-password-token',
   async (credentials: VerifyPasswordTokenProps, { rejectWithValue }) => {
@@ -179,6 +211,44 @@ export const verifyPasswordToken = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data || 'Password token verification failed'
+      );
+    }
+  }
+);
+
+// Async thunk to verify email token
+export const verifyEmailToken = createAsyncThunk(
+  'auth/verify-email-token',
+  async (credentials: TokenProps, { rejectWithValue }) => {
+    try {
+      const response = await api.post<VerifyEmailByTokenResponse>(
+        '/auth/verify-email-token',
+        credentials
+      );
+      const { message, data } = response.data;
+      return { message, data };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || 'Email token verification failed'
+      );
+    }
+  }
+);
+
+// Async thunk to request password creation link
+export const requestPasswordCreation = createAsyncThunk(
+  'auth/request-password-creation',
+  async (credentials: RequestPasswordCreationProps, { rejectWithValue }) => {
+    try {
+      const response = await api.post<GenericResponse>(
+        '/auth/request-password-creation',
+        credentials
+      );
+      const { message } = response.data;
+      return { message };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || 'Password creation request failed'
       );
     }
   }
@@ -221,26 +291,23 @@ export const saveProfile = createAsyncThunk(
 // Async Thunk to save KYC information
 export const submitKYC = createAsyncThunk(
   'auth/submit-kyc',
-  async ({ kycData, businessId }: { kycData: KYCProps; businessId: string }, { rejectWithValue }) => {
+  async (
+    { kycData, businessId }: { kycData: KYCProps; businessId: string },
+    { rejectWithValue }
+  ) => {
     try {
-      const { data } = await api.post(
-        '/onboard/kyc',
-        kycData,
-        {
-          headers: {
-            'Business-Id': businessId, 
-          },
-        }
-      );
+      const { data } = await api.post('/onboard/kyc', kycData, {
+        headers: {
+          'Business-Id': businessId,
+        },
+      });
 
       return {
         message: data.message,
         statusCode: data.statusCode,
       };
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data || 'Failed to submit KYC'
-      );
+      return rejectWithValue(error.response?.data || 'Failed to submit KYC');
     }
   }
 );
@@ -280,7 +347,7 @@ export const updatePassword = createAsyncThunk(
 // Async Thunk to delete account
 export const deleteAccount = createAsyncThunk(
   'auth/delete-account',
-  async ({ }, { rejectWithValue }) => {
+  async ({}, { rejectWithValue }) => {
     try {
       const { data } = await api.delete('/auth/delete-account');
 
@@ -457,6 +524,16 @@ const authSlice = createSlice({
         state.loading = false;
       })
       .addCase(deleteAccount.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(setPasswordByToken.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(setPasswordByToken.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(setPasswordByToken.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
