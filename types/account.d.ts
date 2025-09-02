@@ -117,6 +117,11 @@ export interface BanksResponse {
   data: PaystackBanksResponse;
 }
 
+export interface KYCResponse {
+  statusCode: number;
+  data: KYC;
+}
+
 // Resolve bank account
 export interface RecipientDetails {
   authorization_code: string | null;

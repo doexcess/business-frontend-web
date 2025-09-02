@@ -91,6 +91,17 @@ export interface UserProfileProps {
   gender?: Gender | null;
 }
 
+export interface KYCProps {
+  doc_front: string;
+  doc_back: string;
+  utility_doc: string;
+  location: string;
+  country: string;
+  state: string;
+  city: string;
+  id_type: string;
+}
+
 export const UpdatePasswordSchema = Joi.object({
   current_password: Joi.string().required().label('Current Password'),
   new_password: Joi.string()

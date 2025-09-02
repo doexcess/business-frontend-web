@@ -38,6 +38,7 @@ export interface BusinessProfileFull {
   country_code: string;
   created_at: string; // ISO 8601 format
   updated_at: string; // ISO 8601 format
+  kyc: KYC[];
   onboarding_status: {
     current_step: number;
     is_completed: boolean;
@@ -49,6 +50,29 @@ export interface BusinessProfileFull {
   };
   withdrawal_account: WithdrawalAccount;
 }
+
+export interface KYC {
+  id: string;
+  business_id: string;
+  user_id: string | null;
+  doc_front: string;
+  doc_back: string;
+  utility_doc: string;
+  location: string;
+  state: string | null;
+  city: string;
+  country: string;
+  country_code: string;
+  id_type: string;
+  is_approved: boolean;
+  disapproval_reason: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
 
 export interface WithdrawalAccount {
   id: string;

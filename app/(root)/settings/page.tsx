@@ -12,7 +12,9 @@ import { useSelector } from 'react-redux';
 import { SystemRole } from '@/lib/utils';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { BsPatchCheck } from 'react-icons/bs';
 import BusinessAccountSettings from '@/components/settings/BusinessAccountSettings';
+import KYCSettings from '@/components/settings/KYCSettings';
 
 const Settings = () => {
   const { profile } = useSelector((state: RootState) => state.auth);
@@ -42,13 +44,21 @@ const Settings = () => {
               <TabsList className='flex flex-col h-auto p-2 bg-background'>
                 <TabsTrigger
                   value='general'
-                  className='w-full justify-start px-4 py-3 data-[state=active]:bg-primary-main text-black-1 dark:text-white data-[state=active]:text-white'
-                >
+                  className='w-full justify-start px-4 py-3 data-[state=active]:bg-primary-main text-black-1 dark:text-white data-[state=active]:text-white'>
                   <FiSettings className='w-4 h-4' />
                   &nbsp; General
                 </TabsTrigger>
                 {profile?.role.role_id === SystemRole.BUSINESS_SUPER_ADMIN && (
                   <>
+
+                    <TabsTrigger
+                      value="kyc"
+                      className="w-full justify-start px-4 py-3 data-[state=active]:bg-primary-main text-black-1 dark:text-white
+                      data-[state=active]:text-white">
+                      <BsPatchCheck className="w-4 h-4" />
+                      &nbsp; KYC
+                    </TabsTrigger>
+
                     <TabsTrigger
                       value='business-account'
                       className='w-full justify-start px-4 py-3 data-[state=active]:bg-primary-main text-black-1 dark:text-white data-[state=active]:text-white'
@@ -82,6 +92,11 @@ const Settings = () => {
               </TabsContent>
               {profile?.role.role_id === SystemRole.BUSINESS_SUPER_ADMIN && (
                 <>
+
+                  <TabsContent value="kyc">
+                    <KYCSettings />
+                  </TabsContent>
+
                   <TabsContent value='business-account'>
                     <BusinessAccountSettings />
                   </TabsContent>

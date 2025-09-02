@@ -1,5 +1,6 @@
 import api from '@/lib/api';
 import {
+  KYCProps,
   LoginProps,
   RegisterFormProps,
   RequestPasswordResetProps,
@@ -212,6 +213,33 @@ export const saveProfile = createAsyncThunk(
       // console.log(error);
       return rejectWithValue(
         error.response?.data || 'Failed to save profile info'
+      );
+    }
+  }
+);
+
+// Async Thunk to save KYC information
+export const submitKYC = createAsyncThunk(
+  'auth/submit-kyc',
+  async ({ kycData, businessId }: { kycData: KYCProps; businessId: string }, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post(
+        '/onboard/kyc',
+        kycData,
+        {
+          headers: {
+            'Business-Id': businessId, 
+          },
+        }
+      );
+
+      return {
+        message: data.message,
+        statusCode: data.statusCode,
+      };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || 'Failed to submit KYC'
       );
     }
   }

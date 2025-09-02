@@ -73,6 +73,8 @@ const NotificationPage = () => {
                     handleSearchSubmit={handleSearchSubmit}
                     handleFilterByDateSubmit={handleFilterByDateSubmit}
                     handleRefresh={handleRefresh}
+                    showRefresh={false}
+                    showFilterByDate={false}
                 />
 
                 <div className="max-w-4xl mt-12 space-y-12">
@@ -146,8 +148,7 @@ const NotificationPage = () => {
                                 <div
                                     key={notification.id}
                                     onClick={() => handleClickNotification(notification.id)}
-                                    className="cursor-pointer flex items-start border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-600 p-2"
-                                >
+                                    className="cursor-pointer flex items-start border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-600 p-2">
                                     <Avatar
                                         img={notification.icon_url || '/favicon.ico'}
                                         alt="Notification"
