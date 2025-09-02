@@ -5,6 +5,7 @@ export interface BusinessProfile {
   id: string;
   user_id: string;
   business_name: string;
+  business_description: string;
   business_size: 'small' | 'medium' | 'large' | string;
   timeline: string;
   logo_url: string;
@@ -13,6 +14,7 @@ export interface BusinessProfile {
   location: string;
   state: string | null;
   country: string;
+  social_media_handles: { handle: string; link: string }[];
   country_code: string;
   created_at: string; // ISO timestamp string
   updated_at: string; // ISO timestamp string
@@ -72,7 +74,6 @@ export interface KYC {
   updated_at: string;
   deleted_at: string | null;
 }
-
 
 export interface WithdrawalAccount {
   id: string;

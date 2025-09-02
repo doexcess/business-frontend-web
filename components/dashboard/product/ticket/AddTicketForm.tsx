@@ -598,7 +598,8 @@ const AddTicketForm = () => {
 
       <div>
         <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
-          What do you want to them to know after ticket payments?
+          What do you want to them to know after ticket payments?{' '}
+          <span className='text-red-500'>*</span>
         </label>
         <Textarea
           name='auth_details'
