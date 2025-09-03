@@ -25,10 +25,12 @@ const ID_TYPES = [
 ];
 
 const KYCSettings = () => {
-    const { kyc } = useKYC();
+
     const dispatch = useDispatch<AppDispatch>();
     const { org } = useSelector((state: RootState) => state.org);
     const [isLoading, setIsLoading] = useState(false);
+
+    const { kyc } = useKYC(org?.id as string);
 
     const [formData, setFormData] = useState({
         doc_front: "",

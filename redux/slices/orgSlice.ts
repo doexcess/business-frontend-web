@@ -40,7 +40,7 @@ import {
 
 interface OrgState {
   orgs: BusinessProfile[];
-  org: BusinessProfileFull | null;
+  org?: BusinessProfileFull | null;
   invites: ContactInvite[];
   banks: PaystackBank[];
   kyc: KYC | null;
@@ -362,13 +362,24 @@ export const restoreMember = createAsyncThunk(
 );
 
 // Async Thunk to fetch banks
-export const fetchKYC = createAsyncThunk('auth/fetch-kyc', async () => {
-  const { data } = await api.get<KYCResponse>(`/onboard/kyc`);
+export const fetchKYC = createAsyncThunk(
+  "auth/fetch-kyc",
+  async (business_id: string, { rejectWithValue }) => {
+    try {
 
-  return {
-    kyc: data.data,
-  };
-});
+      const { data } = await api.get<KYCResponse>(`/onboard/kyc`, {
+        headers: { "Business-Id": business_id },
+      });
+
+      return {
+        kyc: data.data,
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
 
 // Async Thunk to fetch banks
 export const fetchBanks = createAsyncThunk('auth/fetch-banks', async () => {
@@ -566,7 +577,7 @@ const orgSlice = createSlice({
       if (matchedOrg) {
         state.org = {
           ...matchedOrg,
-        } as BusinessProfileFull;
+        } as any;
       } else {
         state.error = 'Organization not found in local state';
       }
@@ -759,7 +770,7 @@ const orgSlice = createSlice({
       })
 
       .addCase(fetchKYC.pending, (state) => {
-        state.loading = true; 
+        state.loading = true;
         state.error = null;
       })
       .addCase(fetchKYC.fulfilled, (state, action) => {
