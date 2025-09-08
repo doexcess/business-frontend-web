@@ -27,7 +27,7 @@ import {
   HelpCircle,
 } from 'lucide-react';
 
-const DashboardCart = () => {
+function DashboardCart() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { cart, loading, error } = useCart();
@@ -385,6 +385,6 @@ const DashboardCart = () => {
       </Modal>
     </main>
   );
-};
+}
 
 export default DashboardCart;
