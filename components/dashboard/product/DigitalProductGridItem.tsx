@@ -71,15 +71,6 @@ const DigitalProductGridItem = ({
               {data.status.charAt(0).toUpperCase() + data.status.slice(1)}
             </span>
           )}
-          {data.file_type && (
-            <div className='absolute bottom-2 left-2 bg-white bg-opacity-90 rounded-lg p-1'>
-              <Icon
-                url={getFileTypeIcon(data.file_type)}
-                width={20}
-                height={20}
-              />
-            </div>
-          )}
         </div>
       </Link>
       <div className='flex flex-col flex-grow justify-between px-4 py-3 space-y-2'>
@@ -92,11 +83,6 @@ const DigitalProductGridItem = ({
           <p className='text-gray-600 dark:text-gray-300 text-sm min-h-[20px]'>
             {formattedPrice}
           </p>
-          {data.download_limit && (
-            <p className='text-xs text-gray-500 dark:text-gray-400'>
-              Downloads: {data.download_limit}
-            </p>
-          )}
         </div>
         <Link
           href={href}
