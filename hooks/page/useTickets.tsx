@@ -41,6 +41,7 @@ const useTickets = () => {
   return {
     tickets,
     count,
+    currentPage,
     loading,
     error,
     onClickNext,

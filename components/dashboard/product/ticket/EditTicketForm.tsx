@@ -166,7 +166,7 @@ const EditTicketForm = () => {
     setBody((prev) => ({
       ...prev,
       ticket_tiers: [
-        ...prev?.ticket_tiers!,
+        ...(prev?.ticket_tiers! || []),
         {
           name: '',
           amount: null,
@@ -299,15 +299,15 @@ const EditTicketForm = () => {
         description: ticket.description || '',
         multimedia_id: ticket.multimedia?.id,
         category_id: ticket.category.id,
-        event_end_date: ticket.ticket.event_end_date,
-        event_start_date: ticket.ticket.event_start_date,
-        event_location: ticket.ticket.event_location,
-        event_type: ticket.ticket.event_type,
-        auth_details: ticket.ticket.auth_details!,
-        event_time: ticket.ticket.event_time!,
+        event_end_date: ticket.ticket?.event_end_date,
+        event_start_date: ticket.ticket?.event_start_date,
+        event_location: ticket.ticket?.event_location,
+        event_type: ticket.ticket?.event_type,
+        auth_details: ticket.ticket?.auth_details!,
+        event_time: ticket.ticket?.event_time!,
         status: ticket.status,
         keywords: ticket.keywords!,
-        ticket_tiers: ticket.ticket.ticket_tiers.map((tier) => ({
+        ticket_tiers: ticket.ticket?.ticket_tiers.map((tier) => ({
           id: tier.id,
           name: tier.name,
           amount: +tier.amount,
@@ -632,7 +632,7 @@ const EditTicketForm = () => {
             Ticket Tiers
           </h3>
 
-          {body?.ticket_tiers!.map((tier, index) => (
+          {body?.ticket_tiers?.map((tier, index) => (
             <div key={index} className='grid md:grid-cols-4 gap-4 items-center'>
               <Input
                 type='text'

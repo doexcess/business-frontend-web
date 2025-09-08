@@ -58,10 +58,18 @@ const ActionConfirmationModal = ({
               </div>
             )}
             <div className='flex justify-center gap-4 mt-4'>
-              <Button color='failure' onClick={() => handleAction(true)}>
+              <Button
+                type='button'
+                color='failure'
+                onClick={() => handleAction(true)}
+              >
                 {"Yes, I'm sure"}
               </Button>
-              <Button color='gray' onClick={() => handleAction(false)}>
+              <Button
+                type='button'
+                color='gray'
+                onClick={() => handleAction(false)}
+              >
                 No, cancel
               </Button>
             </div>
