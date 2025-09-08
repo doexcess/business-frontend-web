@@ -1,6 +1,6 @@
 // validators/subscriptionPlan.schema.ts
 import Joi from 'joi';
-import { SubscriptionPeriod } from '../utils';
+import { ProductStatus, SubscriptionPeriod } from '../utils';
 import { SubscriptionPlanBasic } from '@/types/subscription-plan';
 
 // Price schema
@@ -27,7 +27,9 @@ export const createSubscriptionPlanSchema = Joi.object({
   description: Joi.string().optional().allow('', null),
   cover_image: Joi.string().uri().max(2048).optional().allow('', null),
   business_id: Joi.string().required(),
+  multimedia_id: Joi.string().required(),
   creator_id: Joi.string().required(),
+  category_id: Joi.string().required(),
   subscription_plan_prices: Joi.array()
     .items(subscriptionPlanPriceSchema)
     .min(1)
@@ -41,8 +43,13 @@ export const createSubscriptionPlanSchema = Joi.object({
 // Update schema (fields optional, but structure validated)
 export const updateSubscriptionPlanSchema = Joi.object({
   name: Joi.string().max(255).optional(),
+  category_id: Joi.string().required(),
   description: Joi.string().optional().allow('', null),
   cover_image: Joi.string().uri().max(2048).optional().allow('', null),
+  multimedia_id: Joi.string().required(),
+  status: Joi.string()
+    .valid(...Object.values(ProductStatus))
+    .required(),
   subscription_plan_prices: Joi.array()
     .items(subscriptionPlanPriceSchema)
     .optional(),
@@ -72,8 +79,10 @@ export interface CreateSubscriptionPlanProps {
   name: string;
   description?: string | null;
   cover_image?: string | null;
+  category_id?: string | null;
   business_id: string;
   creator_id: string;
+  status?: ProductStatus;
   subscriptions?: SubscriptionPlanBasic[];
   subscription_plan_prices: SubscriptionPlanPriceProps[];
   subscription_plan_roles: SubscriptionPlanRoleProps[];
@@ -83,6 +92,9 @@ export interface UpdateSubscriptionPlanProps {
   name?: string;
   description?: string | null;
   cover_image?: string | null;
+  category_id?: string;
+  multimedia_id?: string;
+  status?: ProductStatus;
   subscription_plan_prices?: SubscriptionPlanPriceProps[];
   subscription_plan_roles?: SubscriptionPlanRoleProps[];
 }

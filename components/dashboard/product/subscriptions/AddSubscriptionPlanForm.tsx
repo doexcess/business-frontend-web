@@ -8,7 +8,7 @@ import {
   createSubscriptionPlanSchema,
   CreateSubscriptionPlanProps,
 } from '@/lib/schema/subscription.schema';
-import { formatMoney, SubscriptionPeriod } from '@/lib/utils';
+import { formatMoney, ProductStatus, SubscriptionPeriod } from '@/lib/utils';
 import {
   Select,
   SelectContent,
@@ -27,13 +27,16 @@ import {
 } from '@/redux/slices/subscriptionPlanSlice';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import { setOnboardingStep } from '@/redux/slices/orgSlice';
+import useProductCategory from '@/hooks/page/useProductCategory';
 
 const defaultValue: CreateSubscriptionPlanProps = {
   name: '',
   business_id: '',
   creator_id: '',
+  category_id: '',
   description: '',
   cover_image: '',
+  status: ProductStatus.PUBLISHED,
   subscription_plan_prices: [
     {
       price: 0,
@@ -53,6 +56,8 @@ const CreateSubscriptionPlanForm = ({
   setIsPlanModalOpen,
 }: CreateSubscriptionPlanFormProps) => {
   const dispatch = useDispatch<AppDispatch>();
+
+  const { categories } = useProductCategory();
 
   const { profile } = useSelector((state: RootState) => state.auth);
   const { org } = useSelector((state: RootState) => state.org);
@@ -157,6 +162,7 @@ const CreateSubscriptionPlanForm = ({
       setBody((prev) => ({
         ...prev,
         cover_image: response.payload.multimedia.url,
+        multimedia_id: response.payload.multimedia.id,
       }));
 
       toast.success('Image uploaded successfully');
@@ -230,6 +236,7 @@ const CreateSubscriptionPlanForm = ({
     body.description &&
     body.business_id &&
     body.creator_id &&
+    body.category_id &&
     body.cover_image &&
     body.subscription_plan_prices.length > 0 &&
     body.subscription_plan_roles.length > 0;
@@ -253,6 +260,31 @@ const CreateSubscriptionPlanForm = ({
             onChange={handleInputChange}
             required
           />
+        </div>
+
+        {/* Category and Price Fields */}
+        <div>
+          <label className='text-sm font-medium mb-1 block'>
+            Category <span className='text-red-500'>*</span>
+          </label>
+          <Select
+            value={body.category_id!}
+            onValueChange={(value) =>
+              setBody((prev) => ({ ...prev, category_id: value }))
+            }
+            required
+          >
+            <SelectTrigger id='category' className='w-full'>
+              <SelectValue placeholder='Select your category' />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category, index) => (
+                <SelectItem key={index} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
@@ -388,6 +420,33 @@ const CreateSubscriptionPlanForm = ({
           </div>
         ))}
       </section>
+
+      <div>
+        <label className='font-medium mb-1 block text-gray-700 dark:text-white'>
+          Make Public? <span className='text-red-500'>*</span>
+        </label>
+        <Select
+          value={body.status!}
+          onValueChange={(value) =>
+            setBody((prev) => ({ ...prev, status: value as any }))
+          }
+          required
+        >
+          <SelectTrigger id='status' className='w-full'>
+            <SelectValue placeholder='Select status' />
+          </SelectTrigger>
+          <SelectContent>
+            {[
+              [ProductStatus.DRAFT, 'No'],
+              [ProductStatus.PUBLISHED, 'Yes'],
+            ].map((status, index) => (
+              <SelectItem key={index} value={status[0]}>
+                {status[1]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <div>
         <Button type='submit' variant='primary' disabled={isSubmitting}>

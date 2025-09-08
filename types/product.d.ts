@@ -90,6 +90,7 @@ export interface Ticket {
 export enum Productinterface {
   COURSE = 'COURSE',
   TICKET = 'TICKET',
+  DIGITAL_PRODUCT = 'DIGITAL_PRODUCT',
 }
 
 // export enum ProductStatus {
@@ -114,7 +115,7 @@ export interface ProductDetails {
   created_at: string;
   creator: Creator;
   category: Category;
-  multimedia: Multimedia;
+  multimedia: Media;
   ticket: Ticket;
   business_id: string;
   business_info: BusinessInfo;
@@ -486,4 +487,63 @@ export interface TicketTierWithTicketAndProduct {
       multimedia: Media;
     };
   };
+}
+
+// DIGITAL PRODUCT
+export interface DigitalProduct {
+  id: string;
+  title: string;
+  description: string;
+  price: string;
+  original_price?: string;
+  currency: string;
+  keywords: string | null;
+  metadata: any | null;
+  status: ProductStatus;
+  published_at: string | null;
+  archived_at: string | null;
+  creator_id: string;
+  created_at: string;
+  updated_at: string;
+  category_id: string;
+  business_id: string;
+  purchased_digital_products: PurchasedDigitalProduct[];
+  creator: CreatorBasic;
+  multimedia: Media;
+  zip_file: Media;
+  category: Category;
+  business_info: BusinessInfo;
+}
+
+export interface PurchasedDigitalProduct {
+  id: string;
+  quantity: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DigitalProductResponse {
+  statusCode: number;
+  data: DigitalProduct[];
+  count: number;
+}
+
+export interface DigitalProductDetailsResponse {
+  statusCode: number;
+  data: DigitalProduct;
+}
+
+export interface DeleteDigitalProductResponse {
+  statusCode: number;
+  message: string;
+  data: {
+    id: string;
+    deleted: boolean;
+  };
+}
+
+export interface UpdateDigitalProductResponse {
+  statusCode: number;
+  message: string;
+  data: DigitalProductDetails;
 }

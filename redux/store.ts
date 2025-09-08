@@ -13,6 +13,7 @@ import notificationReducer from './slices/notificationSlice';
 import productImportReducer from './slices/productImportSlice';
 import analyticsReducer from './slices/analyticsSlice';
 import productReducer from './slices/productSlice';
+import digitalProductReducer from './slices/digitalProductSlice';
 import cartReducer from './slices/cartSlice';
 import orderReducer from './slices/orderSlice';
 import firebaseReducer from './slices/firebaseSlice';
@@ -42,6 +43,7 @@ const rootReducer = combineReducers({
   productImport: productImportReducer,
   analytics: analyticsReducer,
   products: productReducer,
+  digitalProduct: digitalProductReducer,
   cart: persistReducer(persistConfig, cartReducer),
   order: orderReducer, // Not persisted
   firebase: firebaseReducer,

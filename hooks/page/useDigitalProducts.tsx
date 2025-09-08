@@ -1,18 +1,15 @@
 import { AppDispatch, RootState } from '@/redux/store';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCourses } from '@/redux/slices/courseSlice';
 import useQueryParams from '../useQueryParams';
+import { fetchDigitalProducts } from '@/redux/slices/productSlice';
 
-const useCourses = () => {
+const useDigitalProducts = () => {
   const dispatch = useDispatch<AppDispatch>();
 
-  const {
-    courses,
-    coursesLoading: loading,
-    error,
-    coursesCount: count,
-  } = useSelector((state: RootState) => state.course);
+  const { digital_products, loading, error, count } = useSelector(
+    (state: RootState) => state.products
+  );
   const { org } = useSelector((state: RootState) => state.org);
 
   const {
@@ -26,11 +23,11 @@ const useCourses = () => {
     handleSearchSubmit,
     handleFilterByDateSubmit,
     handleRefresh,
-  } = useQueryParams(courses);
+  } = useQueryParams(digital_products);
 
   useEffect(() => {
     dispatch(
-      fetchCourses({
+      fetchDigitalProducts({
         page: currentPage,
         limit: perPage,
         ...(q && { q }),
@@ -42,10 +39,9 @@ const useCourses = () => {
   }, [dispatch, currentPage, perPage, q, startDate, endDate, org]);
 
   return {
-    courses,
+    digitalProducts: digital_products,
     count,
     currentPage,
-    perPage,
     loading,
     error,
     onClickNext,
@@ -56,4 +52,4 @@ const useCourses = () => {
   };
 };
 
-export default useCourses;
+export default useDigitalProducts;

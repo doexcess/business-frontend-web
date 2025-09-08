@@ -351,9 +351,9 @@ const AddTicketForm = () => {
         throw new Error(response.payload.message);
       }
 
-      if (org?.onboarding_status?.current_step! < 4) {
+      if (org?.onboarding_status?.current_step! < 5) {
         // Update the onboarding current step
-        dispatch(setOnboardingStep(4));
+        dispatch(setOnboardingStep(5));
       }
 
       toast.success('Ticket created successfully!');
