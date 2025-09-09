@@ -566,7 +566,7 @@ const orgSlice = createSlice({
       if (matchedOrg) {
         state.org = {
           ...matchedOrg,
-        } as BusinessProfileFull;
+        } as BusinessProfileFull | any;
       } else {
         state.error = 'Organization not found in local state';
       }
@@ -759,7 +759,7 @@ const orgSlice = createSlice({
       })
 
       .addCase(fetchKYC.pending, (state) => {
-        state.loading = true; 
+        state.loading = true;
         state.error = null;
       })
       .addCase(fetchKYC.fulfilled, (state, action) => {
