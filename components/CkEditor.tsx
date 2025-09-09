@@ -315,14 +315,16 @@ const CkEditor = ({ editorData, setEditorData }: CkEditorProps) => {
     'formula', 'emoji',
   ];
 
+
+  //  background: ${isDarkMode
+  //     ? 'linear-gradient(135deg, rgba(55, 65, 81, 0.8) 0%, rgba(31, 41, 55, 0.9) 100%)'
+  //     : 'linear-gradient(135deg, rgba(249, 250, 251, 0.8) 0%, rgba(255, 255, 255, 0.9) 100%)'
+  //   } !important;
+
   // Custom styles for dark/light mode with enhanced design
   const editorStyles = `
     /* Glassmorphism toolbar */
     .ql-toolbar {
-      background: ${isDarkMode
-      ? 'linear-gradient(135deg, rgba(55, 65, 81, 0.8) 0%, rgba(31, 41, 55, 0.9) 100%)'
-      : 'linear-gradient(135deg, rgba(249, 250, 251, 0.8) 0%, rgba(255, 255, 255, 0.9) 100%)'
-    } !important;
       backdrop-filter: blur(20px) !important;
       -webkit-backdrop-filter: blur(20px) !important;
       border: 1px solid ${isDarkMode ? 'rgba(75, 85, 99, 0.3)' : 'rgba(209, 213, 219, 0.3)'} !important;
@@ -335,33 +337,29 @@ const CkEditor = ({ editorData, setEditorData }: CkEditorProps) => {
     } !important;
       position: relative !important;
       overflow: visible !important;
-      z-index: 1000 !important;
     }
     
     /* Animated gradient border effect */
-    .ql-toolbar::before {
-      content: '' !important;
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      height: 2px !important;
-      background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899, #f59e0b, #10b981) !important;
-      background-size: 200% 100% !important;
-      animation: gradientShift 3s ease-in-out infinite !important;
-    }
+    // .ql-toolbar::before {
+    //   content: '' !important;
+    //   position: absolute !important;
+    //   top: 0 !important;
+    //   left: 0 !important;
+    //   right: 0 !important;
+    //   height: 2px !important;
+    //   background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899, #f59e0b, #10b981) !important;
+    //   background-size: 200% 100% !important;
+    //   animation: gradientShift 3s ease-in-out infinite !important;
+    // }
     
-    @keyframes gradientShift {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-    }
+    // @keyframes gradientShift {
+    //   0%, 100% { background-position: 0% 50%; }
+    //   50% { background-position: 100% 50%; }
+    // }
     
     /* Glassmorphism container */
     .ql-container {
-      background: ${isDarkMode
-      ? 'linear-gradient(135deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.95) 100%)'
-      : 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.95) 100%)'
-    } !important;
+
       backdrop-filter: blur(20px) !important;
       -webkit-backdrop-filter: blur(20px) !important;
       border: 1px solid ${isDarkMode ? 'rgba(75, 85, 99, 0.3)' : 'rgba(209, 213, 219, 0.3)'} !important;
@@ -378,20 +376,20 @@ const CkEditor = ({ editorData, setEditorData }: CkEditorProps) => {
     }
     
     /* Floating particles effect */
-    .ql-container::before {
-      content: '' !important;
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      bottom: 0 !important;
-      background-image: 
-        radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.1) 0%, transparent 50%) !important;
-      pointer-events: none !important;
-      z-index: 0 !important;
-    }
+    // .ql-container::before {
+    //   content: '' !important;
+    //   position: absolute !important;
+    //   top: 0 !important;
+    //   left: 0 !important;
+    //   right: 0 !important;
+    //   bottom: 0 !important;
+    //   background-image: 
+    //     radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+    //     radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+    //     radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.1) 0%, transparent 50%) !important;
+    //   pointer-events: none !important;
+    //   z-index: 0 !important;
+    // }
     
     .ql-editor {
       color: ${isDarkMode ? '#f9fafb' : '#111827'} !important;
@@ -1717,11 +1715,10 @@ const CkEditor = ({ editorData, setEditorData }: CkEditorProps) => {
         />
 
 
-
-        <div className={`absolute -bottom-1 left-0 right-0 h-1 rounded-lg ${isDarkMode
+        {/* <div className={`absolute -bottom-1 left-0 right-0 h-1 rounded-lg ${isDarkMode
           ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500'
           : 'bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400'
-          } opacity-60`}></div>
+          } opacity-60`}></div> */}
 
       </div>
     </div>
