@@ -16,11 +16,12 @@ import LoadingIcon from '../ui/icons/LoadingIcon';
 import { Eye, EyeOff } from 'lucide-react';
 import Icon from '../ui/Icon';
 import XIcon from '../ui/icons/XIcon';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const defaultValue = {
   token: '',
   password: '',
+  password_confirmation: '',
 };
 
 type PasswordStrength = {
@@ -37,6 +38,7 @@ interface ChangePasswordFormSchema {
 const SetNewPasswordForm = ({ token }: ChangePasswordFormSchema) => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+  const params = useSearchParams();
 
   const [body, setBody] = useState(defaultValue);
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({
@@ -49,6 +51,7 @@ const SetNewPasswordForm = ({ token }: ChangePasswordFormSchema) => {
   const [passwordScore, setPasswordScore] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConf, setShowPasswordConf] = useState(false);
 
   useEffect(() => {
     const strength = {
@@ -74,25 +77,33 @@ const SetNewPasswordForm = ({ token }: ChangePasswordFormSchema) => {
     try {
       setIsSubmitting(true);
 
-      const { error, value } = SavePasswordByTokenFormSchema.validate(body);
+      const { error, value } = SavePasswordByTokenFormSchema.validate({
+        ...body,
+        token: params.get('token'),
+      });
 
       // Handle validation results
       if (error) {
         throw new Error(error.details[0].message);
       }
 
+      if (body.password !== body.password_confirmation) {
+        throw new Error('Passwords do not match.');
+      }
+
       const data: SavePasswordByTokenProps = {
-        token: body.token,
+        token: params.get('token') as string,
         password: body.password,
       };
 
-      const response: any = await dispatch(setPasswordByToken(body));
+      const response: any = await dispatch(setPasswordByToken(data));
 
       if (response.type === 'auth/verify-email-save-password/rejected') {
         throw new Error(response.payload.message);
       }
 
       toast.success(response.payload.message);
+      router.push('/auth/signin');
     } catch (error: any) {
       console.error(error);
       toast.error(error.message);
@@ -101,7 +112,11 @@ const SetNewPasswordForm = ({ token }: ChangePasswordFormSchema) => {
     }
   };
 
-  const isFormValid = body.password.trim() !== '' && passwordScore === 5;
+  const isFormValid =
+    body.password.trim() !== '' &&
+    passwordScore === 5 &&
+    body.password_confirmation.trim() !== '' &&
+    body.password_confirmation === body.password;
 
   return (
     <form className='w-full' onSubmit={handleSubmit}>
@@ -169,23 +184,30 @@ const SetNewPasswordForm = ({ token }: ChangePasswordFormSchema) => {
               </div>
             </div>
           </div>
-          <div>
+          <div className='relative'>
             <label
-              htmlFor='password'
+              htmlFor='password_confirmation'
               className='block mb-2 text-sm font-bold text-gray-900'
             >
               Password Confirmation
             </label>
             <Input
-              type='password'
-              name='password'
-              placeholder='Enter your password'
+              type={showPasswordConf ? 'text' : 'password'}
+              name='password_confirmation'
+              placeholder='Retype your password'
               className='w-full rounded-lg text-gray-900'
-              value={body.password}
+              value={body.password_confirmation}
               required={true}
               enableDarkMode={false}
               onChange={handleChange}
             />
+            <button
+              type='button'
+              onClick={() => setShowPasswordConf((prev) => !prev)}
+              className='absolute right-3 top-[69%] -translate-y-1/2 text-sm text-gray-600 hover:text-gray-900 focus:outline-none'
+            >
+              {showPasswordConf ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
         </div>
       </div>
@@ -205,7 +227,7 @@ const SetNewPasswordForm = ({ token }: ChangePasswordFormSchema) => {
             Processing...
           </span>
         ) : (
-          'Request'
+          'Create'
         )}
       </button>
     </form>
