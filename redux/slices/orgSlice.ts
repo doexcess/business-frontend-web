@@ -577,7 +577,7 @@ const orgSlice = createSlice({
       if (matchedOrg) {
         state.org = {
           ...matchedOrg,
-        } as any;
+        } as BusinessProfileFull | any;
       } else {
         state.error = 'Organization not found in local state';
       }

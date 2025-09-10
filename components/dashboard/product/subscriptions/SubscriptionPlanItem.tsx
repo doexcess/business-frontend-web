@@ -5,7 +5,7 @@ import moment from 'moment'; // Import moment.js
 
 import { SubscriptionPlan } from '@/types/subscription-plan';
 import { capitalize } from 'lodash';
-import { PencilIcon, VerifiedIcon } from 'lucide-react';
+import { PencilIcon, VerifiedIcon, X } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import UpdateSubscriptionPlanForm from './UpdateSubscriptionPlanForm';
 import { Button } from '@/components/ui/Button';
@@ -100,8 +100,19 @@ const SubscriptionPlanItem = ({
         isOpen={isPlanModalOpen}
         onClose={() => setIsPlanModalOpen(false)}
         title='Update plan'
-        className='max-w-xl my-[50%] overflow-y-auto'
+        className='relative max-w-xl my-[50%] overflow-y-auto'
       >
+        {/* Close Icon */}
+        <button
+          onClick={() => setIsPlanModalOpen(false)}
+          className='absolute top-3 right-3 text-gray-500 hover:text-gray-800'
+        >
+          <X
+            size={20}
+            className='dark:text-white text-black-1 hover:dark:text-slate-500'
+          />
+        </button>
+
         <UpdateSubscriptionPlanForm setIsPlanModalOpen={setIsPlanModalOpen} />
       </Modal>
     </>

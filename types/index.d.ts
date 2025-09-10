@@ -47,5 +47,11 @@ export interface GenericResponse {
   message: string;
 }
 
+export interface GenericResponseAlt<T> {
+  statusCode: number;
+  message: string;
+  data: T;
+}
+
 // Export order types
 export * from './order';

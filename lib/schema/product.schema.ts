@@ -216,3 +216,63 @@ export const updateTicketSchema = Joi.object({
   ticket_tiers: Joi.array().items(updateTicketTierSchema).optional(),
 });
 export interface UpdateTicketProps extends Partial<CreateTicketProps> {}
+
+// Digital Product - Create
+export const createDigitalProductSchema = Joi.object({
+  title: Joi.string().trim().min(3).max(255).required(),
+  description: Joi.string().trim().min(10).required(),
+  category_id: Joi.string()
+    .guid({ version: ['uuidv4'] })
+    .required(),
+  multimedia_id: Joi.string()
+    .guid({ version: ['uuidv4'] })
+    .required(),
+  multimedia_zip_id: Joi.string()
+    .guid({ version: ['uuidv4'] })
+    .required(),
+  status: Joi.string()
+    .valid(...Object.values(ProductStatus))
+    .optional(),
+  price: Joi.number().min(0).required(),
+  original_price: Joi.number().min(0).optional(),
+  keywords: Joi.string().trim().optional(),
+});
+
+export interface CreateDigitalProductProps {
+  title: string;
+  description: string;
+  category_id: string;
+  multimedia_id: string;
+  multimedia_zip_id: string;
+  status: ProductStatus;
+  price: number;
+  original_price: number;
+  keywords?: string;
+}
+
+// Digital Product - Update
+export const updateDigitalProductSchema = Joi.object({
+  title: Joi.string().min(3).max(255).optional(),
+  price: Joi.number().min(0).optional(),
+  original_price: Joi.number().min(0).optional(),
+  description: Joi.string().min(10).optional(),
+  keywords: Joi.string().allow(null, '').optional(),
+  category_id: Joi.string().uuid().optional(),
+  multimedia_id: Joi.string().uuid().optional(),
+  multimedia_zip_id: Joi.string().uuid().optional(),
+  status: Joi.string()
+    .valid(...Object.values(ProductStatus))
+    .optional(),
+});
+
+export interface UpdateDigitalProductProps {
+  title?: string;
+  price?: number;
+  original_price?: number;
+  description?: string;
+  keywords?: string;
+  category_id?: string;
+  multimedia_id?: string;
+  multimedia_zip_id?: string;
+  status?: ProductStatus;
+}
