@@ -174,9 +174,10 @@ const ComposeEmailFormContent = ({
 
   return (
     <>
-      <div className='flex flex-col lg:flex-row gap-2 lg:items-stretch lg:max-h-screen'>
+      <div className='flex flex-col lg:flex-row gap-2 lg:items-stretch lg:min-h-screen'>
+
         <form className='flex-1' onSubmit={handleSubmit}>
-          <div className='space-y-6 p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700'>
+          <div className='h-full space-y-6 p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700'>
             <h1 className='text-xl font-bold text-gray-900 dark:text-white'>
               Compose email
             </h1>
@@ -312,25 +313,24 @@ const ComposeEmailFormContent = ({
             />
           </div>
         </form>
+
         <div className='flex-1 border border-dashed rounded-lg overflow-y-auto'>
-          <div className='space-y-6 p-4 sm:p-6 md:p-8 w-full'>
+          <div className='h-full space-y-6 p-4 sm:p-6 md:p-8 w-full'>
             <div className='flex flex-col items-center justify-center pt-8 mx-auto pt:mt-0 '>
-              <a
-                href='#'
-                className='flex items-center justify-center mb-8 text-2xl font-semibold lg:mb-10 dark:text-white'
-              >
+              <a href='#'
+                className='flex items-center justify-center mb-8 text-2xl font-semibold lg:mb-10 dark:text-white'>
                 <Image
-                  src={'/logo.png'}
-                  width={150}
-                  height={150}
+                  src={organization?.logo_url || '/logopng'}
+                  width={100}
+                  height={100}
                   alt='Logo'
                   className='m-auto block dark:hidden'
                   priority
                 />
                 <Image
-                  src={'/logo-white.png'}
-                  width={150}
-                  height={150}
+                  src={organization?.logo_url || '/logo-white.png'}
+                  width={100}
+                  height={100}
                   alt='Logo'
                   className='m-auto hidden dark:block'
                   priority
@@ -343,6 +343,7 @@ const ComposeEmailFormContent = ({
             </div>
           </div>
         </div>
+
       </div>
     </>
   );
