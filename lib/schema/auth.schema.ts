@@ -138,6 +138,7 @@ export interface RequestPasswordResetProps {
 export const SavePasswordByTokenFormSchema = Joi.object({
   token: Joi.string().required(),
   password: Joi.string().required(),
+  password_confirmation: Joi.string().required(),
 });
 export interface SavePasswordByTokenProps {
   token: string;

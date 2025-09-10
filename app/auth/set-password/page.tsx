@@ -9,10 +9,14 @@ import { ArrowRight, ChevronRight } from 'lucide-react';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import React from 'react';
 
 const SetPassword = () => {
-  const { userDetails, status, token } = useNewAccountToken();
+  const params = useSearchParams();
+  const { userDetails, status } = useNewAccountToken();
+
+  const token = params.get('token');
 
   const renderContent = () => {
     switch (status) {

@@ -106,13 +106,12 @@ export enum Gender {
 }
 
 export enum IdType {
-  INTERNATIONAL_PASSPORT = "international-passport",
-  NATIONAL_IDENTITY_CARD_NIN_SLIP = "national-identity-card-nin-slip",
-  DRIVERS_LICENSE = "drivers-license",
-  VOTERS_CARD = "voters-card",
-  RESIDENCE_PERMIT = "residence-permit",
+  INTERNATIONAL_PASSPORT = 'international-passport',
+  NATIONAL_IDENTITY_CARD_NIN_SLIP = 'national-identity-card-nin-slip',
+  DRIVERS_LICENSE = 'drivers-license',
+  VOTERS_CARD = 'voters-card',
+  RESIDENCE_PERMIT = 'residence-permit',
 }
-
 
 export enum SubscriptionPeriod {
   FREE = 'free',
@@ -292,8 +291,8 @@ export const oneMonthAgo = () => {
 };
 export const now = new Date();
 
-export const shortenId = (id: string) => {
-  return id.split('-')[0];
+export const shortenId = (id?: string) => {
+  return id?.split('-')[0];
 };
 
 export enum ActionKind {

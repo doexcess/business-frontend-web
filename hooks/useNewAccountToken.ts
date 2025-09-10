@@ -59,6 +59,8 @@ export const useNewAccountToken = () => {
     initialize();
   }, [params, dispatch]);
 
+  console.log();
+
   return {
     userDetails,
     status,

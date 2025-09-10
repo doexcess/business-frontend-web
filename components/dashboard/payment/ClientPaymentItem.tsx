@@ -1,6 +1,6 @@
 import React from 'react';
 import { Payment } from '@/types/payment';
-import { formatMoney } from '@/lib/utils';
+import { formatMoney, shortenId } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import {
   Eye,
@@ -82,7 +82,7 @@ const ClientPaymentItem: React.FC<ClientPaymentItemProps> = ({
         <div className='flex-1'>
           <div className='flex items-center gap-3 mb-3'>
             <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>
-              Payment #{payment.transaction_id}
+              Payment #{shortenId(payment.id)}
             </h3>
             <span
               className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(
