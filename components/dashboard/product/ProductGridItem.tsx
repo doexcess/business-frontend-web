@@ -1,17 +1,27 @@
 import Icon from '@/components/ui/Icon';
-import { formatMoney, ProductStatus } from '@/lib/utils';
-import { Course, TicketProduct, TicketTier } from '@/types/product';
+import {
+  formatMoney,
+  getProductPath,
+  ProductStatus,
+  ProductType,
+} from '@/lib/utils';
+import {
+  Course,
+  DigitalProduct,
+  TicketProduct,
+  TicketTier,
+} from '@/types/product';
 import Link from 'next/link';
 import React from 'react';
 
-type ProductGridItemType = 'course' | 'ticket';
+type ProductGridItemType = 'course' | 'ticket' | 'digital_product';
 
 interface ProductGridItemProps {
   id: string;
   title: string;
   imageSrc: string;
-  type: ProductGridItemType;
-  data?: Course | TicketProduct;
+  type: ProductType;
+  data?: Course | TicketProduct | any;
 }
 
 const ProductGridItem = ({
@@ -22,12 +32,13 @@ const ProductGridItem = ({
   data,
 }: ProductGridItemProps) => {
   let formattedPrice = '';
-  let href = `/products/${
-    type === 'ticket' ? 'tickets' : 'courses'
-  }/${id}/edit`;
+
+  const product_path = getProductPath(type);
+
+  let href = `/products/${product_path}/${id}/edit`;
 
   if (data) {
-    if (type === 'ticket') {
+    if (type === ProductType.TICKET) {
       const ticketData = data as TicketProduct;
       const tiers = ticketData.ticket?.ticket_tiers || [];
 
@@ -41,9 +52,15 @@ const ProductGridItem = ({
           defaultTier.currency
         )}+</s> ${formatMoney(+defaultTier.amount, defaultTier.currency)}+`;
       }
-    } else if (type === 'course') {
+    } else if (type === ProductType.COURSE) {
       const courseData = data as Course;
       formattedPrice = formatMoney(+courseData.price, courseData.currency);
+    } else if (type === ProductType.DIGITAL_PRODUCT) {
+      const digitalProductData = data as DigitalProduct;
+      formattedPrice = formatMoney(
+        +digitalProductData.price,
+        digitalProductData.currency
+      );
     }
   }
 

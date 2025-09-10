@@ -99,7 +99,6 @@ export const uploadImage = createAsyncThunk(
   }
 );
 
-
 export const uploadVideo = createAsyncThunk(
   'multimedia-upload/video',
   async ({
@@ -163,6 +162,35 @@ export const uploadDocument = createAsyncThunk(
   }
 );
 
+export const uploadRawDocument = createAsyncThunk(
+  'multimedia-upload/raw-document',
+  async ({
+    form_data,
+    business_id,
+  }: {
+    form_data: FormData;
+    business_id?: string;
+  }) => {
+    const headers: Record<string, any> = {
+      'Content-Type': 'multipart/form-data',
+    };
+
+    if (business_id !== undefined) {
+      headers['Business-Id'] = business_id;
+    }
+
+    const { data } = await api.post<UploadMediaResponse>(
+      '/multimedia-upload/raw-document',
+      form_data,
+      { headers }
+    );
+
+    return {
+      multimedia: data.data,
+    };
+  }
+);
+
 const multimediaSlice = createSlice({
   name: 'multimedia',
   initialState,
@@ -210,6 +238,18 @@ const multimediaSlice = createSlice({
       .addCase(uploadDocument.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to upload document';
+      })
+      .addCase(uploadRawDocument.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(uploadRawDocument.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(uploadRawDocument.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.error.message || 'Failed to upload raw/zip document';
       })
       .addCase(uploadVideo.pending, (state) => {
         state.loading = true;

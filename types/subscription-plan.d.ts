@@ -1,3 +1,5 @@
+import { ProductDetails } from './product';
+
 export interface SubscriptionPlan {
   id: string;
   name: string;
@@ -13,6 +15,7 @@ export interface SubscriptionPlan {
   subscription_plan_prices: SubscriptionPricing[];
   subscription_plan_roles: SubscriptionRole[];
   creator: User;
+  product: ProductDetails;
 }
 
 export interface Business {

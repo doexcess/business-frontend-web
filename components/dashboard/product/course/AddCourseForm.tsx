@@ -84,12 +84,13 @@ const AddCourseForm = () => {
           form_data: formData,
           business_id: org?.id,
           onUploadProgress: (event) => {
-            const percent = Math.round((event.loaded * 100) / (event.total || 1));
+            const percent = Math.round(
+              (event.loaded * 100) / (event.total || 1)
+            );
             setUploadProgress(percent);
-          }
+          },
         })
       );
-
 
       if (response.type === 'multimedia-upload/image/rejected') {
         throw new Error(response.payload.message);
@@ -104,7 +105,7 @@ const AddCourseForm = () => {
     } catch (error) {
       toast.error('Failed to upload image');
     } finally {
-      setUploadProgress(0)
+      setUploadProgress(0);
       setUploadingImage(false);
     }
   };
@@ -183,7 +184,6 @@ const AddCourseForm = () => {
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
         >
-        
           {imagePreview ? (
             <img
               src={imagePreview}
@@ -198,7 +198,9 @@ const AddCourseForm = () => {
                 className='mb-2 w-10 h-10'
               />
               <p className='font-medium'>Upload, Drag or drop image</p>
-              <p className='text-xs'>Supported Format: png, jpeg. Max size is 5MB</p>
+              <p className='text-xs'>
+                Supported Format: png, jpeg. Max size is 5MB
+              </p>
             </>
           )}
 
@@ -225,8 +227,6 @@ const AddCourseForm = () => {
             onChange={handleFileChange}
           />
         </div>
-
-
 
         {/* Category and Price Fields */}
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>

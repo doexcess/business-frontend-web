@@ -68,12 +68,14 @@ export enum PurchaseItemType {
   COURSE = 'COURSE',
   TICKET = 'TICKET',
   SUBSCRIPTION = 'SUBSCRIPTION',
+  DIGITAL_PRODUCT = 'DIGITAL_PRODUCT',
 }
 
 export enum ProductType {
   COURSE = 'COURSE',
   TICKET = 'TICKET',
   SUBSCRIPTION = 'SUBSCRIPTION',
+  DIGITAL_PRODUCT = 'DIGITAL_PRODUCT',
 }
 
 export enum CouponType {
@@ -424,3 +426,27 @@ export const safeRouterPush = (router: any, url: string) => {
     router.push(url);
   }
 };
+
+export const getProductPath = (type: ProductType) => {
+  let path = '';
+  switch (type) {
+    case ProductType.COURSE:
+      path = 'courses';
+      break;
+    case ProductType.DIGITAL_PRODUCT:
+      path = 'digital-products';
+      break;
+    case ProductType.SUBSCRIPTION:
+      path = 'subscriptions';
+      break;
+    case ProductType.TICKET:
+      path = 'tickets';
+      break;
+    default:
+      break;
+  }
+
+  return path;
+};
+
+export const PAGINATION_LIMIT = 20;

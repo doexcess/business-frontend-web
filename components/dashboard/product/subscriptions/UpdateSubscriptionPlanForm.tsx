@@ -9,7 +9,12 @@ import {
   UpdateSubscriptionPlanProps,
   updateSubscriptionPlanSchema,
 } from '@/lib/schema/subscription.schema';
-import { cn, formatMoney, SubscriptionPeriod } from '@/lib/utils';
+import {
+  cn,
+  formatMoney,
+  ProductStatus,
+  SubscriptionPeriod,
+} from '@/lib/utils';
 import {
   Select,
   SelectContent,
@@ -32,6 +37,7 @@ import useSubscriptionPlan from '@/hooks/page/useSubscriptionPlan';
 import { useParams } from 'next/navigation';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
+import useProductCategory from '@/hooks/page/useProductCategory';
 
 interface Props {
   setIsPlanModalOpen: (value: React.SetStateAction<boolean>) => void;
@@ -40,6 +46,9 @@ interface Props {
 const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
   const params = useParams();
   const dispatch = useDispatch<AppDispatch>();
+
+  const { categories } = useProductCategory();
+
   const { profile } = useSelector((state: RootState) => state.auth);
   const { org } = useSelector((state: RootState) => state.org);
   const { subscription_plan: plan } = useSelector(
@@ -142,6 +151,7 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
       setBody((prev) => ({
         ...prev!,
         cover_image: response.payload.multimedia.url,
+        multimedia_id: response.payload.multimedia.id,
       }));
       toast.success('Image uploaded successfully');
     } catch (error) {
@@ -154,6 +164,7 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!isFormValid) return;
 
     setIsSubmitting(true);
@@ -205,9 +216,9 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
   const isFormValid =
     body?.name &&
     body?.description &&
+    body?.category_id &&
     body?.cover_image &&
-    (body?.subscription_plan_prices?.length || 0) > 0 &&
-    (body?.subscription_plan_roles?.length || 0) > 0;
+    (body?.subscription_plan_prices?.length || 0) > 0;
 
   const periods = Object.values(SubscriptionPeriod).filter(
     (period) => period !== SubscriptionPeriod.FREE
@@ -288,6 +299,9 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
         name: subscription_plan.name || '',
         description: subscription_plan.description || '',
         cover_image: subscription_plan.cover_image || '',
+        category_id: subscription_plan?.product?.category.id || '',
+        status: subscription_plan?.product?.status || ProductStatus.DRAFT,
+        multimedia_id: subscription_plan?.product?.multimedia.id || '',
         subscription_plan_prices: (
           subscription_plan.subscription_plan_prices || []
         ).map((price) => ({
@@ -337,6 +351,32 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
             required
           />
         </div>
+
+        {/* Category and Price Fields */}
+        <div>
+          <label className='text-sm font-medium mb-1 block'>
+            Category <span className='text-red-500'>*</span>
+          </label>
+          <Select
+            value={body?.category_id!}
+            onValueChange={(value) =>
+              setBody((prev) => ({ ...prev, category_id: value }))
+            }
+            required
+          >
+            <SelectTrigger id='category' className='w-full'>
+              <SelectValue placeholder='Select your category' />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category, index) => (
+                <SelectItem key={index} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <div>
           <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
             Description
@@ -478,6 +518,33 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
           </div>
         ))}
       </section>
+
+      <div>
+        <label className='font-medium mb-1 block text-gray-700 dark:text-white'>
+          Make Public? <span className='text-red-500'>*</span>
+        </label>
+        <Select
+          value={body?.status!}
+          onValueChange={(value) =>
+            setBody((prev) => ({ ...prev, status: value as any }))
+          }
+          required
+        >
+          <SelectTrigger id='status' className='w-full'>
+            <SelectValue placeholder='Select status' />
+          </SelectTrigger>
+          <SelectContent>
+            {[
+              [ProductStatus.DRAFT, 'No'],
+              [ProductStatus.PUBLISHED, 'Yes'],
+            ].map((status, index) => (
+              <SelectItem key={index} value={status[0]}>
+                {status[1]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* Submit */}
       <div className=' flex gap-2'>

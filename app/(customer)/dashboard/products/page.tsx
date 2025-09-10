@@ -24,7 +24,7 @@ const Products = () => {
   const [search, setSearch] = useState('');
   const [priceRange, setPriceRange] = useState('All Prices');
   const [modalOpenId, setModalOpenId] = useState<string | null>(null);
-  const [modalType, setModalType] = useState<'COURSE' | 'TICKET' | null>(null);
+  const [modalType, setModalType] = useState<ProductType | null>(null);
   const {
     products = [],
     count = 0,
@@ -44,7 +44,7 @@ const Products = () => {
   );
 
   // Helper: open modal with type
-  const handleOpenModal = (id: string, type: 'COURSE' | 'TICKET') => {
+  const handleOpenModal = (id: string, type: ProductType) => {
     setModalOpenId(id);
     setModalType(type);
   };
