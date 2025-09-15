@@ -338,3 +338,19 @@ body {
   backdrop-filter: blur(6px) !important;
   -webkit-backdrop-filter: blur(6px) !important;
 }
+
+/* Make the bar thicker and change color */
+#nprogress .bar {
+  background: #4045e1 !important; /* DoExcess purple */
+  height: 4px !important; /* custom thickness */
+}
+
+/* Remove the spinner (optional) */
+#nprogress .spinner {
+  display: none !important;
+}
+
+/* Customize the peg (the trailing glow effect) */
+#nprogress .peg {
+  box-shadow: 0 0 10px #4045e1, 0 0 5px #4045e1 !important;
+}

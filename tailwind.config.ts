@@ -2,7 +2,7 @@ import type { Config } from 'tailwindcss';
 const flowbite = require('flowbite-react/tailwind');
 
 const config: Config = {
-  darkMode: 'class',
+  darkMode: ['class'],
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -17,33 +17,51 @@ const config: Config = {
       },
       animation: {
         shimmer: 'shimmer 1.5s infinite',
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up': 'accordion-up 0.2s ease-out',
       },
       keyframes: {
         shimmer: {
-          '0%': { backgroundPosition: '-500px 0' },
-          '100%': { backgroundPosition: '500px 0' },
+          '0%': {
+            backgroundPosition: '-500px 0',
+          },
+          '100%': {
+            backgroundPosition: '500px 0',
+          },
+        },
+        'accordion-down': {
+          from: {
+            height: '0',
+          },
+          to: {
+            height: 'var(--radix-accordion-content-height)',
+          },
+        },
+        'accordion-up': {
+          from: {
+            height: 'var(--radix-accordion-content-height)',
+          },
+          to: {
+            height: '0',
+          },
         },
       },
-
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-
         'gradient-light':
           'linear-gradient(57deg, #edeefc 50%, #e7fdf2 91.95%, #f7f8f8 91.95%)',
       },
       boxShadow: {
         light: '0px 2px 14px 0px rgba(0, 0, 0, 0.04)',
       },
-
       colors: {
         black: {
-          1: '#00214F',
-          2: '#344054',
+          '1': '#00214F',
+          '2': '#344054',
         },
         primary: {
-          main: '#4045e1',
           '100': '#dbeafe',
           '200': '#bfdbfe',
           '300': '#93c5fd',
@@ -54,6 +72,7 @@ const config: Config = {
           '800': '#1e40af',
           '900': '#1e3a8a',
           '950': '#172554',
+          main: '#4045e1',
           faded: '#9a9df0',
           grad: {
             main: 'linear-gradient(57deg, #EDEEFC 50%, #E7FDF2 91.95%, #F7F8F8 91.95%))',

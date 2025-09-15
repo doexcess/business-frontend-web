@@ -106,8 +106,6 @@ const Orders = () => {
   };
 
   const handleDownload = (url: string) => {
-    console.log(url);
-
     // Path to your zip file (public folder in Next.js)
     const fileUrl = url; // put the .zip inside /public/files/
     const link = document.createElement('a');
@@ -411,7 +409,7 @@ const Orders = () => {
                       Business Name
                     </p>
                     <Link
-                      href={`${process.env.NEXT_PUBLIC_WEBSITE_URL}/${selectedPayment.business_info.id}`}
+                      href={`${process.env.NEXT_PUBLIC_WEBSITE_URL}/b/${selectedPayment.business_info.business_slug}`}
                       target='_blank'
                       className='hover:underline font-medium text-gray-900 dark:text-white'
                     >

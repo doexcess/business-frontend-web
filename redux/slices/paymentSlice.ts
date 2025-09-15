@@ -124,7 +124,7 @@ export const createPayment = createAsyncThunk(
 // Async thunk to verify a payment
 export const verifyPayment = createAsyncThunk(
   'payment/verify',
-  async (id: string, { rejectWithValue }) => {
+  async (id: number, { rejectWithValue }) => {
     try {
       const response = await api.post<VerifyPaymentResponse>(
         `/payment/verify/${id}`

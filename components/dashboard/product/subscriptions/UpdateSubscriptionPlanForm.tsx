@@ -10,6 +10,7 @@ import {
   updateSubscriptionPlanSchema,
 } from '@/lib/schema/subscription.schema';
 import {
+  baseUrl,
   cn,
   formatMoney,
   ProductStatus,
@@ -22,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PlusIcon, XIcon } from 'lucide-react';
+import { Globe, PlusIcon, XIcon } from 'lucide-react';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
 import { toast } from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
@@ -215,6 +216,7 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
 
   const isFormValid =
     body?.name &&
+    body?.slug &&
     body?.description &&
     body?.category_id &&
     body?.cover_image &&
@@ -303,7 +305,7 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
         status: subscription_plan?.product?.status || ProductStatus.DRAFT,
         multimedia_id: subscription_plan?.product?.multimedia.id || '',
         subscription_plan_prices: (
-          subscription_plan.subscription_plan_prices || []
+          subscription_plan?.subscription_plan_prices || []
         ).map((price) => ({
           ...price,
           id: price.id,
@@ -313,6 +315,7 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
         })),
         subscription_plan_roles:
           subscription_plan.subscription_plan_roles || [],
+        slug: subscription_plan?.product.slug,
       });
 
       setImagePreview(subscription_plan.cover_image);
@@ -350,6 +353,33 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
             onChange={handleInputChange}
             required
           />
+        </div>
+
+        <div>
+          <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
+            Shortlink <span className='text-red-500'>*</span>
+          </label>
+          <div className='relative'>
+            <Globe className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4' />
+            <Input
+              type='text'
+              name='slug'
+              value={body?.slug!}
+              onChange={handleInputChange}
+              required
+              className='w-full rounded-md pl-9'
+            />
+          </div>
+
+          {/* Live preview */}
+          {body?.slug && (
+            <p className='mt-2 text-sm '>
+              Preview:{' '}
+              <span className='text-primary-main dark:text-primary-faded font-medium'>
+                {baseUrl}/{body.slug}
+              </span>
+            </p>
+          )}
         </div>
 
         {/* Category and Price Fields */}

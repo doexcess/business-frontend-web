@@ -86,6 +86,7 @@ export interface Payment {
 
 interface BusinessInfo {
   id: string;
+  business_slug: string;
   business_name: string;
   business_description: string;
   business_size: string;

@@ -2,6 +2,7 @@ import XIcon from '@/components/ui/icons/XIcon';
 import Badge from '@/components/ui/SystemBadge';
 import { getColor, NOTIFICATION_STATUS } from '@/lib/utils';
 import { RootState } from '@/redux/store';
+import { stat } from 'fs';
 import { capitalize } from 'lodash';
 import moment from 'moment-timezone';
 import Image from 'next/image';
@@ -18,6 +19,7 @@ interface ViewNotificationProps {
 const ViewNotification = ({
   setIsNotificationModalOpen,
 }: ViewNotificationProps) => {
+  const { org } = useSelector((state: RootState) => state.org);
   const { notification } = useSelector(
     (state: RootState) => state.notification
   );
@@ -108,30 +110,30 @@ const ViewNotification = ({
           /> */}
           <div className='flex-1 border border-dashed rounded-lg'>
             <div className='space-y-6 p-4 sm:p-6 md:p-8 w-full'>
-              <div className='flex flex-col items-center justify-center pt-8 mx-auto pt:mt-0 '>
+              <div className='flex flex-col items-start justify-start pt-8 mx-auto pt:mt-0 '>
                 <a
                   href='#'
                   className='flex items-center justify-center mb-8 text-2xl font-semibold lg:mb-10 dark:text-white text-gray-600'
                 >
                   <Image
-                    src={'/logo.png'}
-                    width={150}
-                    height={150}
+                    src={org?.logo_url!}
+                    width={70}
+                    height={70}
                     alt='Logo'
                     className='m-auto block dark:hidden'
                     priority
                   />
                   <Image
-                    src={'/logo-white.png'}
-                    width={150}
-                    height={150}
+                    src={org?.logo_url!}
+                    width={70}
+                    height={70}
                     alt='Logo'
                     className='m-auto hidden dark:block'
                     priority
                   />
                 </a>
 
-                <div className='mt-3 overflow-hidden dark:text-white text-gray-600'>
+                <div className='overflow-hidden dark:text-white text-gray-600 w-full'>
                   <div
                     dangerouslySetInnerHTML={{ __html: notification?.message! }}
                   />

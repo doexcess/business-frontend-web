@@ -349,7 +349,7 @@ const ScheduleEmailFormContent = ({
                 />
               </a>
 
-              <div className='mt-3 overflow-hidden dark:text-white text-gray-600 max-h-screen lg:h-[68vh] overflow-y-auto'>
+              <div className='mt-3 overflow-hidden dark:text-white text-gray-600 max-h-screen lg:h-[68vh] overflow-y-auto w-full'>
                 <div dangerouslySetInnerHTML={{ __html: editorData }} />
               </div>
             </div>

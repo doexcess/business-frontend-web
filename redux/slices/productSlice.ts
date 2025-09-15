@@ -7,10 +7,11 @@ import {
   ProductDetails,
   ProductsResponse,
 } from '@/types/product';
+import { Product } from '@/types/org';
 
 interface ProductState {
-  products: ProductDetails[];
-  product: ProductDetails | null;
+  products: Product[];
+  product: Product | null;
   digital_products: DigitalProduct[];
   count: number;
   loading: boolean;
@@ -74,14 +75,14 @@ export const fetchProductsByOrganization = createAsyncThunk<
  * Fetch a single public product by ID
  */
 export const fetchPublicProduct = createAsyncThunk<
-  { statusCode: number; data: ProductDetails },
+  { statusCode: number; data: Product },
   string,
   { rejectValue: string }
 >('product/fetchPublicProduct', async (product_id, { rejectWithValue }) => {
   try {
     const { data } = await api.get<{
       statusCode: number;
-      data: ProductDetails;
+      data: Product;
     }>(`/product-general/public/${product_id}`);
     return data;
   } catch (error: any) {
@@ -168,7 +169,7 @@ const productSlice = createSlice({
         fetchPublicProduct.fulfilled,
         (
           state,
-          action: PayloadAction<{ statusCode: number; data: ProductDetails }>
+          action: PayloadAction<{ statusCode: number; data: Product }>
         ) => {
           state.loading = false;
           state.product = action.payload.data;

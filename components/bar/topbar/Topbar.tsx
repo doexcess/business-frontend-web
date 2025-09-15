@@ -43,7 +43,7 @@ const Topbar = () => {
               className='rounded-lg block dark:hidden'
             />
           </Link>
-          <Search />
+          {/* <Search /> */}
           {/* Mobile nav */}
           <MobileNav />
         </div>

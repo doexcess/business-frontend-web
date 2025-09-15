@@ -2,6 +2,8 @@
 import Joi from 'joi';
 import { ProductStatus, SubscriptionPeriod } from '../utils';
 import { SubscriptionPlanBasic } from '@/types/subscription-plan';
+import { Product } from '@/types/org';
+import { ProductDetails } from '@/types/product';
 
 // Price schema
 export const subscriptionPlanPriceSchema = Joi.object({
@@ -24,6 +26,10 @@ export const subscriptionPlanRoleSchema = Joi.object({
 // Main schema
 export const createSubscriptionPlanSchema = Joi.object({
   name: Joi.string().max(255).required(),
+  slug: Joi.string().min(2).max(36).required(),
+  status: Joi.string()
+    .valid(...Object.values(ProductStatus))
+    .required(),
   description: Joi.string().optional().allow('', null),
   cover_image: Joi.string().uri().max(2048).optional().allow('', null),
   business_id: Joi.string().required(),
@@ -43,6 +49,7 @@ export const createSubscriptionPlanSchema = Joi.object({
 // Update schema (fields optional, but structure validated)
 export const updateSubscriptionPlanSchema = Joi.object({
   name: Joi.string().max(255).optional(),
+  slug: Joi.string().min(2).max(36).optional(),
   category_id: Joi.string().required(),
   description: Joi.string().optional().allow('', null),
   cover_image: Joi.string().uri().max(2048).optional().allow('', null),
@@ -77,6 +84,7 @@ export interface SubscriptionPlanRoleProps {
 
 export interface CreateSubscriptionPlanProps {
   name: string;
+  slug: string;
   description?: string | null;
   cover_image?: string | null;
   category_id?: string | null;
@@ -90,6 +98,7 @@ export interface CreateSubscriptionPlanProps {
 
 export interface UpdateSubscriptionPlanProps {
   name?: string;
+  slug?: string;
   description?: string | null;
   cover_image?: string | null;
   category_id?: string;
@@ -97,4 +106,5 @@ export interface UpdateSubscriptionPlanProps {
   status?: ProductStatus;
   subscription_plan_prices?: SubscriptionPlanPriceProps[];
   subscription_plan_roles?: SubscriptionPlanRoleProps[];
+  product?: ProductDetails;
 }

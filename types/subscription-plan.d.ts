@@ -1,3 +1,4 @@
+import { SubscriptionPlanPrice } from './org';
 import { ProductDetails } from './product';
 
 export interface SubscriptionPlan {
@@ -11,6 +12,24 @@ export interface SubscriptionPlan {
   updated_at: string;
   deleted_at: string | null;
   business: Business;
+  subscriptions: SubscriptionPlanBasic[];
+  subscription_plan_prices: SubscriptionPlanPrice[];
+  subscription_plan_roles: SubscriptionRole[];
+  creator: User;
+  product: ProductDetails;
+}
+
+export interface SubscriptionPlanDetails {
+  id: string;
+  name: string;
+  description: string | null;
+  cover_image: string | null;
+  business_id: string;
+  creator_id: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  business_info: Business;
   subscriptions: SubscriptionPlanBasic[];
   subscription_plan_prices: SubscriptionPricing[];
   subscription_plan_roles: SubscriptionRole[];

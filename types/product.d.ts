@@ -1,5 +1,6 @@
 import { ProductStatus, ProductType, TicketTierStatus } from '@/lib/utils';
 import { Media } from './multimedia';
+import { Product } from './org';
 
 export interface BusinessInfo {
   id: string;
@@ -102,8 +103,10 @@ export enum Productinterface {
 export interface ProductDetails {
   id: string;
   title: string;
+  slug: string;
   description: string | null;
   price: string | null;
+  original_price: string | null;
   currency: string;
   keywords: string | null;
   metadata: any | null;
@@ -123,7 +126,7 @@ export interface ProductDetails {
 
 export interface ProductsResponse {
   statusCode: number;
-  data: ProductDetails[];
+  data: Product[];
   count: number;
 }
 
@@ -157,8 +160,10 @@ export interface CreateProductResponse {
 export interface Course {
   id: string;
   title: string;
+  slug: string;
   description: string;
   price: string; // You can change this to `number` if it's numeric in actual use
+  original_price: string; // You can change this to `number` if it's numeric in actual use
   currency: string;
   keywords: string | null;
   metadata: any | null; // Define a specific shape if metadata has a known structure
@@ -182,8 +187,10 @@ export interface CourseResponse {
 export interface CourseDetails {
   id: string;
   title: string;
+  slug: string;
   description: string;
   price: string;
+  original_price: string;
   currency: string;
   keywords: string | null;
   metadata: any | null;
@@ -222,7 +229,9 @@ export interface EnrolledCourseData {
     id: string;
     business_id: string;
     title: string;
+    slug: string;
     price: string;
+    original_price: string;
     description: string;
     keywords: string | null;
     metadata: any | null;
@@ -275,6 +284,7 @@ export interface Module {
     category_id: string;
     creator_id: string;
     title: string;
+    slug: string;
     description: string;
     keywords: string | null;
     metadata: any; // Use a more specific type if known
@@ -283,6 +293,7 @@ export interface Module {
     published_at: string;
     archived_at: string | null;
     price: string;
+    original_price: string;
     currency: string;
     original_price: string | null;
     multimedia_id: string;
@@ -379,6 +390,7 @@ export interface TicketPurchase {
 export interface TicketProduct {
   id: string;
   title: string;
+  slug: string;
   description: string;
   keywords: string | null;
   metadata: any;
@@ -386,6 +398,7 @@ export interface TicketProduct {
   published_at: string;
   archived_at: string | null;
   price: string;
+  original_price: string;
   currency: string;
   multimedia_id: string;
   creator_id: string;
@@ -438,6 +451,7 @@ export interface TicketTierWithTicketAndProduct {
   id: string;
   ticket_id: string;
   name: string;
+  slug: string;
   description: string | null;
   quantity: number | null;
   remaining_quantity: number | null;
@@ -468,6 +482,7 @@ export interface TicketTierWithTicketAndProduct {
       category_id: string;
       creator_id: string;
       title: string;
+      slug: string;
       description: string;
       keywords: string | null;
       metadata: any;
@@ -477,6 +492,7 @@ export interface TicketTierWithTicketAndProduct {
       published_at: string;
       archived_at: string | null;
       price: string;
+      original_price: string;
       currency: string;
       original_price: string | null;
       multimedia_id: string;
@@ -493,6 +509,7 @@ export interface TicketTierWithTicketAndProduct {
 export interface DigitalProduct {
   id: string;
   title: string;
+  slug: string;
   description: string;
   price: string;
   original_price?: string;

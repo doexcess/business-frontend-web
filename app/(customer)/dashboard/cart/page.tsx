@@ -7,6 +7,7 @@ import {
   ProductType,
   isBrowser,
   safeRouterPush,
+  reformatText,
 } from '@/lib/utils';
 import PageHeading from '@/components/PageHeading';
 import toast from 'react-hot-toast';
@@ -26,11 +27,18 @@ import {
   CheckCircle,
   HelpCircle,
 } from 'lucide-react';
+import Link from 'next/link';
+import { capitalize } from 'lodash';
+import { applyCoupon, clearCouponData } from '@/redux/slices/couponSlice';
+
+import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
 
 function DashboardCart() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const { cart, loading, error } = useCart();
+  const { coupon_info } = useSelector((state: RootState) => state.coupon);
+  const { cart, loading, error, totals } = useCart();
+
   const items = cart?.items || [];
   // Helper to get the actual price for a cart item
   const getItemPrice = (item: (typeof items)[number]) => {
@@ -38,11 +46,15 @@ function DashboardCart() {
       return Number(item.ticket_tier?.amount || 0);
     } else if (item.product_type === ProductType.COURSE) {
       return Number(item.course?.price || 0);
+    } else if (item.product_type === ProductType.DIGITAL_PRODUCT) {
+      return Number(item.digital_product?.price || 0);
+    } else if (item.product_type === ProductType.SUBSCRIPTION) {
+      return Number(item.subscription_plan_price?.price || 0);
     }
     return 0;
   };
   // Calculate the actual total sum based on product type
-  const totalSum = items.reduce(
+  const totalSum = items?.reduce(
     (sum, item) => sum + getItemPrice(item) * item.quantity,
     0
   );
@@ -57,7 +69,8 @@ function DashboardCart() {
   const [isPaying, setIsPaying] = useState(false);
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
   const [paystackRef, setPaystackRef] = useState<string | null>(null);
-  const [paystackUrl, setPaystackUrl] = useState<string | null>(null);
+  const [coupon, setCoupon] = useState('');
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
   // Remove launchPaystack and loadPaystackScript
 
@@ -68,38 +81,38 @@ function DashboardCart() {
   const [paystackPayment, setPaystackPayment] = useState<any>(null);
 
   // Ensure we're on client side before using Paystack
-  React.useEffect(() => {
-    setIsClient(true);
-  }, []);
+  // React.useEffect(() => {
+  //   setIsClient(true);
+  // }, []);
 
-  React.useEffect(() => {
-    // Only import on the client
-    import('react-paystack').then((mod) => {
-      setPaystackPayment(() => mod.usePaystackPayment);
-    });
-  }, []);
+  // React.useEffect(() => {
+  //   // Only import on the client
+  //   import('react-paystack').then((mod) => {
+  //     setPaystackPayment(() => mod.usePaystackPayment);
+  //   });
+  // }, []);
 
-  // Effect to trigger payment when config is ready
-  React.useEffect(() => {
-    if (
-      shouldTriggerPayment &&
-      paystackConfig &&
-      isClient &&
-      typeof paystackPayment === 'function'
-    ) {
-      const initializePayment = paystackPayment(
-        paystackConfig || { publicKey }
-      );
-      initializePayment(paystackConfig);
-      setShouldTriggerPayment(false);
-    }
-  }, [
-    shouldTriggerPayment,
-    paystackConfig,
-    paystackPayment,
-    isClient,
-    publicKey,
-  ]);
+  // // Effect to trigger payment when config is ready
+  // React.useEffect(() => {
+  //   if (
+  //     shouldTriggerPayment &&
+  //     paystackConfig &&
+  //     isClient &&
+  //     typeof paystackPayment === 'function'
+  //   ) {
+  //     const initializePayment = paystackPayment(
+  //       paystackConfig || { publicKey }
+  //     );
+  //     initializePayment(paystackConfig);
+  //     setShouldTriggerPayment(false);
+  //   }
+  // }, [
+  //   shouldTriggerPayment,
+  //   paystackConfig,
+  //   paystackPayment,
+  //   isClient,
+  //   publicKey,
+  // ]);
 
   const handleCheckout = async () => {
     if (!userEmail) {
@@ -110,6 +123,7 @@ function DashboardCart() {
       toast.error('Your cart is empty.');
       return;
     }
+
     setIsPaying(true);
     try {
       // Build purchases array
@@ -117,23 +131,32 @@ function DashboardCart() {
         purchase_id:
           item.product_type === ProductType.TICKET
             ? item.ticket_tier_id!
+            : item.product_type === ProductType.SUBSCRIPTION
+            ? item.subscription_plan_price_id!
             : item.product_id,
         quantity: item.quantity,
         purchase_type: item.product_type as ProductType,
       }));
       // Assume all items have the same currency and business_id
       const firstItem = items[0];
+
       const currency =
         firstItem.product_type === ProductType.TICKET
           ? firstItem.ticket_tier?.currency || 'NGN'
+          : firstItem.product_type === ProductType.SUBSCRIPTION
+          ? firstItem.subscription_plan_price?.currency
           : firstItem.course?.currency || 'NGN';
-      const business_id =
-        firstItem.product_type === ProductType.TICKET
-          ? firstItem.ticket_tier?.ticket.product.business_id
-          : org?.id;
+
+      const business_id = org?.id;
+
       if (!business_id) {
         throw new Error('Business ID is required for payment.');
       }
+
+      const amountToPay = coupon_info?.discountedAmount
+        ? coupon_info?.discountedAmount
+        : totals.subtotal;
+
       const payload: CreatePaymentPayload = {
         email: userEmail,
         purchases,
@@ -141,6 +164,7 @@ function DashboardCart() {
         currency,
         business_id,
       };
+
       // 1. Create payment
       const createRes = await dispatch(createPayment(payload)).unwrap();
 
@@ -152,18 +176,31 @@ function DashboardCart() {
       setPaystackRef(reference);
       // 3. Set up Paystack config and trigger inline payment
       const config = {
-        reference,
-        email: userEmail,
-        amount: totalSum * 100, // Paystack expects amount in kobo
-        publicKey,
-        onSuccess: async (response: any) => {
+        public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_KEY!, // Replace with your actual public key
+        tx_ref: reference,
+        amount: totalSum, // Paystack expects amount in kobo
+        currency, // Or your desired currency
+        customer: {
+          email: userEmail,
+          phone_number: profile?.phone,
+          name: profile?.name!,
+        },
+      };
+
+      // @ts-ignore
+      const handleFlutterwavePayment = useFlutterwave(config);
+
+      handleFlutterwavePayment({
+        callback: async (response) => {
           try {
             // Verify payment using Redux
-
-            await dispatch(verifyPayment(response.reference)).unwrap();
+            await dispatch(verifyPayment(response.transaction_id)).unwrap();
 
             // Empty cart after successful payment
             dispatch(emptyCart());
+
+            // Clear coupon data
+            dispatch(clearCouponData());
 
             // Show success message
             toast.success('Payment successful! Your order has been placed.');
@@ -177,16 +214,39 @@ function DashboardCart() {
           }
         },
         onClose: () => {
+          // handle when modal is closed
           setIsPaying(false);
           toast('Payment window closed');
         },
-      };
-
-      setPaystackConfig(config);
-      setShouldTriggerPayment(true);
+      });
     } catch (error: any) {
       toast.error(error.message || 'Payment failed.');
       setIsPaying(false);
+    }
+  };
+
+  const handleApplyCoupon = async () => {
+    if (!coupon) {
+      toast.error('Enter a coupon code');
+      return;
+    }
+    setIsApplyingCoupon(true);
+    try {
+      const res = await dispatch(
+        applyCoupon({
+          email: profile?.email!,
+          code: coupon,
+          amount: String(totals.subtotal),
+        })
+      ).unwrap();
+
+      toast.success('Coupon applied');
+    } catch (err: any) {
+      console.log(err);
+
+      toast.error(err.message || 'Failed to apply coupon');
+    } finally {
+      setIsApplyingCoupon(false);
     }
   };
 
@@ -278,56 +338,79 @@ function DashboardCart() {
                     </tr>
                   </thead>
                   <tbody className='divide-y divide-gray-200 dark:divide-gray-700'>
-                    {items.map((item) => (
-                      <tr key={item.id}>
-                        <td className='px-4 py-3 flex items-center gap-3'>
-                          <img
-                            src={
-                              item.product_type === ProductType.TICKET
-                                ? item.ticket_tier?.ticket.product.multimedia
-                                    ?.url || '/images/course/course1.png'
-                                : item.course?.multimedia?.url ||
-                                  '/images/course/course1.png'
+                    {items.map((item) => {
+                      const details =
+                        item.product_type === ProductType.TICKET
+                          ? {
+                              image:
+                                item.ticket_tier?.ticket?.product?.multimedia
+                                  ?.url,
+                              name: `${item.ticket_tier?.ticket.product.title}<br/> (${item.ticket_tier?.name} Ticket)`,
                             }
-                            alt={
-                              item.product_type === ProductType.TICKET
-                                ? item.ticket_tier?.ticket.product.title ||
-                                  'Ticket'
-                                : item.course?.title || 'Product'
+                          : item.product_type === ProductType.SUBSCRIPTION
+                          ? {
+                              image:
+                                item.subscription_plan_price?.subscription_plan
+                                  .product.multimedia.url,
+                              name: `${
+                                item.subscription_plan_price?.subscription_plan
+                                  .name
+                              } (${capitalize(
+                                reformatText(
+                                  item?.subscription_plan_price?.period!,
+                                  '_'
+                                )
+                              )})`,
                             }
-                            className='w-14 h-14 object-cover rounded border border-gray-200 dark:border-gray-700 flex-shrink-0'
-                          />
-                          <span className='font-medium flex-1 overflow-hidden whitespace-nowrap text-ellipsis'>
-                            {item.product_type === ProductType.TICKET ? (
-                              <>
-                                {item.ticket_tier?.name}
-                                <span className='text-gray-400 font-normal ml-2'>
-                                  ({item.ticket_tier?.ticket.product.title})
-                                </span>
-                              </>
-                            ) : (
-                              item.course?.title
-                            )}
-                          </span>
-                        </td>
-                        <td className='px-4 py-3'>
-                          {formatMoney(getItemPrice(item))}
-                        </td>
-                        <td className='px-4 py-3'>{item.quantity}</td>
-                        <td className='px-4 py-3 font-semibold'>
-                          {formatMoney(getItemPrice(item) * item.quantity)}
-                        </td>
-                        <td className='px-4 py-3'>
-                          <button
-                            className='bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-semibold disabled:opacity-50'
-                            disabled={loading}
-                            onClick={() => setConfirmRemoveId(item.id)}
-                          >
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                          : item.product_type === ProductType.DIGITAL_PRODUCT
+                          ? {
+                              image: item.digital_product?.multimedia.url,
+                              name: item.digital_product?.title,
+                            }
+                          : {
+                              image: item.course?.multimedia?.url,
+                              name: item.course?.title,
+                            };
+
+                      return (
+                        <tr key={item.id}>
+                          <td className='px-4 py-3 '>
+                            <Link
+                              href={`/dashboard/products/${item.product_id}`}
+                              className='flex items-center gap-3'
+                            >
+                              <img
+                                src={details.image}
+                                alt={`${item.product_type} image`}
+                                className='w-14 h-14 object-cover rounded border border-gray-200 dark:border-gray-700 flex-shrink-0'
+                              />
+                              <span
+                                className='font-medium flex-1 overflow-hidden whitespace-nowrap text-ellipsis'
+                                dangerouslySetInnerHTML={{
+                                  __html: details?.name!,
+                                }}
+                              />
+                            </Link>
+                          </td>
+                          <td className='px-4 py-3'>
+                            {formatMoney(getItemPrice(item))}
+                          </td>
+                          <td className='px-4 py-3'>{item.quantity}</td>
+                          <td className='px-4 py-3 font-semibold'>
+                            {formatMoney(getItemPrice(item) * item.quantity)}
+                          </td>
+                          <td className='px-4 py-3'>
+                            <button
+                              className='bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-semibold disabled:opacity-50'
+                              disabled={loading}
+                              onClick={() => setConfirmRemoveId(item.id)}
+                            >
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

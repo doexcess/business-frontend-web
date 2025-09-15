@@ -23,6 +23,12 @@ import Avatar from '../ui/Avatar';
 import Link from 'next/link';
 import OnboardingAlert from '../OnboardingAlert';
 import { Textarea } from '../ui/textarea';
+import { Globe, X } from 'lucide-react';
+
+enum BusinessAction {
+  MODIFY = 'modify',
+  SELECT = 'select',
+}
 
 const SOCIAL_MEDIA_PLATFORMS = [
   'Select Platform',
@@ -235,6 +241,8 @@ const COUNTRIES = [
   'Zambia',
   'Zimbabwe',
 ];
+
+const baseUrl = process.env.NEXT_PUBLIC_WEBSITE_URL; // change to your actual base URL
 
 const STATES_BY_COUNTRY: { [key: string]: string[] } = {
   'United States': [
@@ -820,6 +828,7 @@ const getStatesForCountry = (country: string): string[] => {
 
 const businessSchema = Joi.object({
   business_name: Joi.string().required().min(2).max(100),
+  business_slug: Joi.string().required().min(2).max(36),
   business_description: Joi.string().required().min(2).max(100),
   industry: Joi.string()
     .required()
@@ -845,6 +854,8 @@ const BusinessAccountSettings = () => {
   );
   const [selectedOrg, setSelectedOrg] = useState<BusinessProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaveLoading, setIsSaveLoading] = useState(false);
+  const [isSelectLoading, setIsSelectLoading] = useState(false);
   const [formData, setFormData] = useState<
     Omit<
       BusinessProfile,
@@ -864,6 +875,7 @@ const BusinessAccountSettings = () => {
     business_name: '',
     business_description: '',
     industry: '',
+    business_slug: '',
     business_size: '',
     location: '',
     state: '',
@@ -897,6 +909,7 @@ const BusinessAccountSettings = () => {
       setFormData({
         business_name: selectedOrg.business_name || '',
         business_description: selectedOrg.business_description || '',
+        business_slug: selectedOrg.business_slug || '',
         industry: selectedOrg.industry || '',
         business_size: selectedOrg.business_size || '',
         location: selectedOrg.location || '',
@@ -913,6 +926,7 @@ const BusinessAccountSettings = () => {
       setFormData({
         business_name: '',
         business_description: '',
+        business_slug: '',
         industry: '',
         business_size: '',
         location: '',
@@ -1008,9 +1022,15 @@ const BusinessAccountSettings = () => {
     setShowAddModal(true);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (action: BusinessAction) => {
     try {
       setIsLoading(true);
+
+      if (action === BusinessAction.MODIFY) {
+        setIsSaveLoading(true);
+      } else if (action === BusinessAction.SELECT) {
+        setIsSelectLoading(true);
+      }
 
       let logoUrl = formData.logo_url;
 
@@ -1031,8 +1051,6 @@ const BusinessAccountSettings = () => {
         business_size: formData.business_size.toLowerCase(),
         industry: formData.industry,
       };
-
-      console.log(businessData);
 
       // Validate form data
       const { error } = businessSchema.validate(businessData);
@@ -1076,6 +1094,7 @@ const BusinessAccountSettings = () => {
       setFormData({
         business_name: '',
         business_description: '',
+        business_slug: '',
         industry: '',
         business_size: '',
         location: '',
@@ -1095,6 +1114,11 @@ const BusinessAccountSettings = () => {
       console.error('Error saving business account:', error);
     } finally {
       setIsLoading(false);
+      if (action === BusinessAction.MODIFY) {
+        setIsSaveLoading(false);
+      } else if (action === BusinessAction.SELECT) {
+        setIsSelectLoading(false);
+      }
     }
   };
 
@@ -1212,8 +1236,15 @@ const BusinessAccountSettings = () => {
           isOpen={showAddModal || !!selectedOrg}
           onClose={handleCloseModal}
           title={selectedOrg ? 'Edit Business Account' : 'Add Business Account'}
-          className='m-2'
+          className='m-2 dark:text-gray-400 text-gray-800'
         >
+          {/* X Close Button */}
+          <button
+            onClick={handleCloseModal}
+            className='absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+          >
+            <X className='w-5 h-5' />
+          </button>
           <div className='space-y-4'>
             <div>
               <label className='block text-sm font-medium mb-1'>
@@ -1227,6 +1258,33 @@ const BusinessAccountSettings = () => {
                 onChange={handleInputChange}
                 required
               />
+            </div>
+            <div>
+              <label className='block text-sm font-medium mb-1'>
+                Business Shortlink
+              </label>
+              <div className='relative'>
+                <Globe className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4' />
+                <Input
+                  type='text'
+                  name='business_slug'
+                  placeholder='Enter business shortlink'
+                  value={formData.business_slug}
+                  onChange={handleInputChange}
+                  required
+                  className='pl-9'
+                />
+              </div>
+
+              {/* Live preview */}
+              {formData.business_slug && (
+                <p className='mt-2 text-sm '>
+                  Preview:{' '}
+                  <span className='text-primary-main dark:text-primary-faded font-medium'>
+                    {baseUrl}/b/{formData.business_slug}
+                  </span>
+                </p>
+              )}
             </div>
             <div>
               <label className='block text-sm font-medium mb-1'>
@@ -1442,10 +1500,10 @@ const BusinessAccountSettings = () => {
               {selectedOrg && org?.id !== selectedOrg?.id && (
                 <Button
                   variant='primary'
-                  onClick={handleSubmit}
+                  onClick={() => handleSubmit(BusinessAction.SELECT)}
                   disabled={isLoading}
                 >
-                  {isLoading ? (
+                  {isSelectLoading ? (
                     <div className='flex items-center gap-2'>
                       <LoadingIcon />
                       Processing...
@@ -1457,10 +1515,10 @@ const BusinessAccountSettings = () => {
               )}
               <Button
                 variant={selectedOrg ? 'green' : 'primary'}
-                onClick={handleSubmit}
+                onClick={() => handleSubmit(BusinessAction.MODIFY)}
                 disabled={isLoading || !isFormValid()}
               >
-                {isLoading ? (
+                {isSaveLoading ? (
                   <div className='flex items-center gap-2'>
                     <LoadingIcon />
                     Processing...

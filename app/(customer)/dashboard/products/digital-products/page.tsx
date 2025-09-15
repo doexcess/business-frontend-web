@@ -1,15 +1,15 @@
 'use client';
 
-import PageHeading from '@/components/PageHeading';
-import React, { useState } from 'react';
 import ProductFilters from '@/components/dashboard/product/course/ProductFilters';
 import PublicProductGridItem from '@/components/dashboard/product/course/PublicCourseGridItem';
-import useProducts from '@/hooks/page/useProducts';
+import PageHeading from '@/components/PageHeading';
 import Pagination from '@/components/Pagination';
 import NotFound from '@/components/ui/NotFound';
+import useProducts from '@/hooks/page/useProducts';
 import { ProductType } from '@/lib/utils';
+import React, { useState } from 'react';
 
-const Courses = () => {
+const DigitalProducts = () => {
   const [search, setSearch] = useState('');
   const [priceRange, setPriceRange] = useState('All Prices');
   const {
@@ -23,21 +23,19 @@ const Courses = () => {
     handleRefresh,
     limit = 10,
     currentPage,
-  } = useProducts(ProductType.COURSE, search, priceRange);
-
-  // Optionally filter products by price range here if needed
+  } = useProducts(ProductType.DIGITAL_PRODUCT, search, priceRange);
 
   return (
     <main className='min-h-screen bg-black text-white'>
       <div className='section-container pb-4'>
         <PageHeading
-          title='Courses'
-          brief='Buy your courses with ease'
+          title='Digital Products'
+          brief='Buy your digital products with ease'
           enableBreadCrumb={true}
           layer2='Products'
           layer2Link='/products'
-          layer3='Courses'
-          layer3Link='/products/courses'
+          layer3='Digital Products'
+          layer3Link='/products/digtatal-products'
         />
         <div className='flex flex-col gap-4 mt-2'>
           <ProductFilters
@@ -63,24 +61,22 @@ const Courses = () => {
             </div>
           ) : products.length === 0 ? (
             <NotFound
-              title='No Courses Found'
-              description='No courses are currently available. Check back later or try searching for different courses.'
-              searchPlaceholder='Search for courses...'
+              title='No Digital Product Found'
+              description='No digital product are currently available. Check back later or try searching for different courses.'
+              searchPlaceholder='Search for digital products...'
               onSearch={handleSearchSubmit}
             />
           ) : (
             <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
-              {products.map((course) => (
+              {products.map((product) => (
                 <PublicProductGridItem
-                  key={course.id}
-                  id={course.id}
-                  details={course}
-                  type={course.type}
-                  title={course.title}
-                  imageSrc={
-                    course.multimedia?.url || '/images/course/course1.png'
-                  }
-                  price={course.price!}
+                  key={product.id}
+                  id={product.id}
+                  details={product}
+                  type={product.type}
+                  title={product.title}
+                  imageSrc={product.multimedia?.url}
+                  price={product.price!}
                   onView={() => {}}
                   onBuy={() => {}}
                 />
@@ -102,4 +98,4 @@ const Courses = () => {
   );
 };
 
-export default Courses;
+export default DigitalProducts;
