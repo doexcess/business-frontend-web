@@ -691,9 +691,8 @@ export default function Chat({
                   <Icon url="/icons/clients/angle-left.svg" width={30} />
                 </Link>
               )}
-              {(chat?.chat_buddy?.profile?.profile_picture! || chat?.chat_buddy.name) && (
-                <img
-                  src={
+              {(chat?.chat_buddy?.profile?.profile_picture! || chat?.chat_buddy?.name) && (
+                <img src={
                     getAvatar(chat?.chat_buddy?.profile?.profile_picture!, chat?.chat_buddy?.name!) ||
                     "/placeholder.svg" ||
                     "/placeholder.svg" ||
