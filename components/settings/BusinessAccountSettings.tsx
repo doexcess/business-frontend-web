@@ -22,6 +22,23 @@ import LoadingIcon from '../ui/icons/LoadingIcon';
 import Avatar from '../ui/Avatar';
 import Link from 'next/link';
 import OnboardingAlert from '../OnboardingAlert';
+import { Textarea } from '../ui/textarea';
+import { Globe, X } from 'lucide-react';
+
+enum BusinessAction {
+  MODIFY = 'modify',
+  SELECT = 'select',
+}
+
+const SOCIAL_MEDIA_PLATFORMS = [
+  'Select Platform',
+  'Facebook',
+  'Twitter',
+  'Instagram',
+  'LinkedIn',
+  'Website',
+  'Other',
+];
 
 const BUSINESS_SIZES = ['Select Business Size', 'Small', 'Medium', 'Large'];
 
@@ -224,6 +241,8 @@ const COUNTRIES = [
   'Zambia',
   'Zimbabwe',
 ];
+
+const baseUrl = process.env.NEXT_PUBLIC_WEBSITE_URL; // change to your actual base URL
 
 const STATES_BY_COUNTRY: { [key: string]: string[] } = {
   'United States': [
@@ -809,9 +828,15 @@ const getStatesForCountry = (country: string): string[] => {
 
 const businessSchema = Joi.object({
   business_name: Joi.string().required().min(2).max(100),
+  business_slug: Joi.string().required().min(2).max(36),
+  business_description: Joi.string().required().min(2).max(100),
   industry: Joi.string()
     .required()
     .valid(...BUSINESS_INDUSTRIES),
+  social_media_handles: Joi.array().items({
+    handle: Joi.string().required().min(2).max(100),
+    link: Joi.string().required().min(2).max(100),
+  }),
   business_size: Joi.string()
     .required()
     .valid(...BUSINESS_SIZES.map((size) => size.toLowerCase())),
@@ -829,13 +854,33 @@ const BusinessAccountSettings = () => {
   );
   const [selectedOrg, setSelectedOrg] = useState<BusinessProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [isSaveLoading, setIsSaveLoading] = useState(false);
+  const [isSelectLoading, setIsSelectLoading] = useState(false);
+  const [formData, setFormData] = useState<
+    Omit<
+      BusinessProfile,
+      | 'id'
+      | 'business_id'
+      | 'user_id'
+      | 'onboarding_status'
+      | 'is_active'
+      | 'is_approved'
+      | 'created_at'
+      | 'updated_at'
+      | 'timeline'
+      | 'working_hours'
+      | 'country_code'
+    > & { social_media_handles: { handle: string; link: string }[] }
+  >({
     business_name: '',
+    business_description: '',
     industry: '',
+    business_slug: '',
     business_size: '',
     location: '',
     state: '',
     country: '',
+    social_media_handles: [],
     logo_url: '',
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -846,11 +891,13 @@ const BusinessAccountSettings = () => {
   const isFormValid = () => {
     return (
       formData.business_name.trim() !== '' &&
+      formData.business_description.trim() !== '' &&
       formData.industry.trim() !== '' &&
       formData.business_size.trim() !== '' &&
       formData.location.trim() !== '' &&
-      formData.state.trim() !== '' &&
-      formData.country.trim() !== ''
+      (formData.state || '').trim() !== '' &&
+      formData.country.trim() !== '' &&
+      formData.social_media_handles.length > 0
       // &&
       // formData.logo_url !== ''
     );
@@ -861,12 +908,15 @@ const BusinessAccountSettings = () => {
     if (selectedOrg) {
       setFormData({
         business_name: selectedOrg.business_name || '',
+        business_description: selectedOrg.business_description || '',
+        business_slug: selectedOrg.business_slug || '',
         industry: selectedOrg.industry || '',
         business_size: selectedOrg.business_size || '',
         location: selectedOrg.location || '',
         state: selectedOrg.state || '',
         country: selectedOrg.country || '',
         logo_url: selectedOrg.logo_url || '',
+        social_media_handles: selectedOrg.social_media_handles || [],
       });
       setLogoPreview(selectedOrg.logo_url || null);
       // Set available states for the selected country
@@ -875,12 +925,15 @@ const BusinessAccountSettings = () => {
       const defaultStates = getStatesForCountry(COUNTRIES[0]);
       setFormData({
         business_name: '',
+        business_description: '',
+        business_slug: '',
         industry: '',
         business_size: '',
         location: '',
         state: '',
         country: '',
         logo_url: '',
+        social_media_handles: [],
       });
       setLogoFile(null);
       setAvailableStates(defaultStates);
@@ -889,10 +942,10 @@ const BusinessAccountSettings = () => {
 
   // Update available states when country changes
   useEffect(() => {
-    const states = getStatesForCountry(formData.country);
+    const states = getStatesForCountry(formData.country || '');
     setAvailableStates(states);
     // Reset state if current state is not available in the new country
-    if (states.length > 0 && !states.includes(formData.state)) {
+    if (states.length > 0 && !states.includes(formData.state || '')) {
       setFormData((prev) => ({ ...prev, state: states[0] }));
     } else if (states.length === 0) {
       setFormData((prev) => ({ ...prev, state: '' }));
@@ -900,10 +953,42 @@ const BusinessAccountSettings = () => {
   }, [formData.country]);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSocialMediaChange = (
+    index: number,
+    field: 'handle' | 'link',
+    value: string
+  ) => {
+    setFormData((prev) => {
+      const updatedHandles = [...prev.social_media_handles];
+      updatedHandles[index] = { ...updatedHandles[index], [field]: value };
+      return { ...prev, social_media_handles: updatedHandles };
+    });
+  };
+
+  const handleAddSocialMedia = () => {
+    setFormData((prev) => ({
+      ...prev,
+      social_media_handles: [
+        ...prev.social_media_handles,
+        { handle: '', link: '' },
+      ],
+    }));
+  };
+
+  const handleRemoveSocialMedia = (index: number) => {
+    setFormData((prev) => {
+      const updatedHandles = [...prev.social_media_handles];
+      updatedHandles.splice(index, 1);
+      return { ...prev, social_media_handles: updatedHandles };
+    });
   };
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -937,9 +1022,15 @@ const BusinessAccountSettings = () => {
     setShowAddModal(true);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (action: BusinessAction) => {
     try {
       setIsLoading(true);
+
+      if (action === BusinessAction.MODIFY) {
+        setIsSaveLoading(true);
+      } else if (action === BusinessAction.SELECT) {
+        setIsSelectLoading(true);
+      }
 
       let logoUrl = formData.logo_url;
 
@@ -960,8 +1051,6 @@ const BusinessAccountSettings = () => {
         business_size: formData.business_size.toLowerCase(),
         industry: formData.industry,
       };
-
-      // console.log(businessData);
 
       // Validate form data
       const { error } = businessSchema.validate(businessData);
@@ -1004,12 +1093,15 @@ const BusinessAccountSettings = () => {
       const defaultStates = getStatesForCountry(COUNTRIES[0]);
       setFormData({
         business_name: '',
+        business_description: '',
+        business_slug: '',
         industry: '',
         business_size: '',
         location: '',
         state: '',
         country: '',
         logo_url: '',
+        social_media_handles: [],
       });
       setLogoFile(null);
       setAvailableStates(defaultStates);
@@ -1022,6 +1114,11 @@ const BusinessAccountSettings = () => {
       console.error('Error saving business account:', error);
     } finally {
       setIsLoading(false);
+      if (action === BusinessAction.MODIFY) {
+        setIsSaveLoading(false);
+      } else if (action === BusinessAction.SELECT) {
+        setIsSelectLoading(false);
+      }
     }
   };
 
@@ -1139,8 +1236,15 @@ const BusinessAccountSettings = () => {
           isOpen={showAddModal || !!selectedOrg}
           onClose={handleCloseModal}
           title={selectedOrg ? 'Edit Business Account' : 'Add Business Account'}
-          className='m-2'
+          className='m-2 dark:text-gray-400 text-gray-800'
         >
+          {/* X Close Button */}
+          <button
+            onClick={handleCloseModal}
+            className='absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+          >
+            <X className='w-5 h-5' />
+          </button>
           <div className='space-y-4'>
             <div>
               <label className='block text-sm font-medium mb-1'>
@@ -1152,6 +1256,46 @@ const BusinessAccountSettings = () => {
                 placeholder='Enter business name'
                 value={formData.business_name}
                 onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div>
+              <label className='block text-sm font-medium mb-1'>
+                Business Shortlink
+              </label>
+              <div className='relative'>
+                <Globe className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4' />
+                <Input
+                  type='text'
+                  name='business_slug'
+                  placeholder='Enter business shortlink'
+                  value={formData.business_slug}
+                  onChange={handleInputChange}
+                  required
+                  className='pl-9'
+                />
+              </div>
+
+              {/* Live preview */}
+              {formData.business_slug && (
+                <p className='mt-2 text-sm '>
+                  Preview:{' '}
+                  <span className='text-primary-main dark:text-primary-faded font-medium'>
+                    {baseUrl}/b/{formData.business_slug}
+                  </span>
+                </p>
+              )}
+            </div>
+            <div>
+              <label className='block text-sm font-medium mb-1'>
+                Business Description
+              </label>
+              <Textarea
+                rows={3}
+                name='business_description'
+                placeholder='Enter business description'
+                value={formData.business_description}
+                onChange={handleInputChange as any}
                 required
               />
             </div>
@@ -1228,7 +1372,7 @@ const BusinessAccountSettings = () => {
                   name='state'
                   className='w-full'
                   data={availableStates}
-                  value={formData.state}
+                  value={formData.state || ''}
                   onChange={(e: any) =>
                     setFormData({
                       ...formData,
@@ -1244,7 +1388,7 @@ const BusinessAccountSettings = () => {
                   type='text'
                   name='state'
                   placeholder='Enter state/province'
-                  value={formData.state}
+                  value={formData.state || ''}
                   onChange={handleInputChange}
                   required
                 />
@@ -1256,7 +1400,7 @@ const BusinessAccountSettings = () => {
                 type='text'
                 name='location'
                 placeholder='Enter business location'
-                value={formData.location}
+                value={formData.location || ''}
                 onChange={handleInputChange}
                 required
               />
@@ -1293,7 +1437,57 @@ const BusinessAccountSettings = () => {
                 )}
               </div>
             </div>
+            <div>
+              <label className='block text-sm font-medium mb-1'>
+                Social Media Handles
+              </label>
+              <div className='space-y-3'>
+                {formData.social_media_handles.map((handle, index) => (
+                  <div key={index} className='flex gap-2 items-center'>
+                    <Select
+                      name={`social_media_handle_${index}`}
+                      className='w-1/2'
+                      data={SOCIAL_MEDIA_PLATFORMS}
+                      value={handle.handle}
+                      onChange={(e: any) =>
+                        handleSocialMediaChange(index, 'handle', e.target.value)
+                      }
+                      defaultValue='Select Platform'
+                      placeholder='Select Platform'
+                    />
+                    <Input
+                      type='text'
+                      name={`social_media_link_${index}`}
+                      placeholder='Enter link'
+                      value={handle.link}
+                      onChange={(e) =>
+                        handleSocialMediaChange(index, 'link', e.target.value)
+                      }
+                      required
+                    />
+                    <Button
+                      variant='destructive'
+                      size='sm'
+                      onClick={() => handleRemoveSocialMedia(index)}
+                      className='flex-shrink-0'
+                    >
+                      <FiTrash2 className='w-4 h-4' />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={handleAddSocialMedia}
+                  className='flex items-center gap-2 mt-2'
+                >
+                  <FiPlus className='w-4 h-4' />
+                  Add Social Media Handle
+                </Button>
+              </div>
+            </div>
           </div>
+
           <div className='flex justify-end mt-6 gap-3'>
             <Button
               variant='outline'
@@ -1306,10 +1500,10 @@ const BusinessAccountSettings = () => {
               {selectedOrg && org?.id !== selectedOrg?.id && (
                 <Button
                   variant='primary'
-                  onClick={handleSubmit}
+                  onClick={() => handleSubmit(BusinessAction.SELECT)}
                   disabled={isLoading}
                 >
-                  {isLoading ? (
+                  {isSelectLoading ? (
                     <div className='flex items-center gap-2'>
                       <LoadingIcon />
                       Processing...
@@ -1321,10 +1515,10 @@ const BusinessAccountSettings = () => {
               )}
               <Button
                 variant={selectedOrg ? 'green' : 'primary'}
-                onClick={handleSubmit}
+                onClick={() => handleSubmit(BusinessAction.MODIFY)}
                 disabled={isLoading || !isFormValid()}
               >
-                {isLoading ? (
+                {isSaveLoading ? (
                   <div className='flex items-center gap-2'>
                     <LoadingIcon />
                     Processing...

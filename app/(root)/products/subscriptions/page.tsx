@@ -6,6 +6,7 @@ import PageHeading from '@/components/PageHeading';
 import { Button } from '@/components/ui/Button';
 import Icon from '@/components/ui/Icon';
 import { Modal } from '@/components/ui/Modal';
+import { X } from 'lucide-react';
 import React, { useState } from 'react';
 
 const Subscription = () => {
@@ -41,8 +42,18 @@ const Subscription = () => {
           isOpen={isPlanModalOpen}
           onClose={() => setIsPlanModalOpen(false)}
           title='Create plan'
-          className='max-w-xl my-[50%] overflow-y-auto'
+          className='relative max-w-xl my-[50%] overflow-y-auto'
         >
+          {/* Close Icon */}
+          <button
+            onClick={() => setIsPlanModalOpen(false)}
+            className='absolute top-3 right-3 text-gray-500 hover:text-gray-800'
+          >
+            <X
+              size={20}
+              className='dark:text-white text-black-1 hover:dark:text-slate-500'
+            />
+          </button>
           <CreateSubscriptionPlanForm setIsPlanModalOpen={setIsPlanModalOpen} />
         </Modal>
       </div>

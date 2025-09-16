@@ -1,4 +1,3 @@
-import TableEndRecord from '@/components/ui/TableEndRecord';
 import {
   cn,
   formatMoney,
@@ -32,7 +31,7 @@ const PaymentItem = ({ txn, idx }: PaymentItemProps) => {
       <tr key={txn.id} className={rowClasses}>
         {/* Date */}
         <td className='px-6 py-2 min-w-[140px] text-sm'>
-          {moment(txn.created_at).format('LL')}
+          {moment(txn.created_at).format('lll')}
         </td>
 
         {/* Transaction ID */}

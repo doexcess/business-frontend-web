@@ -43,6 +43,15 @@ const OnboardingModal = ({ isOpen, setIsOpen }: OnboardingModalProps) => {
     },
     {
       id: 2,
+      title: 'KYC Verification',
+      description: 'Verify your identity to unlock full access',
+      icon: <FaCheckCircle className='w-6 h-6 text-indigo-500' />,
+      action: 'Verify KYC',
+      path: '/settings?tab=kyc',
+      isCompleted: org?.onboarding_status?.current_step! >= 2,
+    },
+    {
+      id: 3,
       title: 'Withdrawal Account',
       description: 'Set up your bank account for receiving payments',
       icon: <FaCreditCard className='w-6 h-6 text-green-500' />,
@@ -51,7 +60,7 @@ const OnboardingModal = ({ isOpen, setIsOpen }: OnboardingModalProps) => {
       isCompleted: org?.onboarding_status?.current_step! >= 2,
     },
     {
-      id: 3,
+      id: 4,
       title: 'Invite Team Members',
       description: 'Add your team members to collaborate',
       icon: <FaUsers className='w-6 h-6 text-purple-500' />,
@@ -60,7 +69,7 @@ const OnboardingModal = ({ isOpen, setIsOpen }: OnboardingModalProps) => {
       isCompleted: org?.onboarding_status?.current_step! >= 3,
     },
     {
-      id: 4,
+      id: 5,
       title: 'Create Your First Product',
       description: 'Start by creating a course, event, or subscription',
       icon: <FaShoppingBag className='w-6 h-6 text-orange-500' />,
@@ -102,11 +111,10 @@ const OnboardingModal = ({ isOpen, setIsOpen }: OnboardingModalProps) => {
           {steps.map((step) => (
             <div
               key={step.id}
-              className={`p-3 sm:p-4 rounded-lg cursor-pointer transition-all ${
-                step.isCompleted
-                  ? 'bg-green-50 dark:bg-green-900/20'
-                  : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
-              }`}
+              className={`p-3 sm:p-4 rounded-lg cursor-pointer transition-all ${step.isCompleted
+                ? 'bg-green-50 dark:bg-green-900/20'
+                : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                }`}
               onClick={() => handleStepClick(step)}
             >
               <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4'>

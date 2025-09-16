@@ -45,3 +45,20 @@ export interface CouponDetailsResponse {
   message: string;
   data: Coupon;
 }
+
+export interface ApplyCouponResponse {
+  statusCode: number;
+  data: CouponData;
+  message: string;
+}
+
+export interface ApplyCoupon {
+  email: string;
+  code: string;
+  amount: string;
+}
+
+export interface CouponData {
+  discountedAmount: number;
+  discount: number;
+}

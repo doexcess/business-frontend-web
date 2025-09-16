@@ -1,6 +1,12 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import api from '@/lib/api';
-import { Coupon, CouponDetailsResponse, CouponResponse } from '@/types/coupon';
+import {
+  ApplyCoupon,
+  ApplyCouponResponse,
+  Coupon,
+  CouponDetailsResponse,
+  CouponResponse,
+} from '@/types/coupon';
 import {
   CreateCouponProps,
   UpdateCouponProps,
@@ -14,6 +20,11 @@ interface CouponState {
   loading: boolean;
   error: string | null;
   currentPage: number;
+
+  coupon_info: {
+    discount: number;
+    discountedAmount: number;
+  };
 }
 
 // Initial state
@@ -24,6 +35,11 @@ const initialState: CouponState = {
   loading: false,
   error: null,
   currentPage: 1,
+
+  coupon_info: {
+    discount: 0,
+    discountedAmount: 0,
+  },
 };
 
 // Async thunk to fetch paginated coupons
@@ -161,6 +177,27 @@ export const deleteCoupon = createAsyncThunk(
   }
 );
 
+// Async thunk to apply coupon
+export const applyCoupon = createAsyncThunk(
+  'coupon-management/apply-coupon',
+  async (payload: ApplyCoupon, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post<ApplyCouponResponse>(
+        '/coupon-management/apply-coupon',
+        payload
+      );
+
+      return {
+        data: data.data,
+      };
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data?.message || 'Failed to apply coupon'
+      );
+    }
+  }
+);
+
 const couponSlice = createSlice({
   name: 'coupons',
   initialState,
@@ -184,6 +221,12 @@ const couponSlice = createSlice({
       } else {
         state.error = 'Coupon not found in local state';
       }
+    },
+    clearCouponData: (state) => {
+      state.coupon_info = {
+        discount: 0,
+        discountedAmount: 0,
+      };
     },
   },
   extraReducers: (builder) => {
@@ -249,5 +292,6 @@ const couponSlice = createSlice({
   },
 });
 
-export const { setPage, setPerPage, viewCoupon } = couponSlice.actions;
+export const { setPage, setPerPage, viewCoupon, clearCouponData } =
+  couponSlice.actions;
 export default couponSlice.reducer;

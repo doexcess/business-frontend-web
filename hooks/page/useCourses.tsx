@@ -44,6 +44,8 @@ const useCourses = () => {
   return {
     courses,
     count,
+    currentPage,
+    perPage,
     loading,
     error,
     onClickNext,

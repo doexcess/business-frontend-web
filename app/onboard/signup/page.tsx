@@ -32,7 +32,9 @@ const SignupContent = () => {
         </Link>
 
         <h1 className='text-xl sm:text-2xl font-bold text-center text-gray-800 mb-2'>
-          Grow Your Business with Doexcess
+          {role === SignupRole.BUSINESS_OWNER
+            ? 'Grow Your Business with Doexcess'
+            : 'Discover, Connect, and Experience Doexcess.'}
         </h1>
 
         <p className='text-sm sm:text-base text-gray-600 text-center mb-6 max-w-md'>
@@ -53,7 +55,6 @@ const SignupContent = () => {
             Sign in
           </Link>
         </div>
-
       </div>
     </div>
   );

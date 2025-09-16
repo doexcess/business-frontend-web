@@ -9,6 +9,7 @@ import {
   ContactInviteDetailsResponse,
   ContactInviteResponse,
   ExportUserResponse,
+  KYC,
 } from '@/types/org';
 import {
   AcceptInviteProps,
@@ -26,6 +27,7 @@ import {
 } from '@/lib/utils';
 import {
   BanksResponse,
+  KYCResponse,
   PaystackBank,
   ResolveAccountResponse,
   TransferRecipientData,
@@ -38,9 +40,10 @@ import {
 
 interface OrgState {
   orgs: BusinessProfile[];
-  org: BusinessProfileFull | null;
+  org?: BusinessProfileFull | null;
   invites: ContactInvite[];
   banks: PaystackBank[];
+  kyc: KYC | null;
   account: TransferRecipientData | null;
   customers: Customer[];
   totalCustomers: number;
@@ -67,6 +70,7 @@ const initialState: OrgState = {
   org: null,
   invites: [],
   banks: [],
+  kyc: null,
   account: null,
   customers: [],
   totalCustomers: 0,
@@ -358,6 +362,26 @@ export const restoreMember = createAsyncThunk(
 );
 
 // Async Thunk to fetch banks
+export const fetchKYC = createAsyncThunk(
+  "auth/fetch-kyc",
+  async (business_id: string, { rejectWithValue }) => {
+    try {
+
+      const { data } = await api.get<KYCResponse>(`/onboard/kyc`, {
+        headers: { "Business-Id": business_id },
+      });
+
+      return {
+        kyc: data.data,
+      };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+
+// Async Thunk to fetch banks
 export const fetchBanks = createAsyncThunk('auth/fetch-banks', async () => {
   const { data } = await api.get<BanksResponse>(`/auth/fetch-banks`);
 
@@ -553,7 +577,7 @@ const orgSlice = createSlice({
       if (matchedOrg) {
         state.org = {
           ...matchedOrg,
-        } as BusinessProfileFull;
+        } as BusinessProfileFull | any;
       } else {
         state.error = 'Organization not found in local state';
       }
@@ -744,6 +768,20 @@ const orgSlice = createSlice({
         state.banksLoading = false;
         state.error = action.error.message || 'Failed to fetch banks';
       })
+
+      .addCase(fetchKYC.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchKYC.fulfilled, (state, action) => {
+        state.loading = false;
+        state.kyc = action.payload.kyc;
+      })
+      .addCase(fetchKYC.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch KYC';
+      })
+
       .addCase(resolveAccount.pending, (state) => {
         state.bankLoading = true;
         state.error = null;

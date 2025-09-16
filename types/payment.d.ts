@@ -1,11 +1,13 @@
 import {
   PaymentMethod,
+  ProductType,
   RefundStatus,
   RefundType,
   TransactionType,
 } from '@/lib/utils';
 import { Profile } from './account';
 import { UserProfile } from './org';
+import { Media } from './multimedia';
 
 export interface PaymentItem {
   id: string;
@@ -71,7 +73,57 @@ export interface Payment {
   subscription_plan: SubscriptionPlan; // Replace with actual type if available
   billing_info: BillingInformation; // Replace with actual type if available
   refunds: Refund[]; // Replace with actual type if available
+  business_info: BusinessInfo;
   payment_gateway_logs: PaymentGatewayLog[]; // Replace with actual type if available
+  full_purchases_details: {
+    items: FullPurchaseDetails[];
+    coupon_id: string | null;
+    business_id: string | null;
+    coupon_type: string | null;
+    coupon_value: string | null;
+  };
+}
+
+interface BusinessInfo {
+  id: string;
+  business_slug: string;
+  business_name: string;
+  business_description: string;
+  business_size: string;
+}
+
+interface FullPurchaseDetails {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  created_at: string;
+  product_id: string;
+  purchase_type: ProductType;
+  details: PurchasedDigitalProduct;
+}
+
+export interface PurchasedDigitalProduct {
+  id: string;
+  user_id: string;
+  product_id: string;
+  payment_id: string | null;
+  quantity: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  product: {
+    multimedia: Media;
+    zip_file: Media;
+    business_info: {
+      id: true;
+      business_name: true;
+      business_size: true;
+      business_description: true;
+    };
+    title: true;
+    description: true;
+  };
 }
 
 export interface SubscriptionPlan {

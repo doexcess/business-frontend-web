@@ -13,7 +13,7 @@ const AddCourse = () => {
           layer2='Products'
           layer2Link='/products'
           layer3='Courses'
-          layer3Link='/products/course'
+          layer3Link='/products/courses'
           layer4='Add Course'
           layer4Link='/products/course/add'
           enableBackButton={true}

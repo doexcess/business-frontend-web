@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/components/providers/toaster-provider';
 import { ConfettiProvider } from '@/components/providers/confetti-provider';
+import ProgressBar from '@/components/ProgressBar';
+import 'nprogress/nprogress.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -51,6 +53,7 @@ export default function RootLayout({
           </head>
           <ConfettiProvider />
           <ToastProvider />
+          <ProgressBar />
           <ThemeProvider
             attribute='class'
             defaultTheme='system'

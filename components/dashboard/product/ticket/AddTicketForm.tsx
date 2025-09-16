@@ -4,7 +4,7 @@ import XIcon from '@/components/ui/icons/XIcon';
 import Input from '@/components/ui/Input';
 import { AppDispatch, RootState } from '@/redux/store';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { useDispatch, useSelector } from 'react-redux';
@@ -16,7 +16,13 @@ import {
 } from '@/lib/schema/product.schema';
 import { toast } from 'react-hot-toast';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
-import { cn, EventType, ProductStatus, TicketTierStatus } from '@/lib/utils';
+import {
+  baseUrl,
+  cn,
+  EventType,
+  ProductStatus,
+  TicketTierStatus,
+} from '@/lib/utils';
 import { createTicket } from '@/redux/slices/ticketSlice';
 import {
   SelectItem,
@@ -30,6 +36,9 @@ import { Textarea } from '@/components/ui/textarea';
 import dynamic from 'next/dynamic';
 import { setOnboardingStep } from '@/redux/slices/orgSlice';
 import { capitalize } from 'lodash';
+import { Globe } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
+import TinyMceEditor from '@/components/editor/TinyMceEditor';
 
 // Dynamically import ReactQuill to avoid SSR issues
 const ReactQuillEditor = dynamic(() => import('react-quill'), {
@@ -39,6 +48,7 @@ const ReactQuillEditor = dynamic(() => import('react-quill'), {
 
 const DEFAULT_FORM_VALUES: CreateTicketProps = {
   title: '',
+  slug: uuidv4().split('-')[0],
   description: '',
   keywords: '',
   metadata: '',
@@ -333,7 +343,7 @@ const AddTicketForm = () => {
       const { error, value } = createTicketSchema.validate(input);
       if (error) throw new Error(error.details[0].message);
 
-      const response: any = await dispatch(
+      const response = await dispatch(
         createTicket({
           credentials: {
             ...input,
@@ -345,15 +355,11 @@ const AddTicketForm = () => {
           },
           business_id: org?.id!,
         })
-      );
+      ).unwrap();
 
-      if (response.type === 'product-ticket-crud/rejected') {
-        throw new Error(response.payload.message);
-      }
-
-      if (org?.onboarding_status?.current_step! < 4) {
+      if (org?.onboarding_status?.current_step! < 5) {
         // Update the onboarding current step
-        dispatch(setOnboardingStep(4));
+        dispatch(setOnboardingStep(5));
       }
 
       toast.success('Ticket created successfully!');
@@ -368,6 +374,7 @@ const AddTicketForm = () => {
 
   const isFormValid =
     formData.title &&
+    formData.slug &&
     formData.description &&
     formData.category_id &&
     formData.event_end_date &&
@@ -411,17 +418,45 @@ const AddTicketForm = () => {
         />
       </div>
 
-      <div>
-        <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
-          Event Location <span className='text-red-500'>*</span>
-        </label>
-        <Input
-          type='text'
-          name='event_location'
-          value={formData.event_location}
-          onChange={handleInputChange}
-          required
-        />
+      <div className='grid lg:grid-cols-2 gap-2'>
+        <div>
+          <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
+            Shortlink <span className='text-red-500'>*</span>
+          </label>
+          <div className='relative'>
+            <Globe className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4' />
+            <Input
+              type='text'
+              name='slug'
+              value={formData.slug}
+              onChange={handleInputChange}
+              required
+              className='w-full rounded-md pl-9'
+            />
+          </div>
+
+          {/* Live preview */}
+          {formData.slug && (
+            <p className='mt-2 text-sm '>
+              Preview:{' '}
+              <span className='text-primary-main dark:text-primary-faded font-medium'>
+                {baseUrl}/{formData.slug}
+              </span>
+            </p>
+          )}
+        </div>
+        <div>
+          <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
+            Event Location <span className='text-red-500'>*</span>
+          </label>
+          <Input
+            type='text'
+            name='event_location'
+            value={formData.event_location}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
       </div>
 
       <div>
@@ -454,7 +489,7 @@ const AddTicketForm = () => {
         <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
           Event Description <span className='text-red-500'>*</span>
         </label>
-        <div className='quill-container'>
+        {/* <div className='quill-container'>
           <ReactQuillEditor
             value={formData.description}
             onChange={(value: string) =>
@@ -463,7 +498,16 @@ const AddTicketForm = () => {
             className='dark:text-white'
             theme='snow'
           />
-        </div>
+        </div> */}
+        <Suspense fallback={<div>Loading editor...</div>}>
+          <TinyMceEditor
+            value={formData.description!}
+            onChange={(value: any) =>
+              setFormData((prev) => ({ ...prev, description: value! }))
+            }
+            height={200}
+          />
+        </Suspense>
       </div>
 
       <div>
@@ -598,7 +642,8 @@ const AddTicketForm = () => {
 
       <div>
         <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
-          What do you want to them to know after ticket payments?
+          What do you want to them to know after ticket payments?{' '}
+          <span className='text-red-500'>*</span>
         </label>
         <Textarea
           name='auth_details'

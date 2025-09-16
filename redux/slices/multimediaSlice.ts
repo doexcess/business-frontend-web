@@ -99,7 +99,6 @@ export const uploadImage = createAsyncThunk(
   }
 );
 
-
 export const uploadVideo = createAsyncThunk(
   'multimedia-upload/video',
   async ({
@@ -130,7 +129,41 @@ export const uploadVideo = createAsyncThunk(
 );
 
 export const uploadDocument = createAsyncThunk(
-  'multimedia-upload/document',
+  "multimedia-upload/document",
+  async ({
+    form_data,
+    business_id,
+    onUploadProgress,
+  }: {
+    form_data: FormData;
+    business_id?: string;
+    onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;
+  }) => {
+    const headers: Record<string, any> = {
+      "Content-Type": "multipart/form-data",
+    };
+
+    if (business_id !== undefined) {
+      headers["Business-Id"] = business_id;
+    }
+
+    const { data } = await api.post<UploadMediaResponse>(
+      "/multimedia-upload/document",
+      form_data,
+      {
+        headers,
+        onUploadProgress,
+      }
+    );
+
+    return {
+      multimedia: data.data,
+    };
+  }
+);
+
+export const uploadRawDocument = createAsyncThunk(
+  'multimedia-upload/raw-document',
   async ({
     form_data,
     business_id,
@@ -147,7 +180,7 @@ export const uploadDocument = createAsyncThunk(
     }
 
     const { data } = await api.post<UploadMediaResponse>(
-      '/multimedia-upload/document',
+      '/multimedia-upload/raw-document',
       form_data,
       { headers }
     );
@@ -205,6 +238,18 @@ const multimediaSlice = createSlice({
       .addCase(uploadDocument.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to upload document';
+      })
+      .addCase(uploadRawDocument.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(uploadRawDocument.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(uploadRawDocument.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.error.message || 'Failed to upload raw/zip document';
       })
       .addCase(uploadVideo.pending, (state) => {
         state.loading = true;

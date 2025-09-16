@@ -91,6 +91,17 @@ export interface UserProfileProps {
   gender?: Gender | null;
 }
 
+export interface KYCProps {
+  doc_front: string;
+  doc_back: string;
+  utility_doc: string;
+  location: string;
+  country: string;
+  state: string;
+  city: string;
+  id_type: string;
+}
+
 export const UpdatePasswordSchema = Joi.object({
   current_password: Joi.string().required().label('Current Password'),
   new_password: Joi.string()
@@ -124,10 +135,34 @@ export interface RequestPasswordResetProps {
   email: string;
 }
 
+export const SavePasswordByTokenFormSchema = Joi.object({
+  token: Joi.string().required(),
+  password: Joi.string().required(),
+  password_confirmation: Joi.string().required(),
+});
+export interface SavePasswordByTokenProps {
+  token: string;
+  password: string;
+}
+
+export const RequestPasswordCreationFormSchema = Joi.object({
+  email: Joi.string().required(),
+});
+export interface RequestPasswordCreationProps {
+  email: string;
+}
+
 export const VerifyPasswordTokenFormSchema = Joi.object({
   token: Joi.string().required(),
 });
 export interface VerifyPasswordTokenProps {
+  token: string;
+}
+
+export const TokenFormSchema = Joi.object({
+  token: Joi.string().required(),
+});
+export interface TokenProps {
   token: string;
 }
 export const ResetPasswordFormSchema = Joi.object({

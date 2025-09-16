@@ -48,13 +48,23 @@ export interface InstantNotification {
   id: string;
   title: string;
   message: string;
-  type: NotificationType; // extend as needed
+  type: NotificationType;
+  read: boolean; 
+  icon_url?: string | null; 
   status: boolean;
   is_scheduled: boolean;
   business_id: string | null;
   created_at: string;
-  business: Business | null; // adjust if business structure is known
+  business: {
+    id: string;
+    business_name: string;
+    user: {
+      id: string;
+      name: string;
+    };
+  } | null;
   recipients: NotificationRecipientUserDetails[];
+  schedule_info?: any | null; 
   owner: {
     id: string;
     name: string;
@@ -77,8 +87,9 @@ export interface InstantNotification {
       state: string | null;
       country_code: string;
     };
-  };
+  } | null; // 👈 make owner nullable
 }
+
 
 export interface ScheduledNotification {
   id: string;
@@ -120,6 +131,7 @@ export interface InstantNotificationResponse {
   statusCode: number;
   data: InstantNotification[];
   count: number;
+  unread_count: number;
 }
 
 export interface ScheduledNotificationResponse {

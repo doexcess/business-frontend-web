@@ -1,10 +1,14 @@
 import { DocFormat } from '@/lib/schema/org.schema';
 import { BusinessOwnerOrgRole, ContactInviteStatus, Gender } from '@/lib/utils';
+import { SubscriptionPlan } from './subscription-plan';
+import { Ticket } from './product';
 
 export interface BusinessProfile {
   id: string;
   user_id: string;
   business_name: string;
+  business_description: string;
+  business_slug: string;
   business_size: 'small' | 'medium' | 'large' | string;
   timeline: string;
   logo_url: string;
@@ -13,6 +17,7 @@ export interface BusinessProfile {
   location: string;
   state: string | null;
   country: string;
+  social_media_handles: { handle: string; link: string }[];
   country_code: string;
   created_at: string; // ISO timestamp string
   updated_at: string; // ISO timestamp string
@@ -28,6 +33,7 @@ export interface BusinessProfileFull {
   user_id: string;
   business_name: string;
   business_size: 'small' | 'medium' | 'large' | string;
+  business_slug: string;
   timeline: string;
   logo_url: string;
   industry: string;
@@ -38,6 +44,7 @@ export interface BusinessProfileFull {
   country_code: string;
   created_at: string; // ISO 8601 format
   updated_at: string; // ISO 8601 format
+  kyc: KYC[];
   onboarding_status: {
     current_step: number;
     is_completed: boolean;
@@ -48,6 +55,28 @@ export interface BusinessProfileFull {
     currency: string;
   };
   withdrawal_account: WithdrawalAccount;
+}
+
+export interface KYC {
+  id: string;
+  business_id: string;
+  user_id: string | null;
+  doc_front: string;
+  doc_back: string;
+  utility_doc: string;
+  location: string;
+  state: string | null;
+  city: string;
+  country: string;
+  country_code: string;
+  id_type: string;
+  is_approved: boolean;
+  disapproval_reason: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
 }
 
 export interface WithdrawalAccount {
@@ -133,4 +162,113 @@ export interface ExportUserResponse {
   statusCode: number;
   message: string;
   data: ExportUserDetails;
+}
+
+export interface SubscriptionPlanPrice {
+  id: string;
+  subscription_plan_id: string;
+  price: string; // Could be number if converted
+  currency: Currency; // Consider using enum like 'NGN' | 'USD' | 'EUR'
+  creator_id: string;
+  period: 'monthly' | 'yearly' | string; // Add other possible periods if needed
+  created_at: string; // ISO 8601 date string
+  updated_at: string; // ISO 8601 date string
+  deleted_at: string | null; // ISO 8601 date string
+  subscription_plan: SubscriptionPlan;
+}
+
+export interface Product {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  price: string; // Could be number if you convert it
+  original_price: string; // Could be number if you convert it
+  currency: string; // Consider using a union type like 'NGN' | 'USD' | 'EUR' if you know possible values
+  keywords: string[] | null; // Assuming keywords would be an array if present
+  metadata: Record<string, unknown> | null; // Generic metadata object
+  status: ProductStatus; // Common status types
+  type: ProductType; // Example types, adjust as needed
+  published_at: string | null; // ISO 8601 date string
+  archived_at: string | null; // ISO 8601 date string
+  creator_id: string;
+  created_at: string; // Date string (note the format differs from ISO in your example)
+  business_info?: BusinessInfo | null;
+  creator: {
+    id: string;
+    name: string;
+    role: {
+      name: string;
+      role_id: string; // Consider using specific role IDs if they're standardized
+    };
+  };
+  category: {
+    id: string;
+    name: string;
+    creator_id: string;
+    created_at: string; // ISO 8601 date string
+    updated_at: string; // ISO 8601 date string
+    deleted_at: string | null; // ISO 8601 date string
+  };
+  multimedia: {
+    id: string;
+    url: string;
+    creator_id: string;
+    business_id: string;
+    created_at: string; // ISO 8601 date string
+    updated_at: string; // ISO 8601 date string
+    deleted_at: string | null; // ISO 8601 date string
+    provider: MediaProvider; // Example providers
+    type: MediaType; // Media types
+  };
+  ticket: null | Ticket;
+  subscription_plan: null | SubscriptionPlan;
+  modules: CourseModule[];
+}
+
+// Multimedia type
+export type MultimediaType = 'VIDEO' | 'IMAGE';
+
+// Multimedia object
+export interface Multimedia {
+  type: MultimediaType;
+}
+
+// Content inside a module
+export interface ModuleContent {
+  id: string;
+  title: string;
+  multimedia: Multimedia;
+}
+
+// Module object
+export interface CourseModule {
+  id: string;
+  course_id: string;
+  title: string;
+  position: number;
+  creator_id: string;
+  business_id: string;
+  created_at: string; // ISO Date string
+  updated_at: string; // ISO Date string
+  deleted_at: string | null;
+  contents: ModuleContent[];
+}
+
+export interface TicketTier {
+  id: string;
+  ticket_id: string;
+  name: string;
+  description: string | null;
+  quantity: number;
+  remaining_quantity: number | null;
+  max_per_purchase: number | null;
+  default_view: boolean;
+  status: TicketStatus;
+  created_at: string; // ISO 8601 date string
+  updated_at: string; // ISO 8601 date string
+  deleted_at: string | null; // ISO 8601 date string
+  currency: Currency; // Reusing the Currency enum from previous example
+  amount: string; // Could be number if converted
+  original_amount: string; // Could be number if converted
 }

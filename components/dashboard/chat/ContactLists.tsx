@@ -122,7 +122,7 @@ const ContactLists = ({ searchQuery, setChatTab }: { searchQuery: string; setCha
     }, []);
 
     return (
-        <div className="w-full">
+        <div className="w-full overflow-y-auto rounded-md h-[64vh] max-h-[64vh] md:max-h-[60vh] lg:max-h-[66vh]">
             {contactsLoading ? (
                 <ContactSkeleton />
             ) : filteredContacts.length === 0 ? (

@@ -165,7 +165,7 @@ const EditTicket = () => {
                   )}
                 </Button>
               )}
-              {ticket?.ticket.purchased_tickets!?.length === 0 ? (
+              {ticket?.ticket?.purchased_tickets!?.length === 0 ? (
                 <Button
                   variant='red'
                   className='flex gap-1'
