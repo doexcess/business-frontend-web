@@ -13,6 +13,7 @@ import {
   baseUrl,
   cn,
   formatMoney,
+  OnboardingProcess,
   ProductStatus,
   SubscriptionPeriod,
 } from '@/lib/utils';
@@ -39,6 +40,7 @@ import { useParams } from 'next/navigation';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
 import useProductCategory from '@/hooks/page/useProductCategory';
+import { updateOnboardingProcess } from '@/redux/slices/orgSlice';
 
 interface Props {
   setIsPlanModalOpen: (value: React.SetStateAction<boolean>) => void;
@@ -143,16 +145,14 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
       reader.onloadend = () => setImagePreview(reader.result as string);
       reader.readAsDataURL(file);
 
-      const response: any = await dispatch(
+      const response = await dispatch(
         uploadImage({ form_data: formData, business_id: org?.id })
-      );
-      if (response.type === 'multimedia-upload/image/rejected')
-        throw new Error(response.payload.message);
+      ).unwrap();
 
       setBody((prev) => ({
         ...prev!,
-        cover_image: response.payload.multimedia.url,
-        multimedia_id: response.payload.multimedia.id,
+        cover_image: response.multimedia.url,
+        multimedia_id: response.multimedia.id,
       }));
       toast.success('Image uploaded successfully');
     } catch (error) {
@@ -196,15 +196,25 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
       const { error } = updateSubscriptionPlanSchema.validate(raw);
       if (error) throw new Error(error.details[0].message);
 
-      const response: any = await dispatch(
+      const response = await dispatch(
         updateSubscriptionPlan({ id: subscription_plan?.id!, credentials: raw })
-      );
+      ).unwrap();
 
-      if (response.type === 'subscription-plan/:id/bulk-update/rejected') {
-        throw new Error(response.payload.message);
+      // Update onboarding process
+      if (
+        !org?.onboarding_status.onboard_processes?.includes(
+          OnboardingProcess.PRODUCT_CREATION
+        )
+      ) {
+        await dispatch(
+          updateOnboardingProcess({
+            business_id: org?.id!,
+            process: OnboardingProcess.PRODUCT_CREATION,
+          })
+        );
       }
 
-      toast.success(response.payload.message);
+      toast.success(response.message);
       setIsPlanModalOpen(false);
       dispatch(fetchSubscriptionPlans({ business_id: org?.id! }));
     } catch (error: any) {
@@ -219,7 +229,7 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
     body?.slug &&
     body?.description &&
     body?.category_id &&
-    body?.cover_image &&
+    // body?.cover_image &&
     (body?.subscription_plan_prices?.length || 0) > 0;
 
   const periods = Object.values(SubscriptionPeriod).filter(
@@ -232,15 +242,11 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
       setIsSubmitting(true);
 
       // Submit logic here
-      const response: any = await dispatch(
+      const response = await dispatch(
         deleteSubscriptionPlan({ id: subscription_plan?.id! })
-      );
+      ).unwrap();
 
-      if (response.type === 'subscription-plan/:id/delete/rejected') {
-        throw new Error(response.payload.message);
-      }
-
-      toast.success(response.payload.message);
+      toast.success(response.message);
       setIsPlanModalOpen(false);
       dispatch(fetchSubscriptionPlans({ business_id: org?.id! }));
     } catch (error: any) {
@@ -268,13 +274,9 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
         setIsSubmitting(true);
 
         // Submit logic here
-        const response: any = await dispatch(
+        const response = await dispatch(
           deletePlanPrice({ id: planPrice.id })
-        );
-
-        if (response.type === 'subscription-plan-price/:id/delete/rejected') {
-          throw new Error(response.payload.message);
-        }
+        ).unwrap();
 
         const updatedPlanPrices = body?.subscription_plan_prices!.filter(
           (_, i) => i !== planPriceIndex

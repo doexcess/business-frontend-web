@@ -20,6 +20,7 @@ import {
   baseUrl,
   cn,
   EventType,
+  OnboardingProcess,
   ProductStatus,
   TicketTierStatus,
 } from '@/lib/utils';
@@ -34,17 +35,14 @@ import {
 import moment from 'moment-timezone';
 import { Textarea } from '@/components/ui/textarea';
 import dynamic from 'next/dynamic';
-import { setOnboardingStep } from '@/redux/slices/orgSlice';
+import {
+  setOnboardingStep,
+  updateOnboardingProcess,
+} from '@/redux/slices/orgSlice';
 import { capitalize } from 'lodash';
 import { Globe } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import TinyMceEditor from '@/components/editor/TinyMceEditor';
-
-// Dynamically import ReactQuill to avoid SSR issues
-const ReactQuillEditor = dynamic(() => import('react-quill'), {
-  ssr: false,
-  loading: () => <p>Loading editor...</p>,
-});
 
 const DEFAULT_FORM_VALUES: CreateTicketProps = {
   title: '',
@@ -244,17 +242,13 @@ const AddTicketForm = () => {
       };
       reader.readAsDataURL(file);
 
-      const response: any = await dispatch(
+      const response = await dispatch(
         uploadImage({ form_data: formData, business_id: org?.id })
-      );
-
-      if (response.type === 'multimedia-upload/image/rejected') {
-        throw new Error(response.payload.message);
-      }
+      ).unwrap();
 
       setFormData((prev) => ({
         ...prev,
-        multimedia_id: response.payload.multimedia.id,
+        multimedia_id: response.multimedia.id,
       }));
 
       toast.success('Image uploaded successfully');
@@ -357,9 +351,18 @@ const AddTicketForm = () => {
         })
       ).unwrap();
 
-      if (org?.onboarding_status?.current_step! < 5) {
-        // Update the onboarding current step
-        dispatch(setOnboardingStep(5));
+      // Update onboarding process
+      if (
+        !org?.onboarding_status.onboard_processes?.includes(
+          OnboardingProcess.PRODUCT_CREATION
+        )
+      ) {
+        await dispatch(
+          updateOnboardingProcess({
+            business_id: org?.id!,
+            process: OnboardingProcess.PRODUCT_CREATION,
+          })
+        );
       }
 
       toast.success('Ticket created successfully!');
@@ -489,16 +492,7 @@ const AddTicketForm = () => {
         <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
           Event Description <span className='text-red-500'>*</span>
         </label>
-        {/* <div className='quill-container'>
-          <ReactQuillEditor
-            value={formData.description}
-            onChange={(value: string) =>
-              setFormData((prev) => ({ ...prev, description: value }))
-            }
-            className='dark:text-white'
-            theme='snow'
-          />
-        </div> */}
+
         <Suspense fallback={<div>Loading editor...</div>}>
           <TinyMceEditor
             value={formData.description!}

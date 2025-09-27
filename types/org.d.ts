@@ -1,5 +1,10 @@
 import { DocFormat } from '@/lib/schema/org.schema';
-import { BusinessOwnerOrgRole, ContactInviteStatus, Gender } from '@/lib/utils';
+import {
+  BusinessOwnerOrgRole,
+  ContactInviteStatus,
+  Gender,
+  OnboardingProcess,
+} from '@/lib/utils';
 import { SubscriptionPlan } from './subscription-plan';
 import { Ticket } from './product';
 
@@ -25,13 +30,16 @@ export interface BusinessProfile {
 
 export interface BusinessProfileResponse {
   statusCode: number;
-  data: BusinessProfile[];
+  data: BusinessProfileFull[];
 }
 
 export interface BusinessProfileFull {
   id: string;
   user_id: string;
   business_name: string;
+  business_description: string;
+  business_slug: string;
+  social_media_handles: { handle: string; link: string }[];
   business_size: 'small' | 'medium' | 'large' | string;
   business_slug: string;
   timeline: string;
@@ -46,6 +54,7 @@ export interface BusinessProfileFull {
   updated_at: string; // ISO 8601 format
   kyc: KYC[];
   onboarding_status: {
+    onboard_processes: string[] | null;
     current_step: number;
     is_completed: boolean;
   };
@@ -271,4 +280,64 @@ export interface TicketTier {
   currency: Currency; // Reusing the Currency enum from previous example
   amount: string; // Could be number if converted
   original_amount: string; // Could be number if converted
+}
+
+export interface ContactRole {
+  id: string;
+  name: string;
+  role_group_id: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+  role_id: string;
+  deleted_at: string | null;
+}
+
+export interface ContactProfile {
+  id: string;
+  user_id: string;
+  profile_picture: string | null;
+  address: string | null;
+  bio: string | null;
+  date_of_birth: string | null; // ISO string
+  gender: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  country: string | null;
+  state: string | null;
+  country_code: string | null;
+}
+
+export interface ContactInfo {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  is_email_verified: boolean;
+  is_phone_verified: boolean;
+  created_at: string; // timestamp
+  updated_at: string; // timestamp
+  role: Role;
+  profile?: Profile;
+}
+
+export interface ContactInfoResponse {
+  statusCode: number;
+  data: ContactInfo[];
+  count: number;
+}
+
+export interface BusinessProps {
+  business_id: string;
+}
+
+export interface UpdateOnboardingProcessResponse {
+  statusCode: number;
+  message: string;
+  data: OnboardProcess;
+}
+
+export interface OnboardProcess {
+  onboard_processes: OnboardingProcess[];
 }

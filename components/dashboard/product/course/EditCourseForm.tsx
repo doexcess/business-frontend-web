@@ -16,7 +16,7 @@ import {
   UpdateCourseProps,
   UpdateCourseSchema,
 } from '@/lib/schema/product.schema';
-import { cn } from '@/lib/utils';
+import { cn, OnboardingProcess } from '@/lib/utils';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
@@ -25,6 +25,7 @@ import { useRouter } from 'next/navigation';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
 import { updateCourse } from '@/redux/slices/courseSlice';
 import { Globe } from 'lucide-react';
+import { updateOnboardingProcess } from '@/redux/slices/orgSlice';
 
 const defaultValue = {
   title: '',
@@ -130,7 +131,7 @@ const EditCourseForm = () => {
       if (error) throw new Error(error.details[0].message);
 
       // Submit logic here
-      const response: any = await dispatch(
+      const response = await dispatch(
         updateCourse({
           id: course?.id!,
           credentials: {
@@ -140,10 +141,20 @@ const EditCourseForm = () => {
           },
           business_id: org?.id!,
         })
-      );
+      ).unwrap();
 
-      if (response.type === 'product-course-crud/:id/update/rejected') {
-        throw new Error(response.payload.message);
+      // Update onboarding process
+      if (
+        !org?.onboarding_status.onboard_processes?.includes(
+          OnboardingProcess.PRODUCT_CREATION
+        )
+      ) {
+        await dispatch(
+          updateOnboardingProcess({
+            business_id: org?.id!,
+            process: OnboardingProcess.PRODUCT_CREATION,
+          })
+        );
       }
 
       toast.success('Course updated successfully!');

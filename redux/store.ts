@@ -49,9 +49,19 @@ const rootReducer = combineReducers({
   firebase: firebaseReducer,
 });
 
+const loggerMiddleware = (store: any) => (next: any) => (action: any) => {
+  console.log('Dispatching:', action);
+  let result = next(action);
+  // console.log('Next state:', store.getState());
+  // console.log('📊 New state:', store.getState().chat); // 👈 only chat slice
+  return result;
+};
+
 export const store = configureStore({
   reducer: rootReducer,
   devTools: process.env.NODE_ENV !== 'production',
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(loggerMiddleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

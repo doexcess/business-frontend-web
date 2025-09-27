@@ -39,7 +39,7 @@ export function ClientRequestsTable({ requests }: ClientRequestsTableProps) {
             </tr>
           </thead>
           <tbody className='divide-y divide-gray-200'>
-            {requests.map((request, index) => (
+            {requests?.map((request, index) => (
               <tr
                 key={request.id}
                 className={

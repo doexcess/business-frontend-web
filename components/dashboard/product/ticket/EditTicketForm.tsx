@@ -14,6 +14,7 @@ import {
   cn,
   ProductStatus,
   baseUrl,
+  OnboardingProcess,
 } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import React, { Suspense, useEffect, useRef, useState } from 'react';
@@ -39,6 +40,7 @@ import ThemeDiv from '@/components/ui/ThemeDiv';
 import CkEditor from '@/components/CkEditor';
 import TinyMceEditor from '@/components/editor/TinyMceEditor';
 import { Globe } from 'lucide-react';
+import { updateOnboardingProcess } from '@/redux/slices/orgSlice';
 
 const defaultValue: UpdateTicketProps = {
   title: '',
@@ -260,7 +262,7 @@ const EditTicketForm = () => {
       if (error) throw new Error(error.details[0].message);
 
       // Submit logic here
-      const response: any = await dispatch(
+      const response = await dispatch(
         updateTicket({
           id: ticket?.id!,
           credentials: {
@@ -273,10 +275,20 @@ const EditTicketForm = () => {
           },
           business_id: org?.id!,
         })
-      );
+      ).unwrap();
 
-      if (response.type === 'product-ticket-crud/:id/update/rejected') {
-        throw new Error(response.payload.message);
+      // Update onboarding process
+      if (
+        !org?.onboarding_status.onboard_processes?.includes(
+          OnboardingProcess.PRODUCT_CREATION
+        )
+      ) {
+        await dispatch(
+          updateOnboardingProcess({
+            business_id: org?.id!,
+            process: OnboardingProcess.PRODUCT_CREATION,
+          })
+        );
       }
 
       toast.success('Ticket updated successfully!');
@@ -449,16 +461,7 @@ const EditTicketForm = () => {
           <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
             Event Description
           </label>
-          {/* <div className='quill-container'>
-            <ReactQuill
-              value={body.description}
-              onChange={(value: string) =>
-                setBody((prev) => ({ ...prev, description: value }))
-              }
-              className='dark:text-white'
-              theme='snow'
-            />
-          </div> */}
+
           <Suspense fallback={<div>Loading editor...</div>}>
             <TinyMceEditor
               value={body.description!}

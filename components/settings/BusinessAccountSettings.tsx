@@ -3,12 +3,17 @@ import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import { BusinessProfile } from '@/types/org';
+import { BusinessProfile, BusinessProfileFull } from '@/types/org';
 import { FiPlus, FiEdit2, FiTrash2, FiBriefcase } from 'react-icons/fi';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import Input from '../ui/Input';
 import Select from '../Select';
-import { BUSINESS_INDUSTRIES, cn, getAvatar } from '@/lib/utils';
+import {
+  BUSINESS_INDUSTRIES,
+  cn,
+  getAvatar,
+  OnboardingProcess,
+} from '@/lib/utils';
 import Joi from 'joi';
 import { toast } from 'react-hot-toast';
 import {
@@ -16,6 +21,7 @@ import {
   setOnboardingStep,
   switchToOrg,
   fetchOrgs,
+  updateOnboardingProcess,
 } from '@/redux/slices/orgSlice';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
 import LoadingIcon from '../ui/icons/LoadingIcon';
@@ -852,7 +858,9 @@ const BusinessAccountSettings = () => {
   const [showAddModal, setShowAddModal] = useState(
     Boolean(orgs.length) ? false : true
   );
-  const [selectedOrg, setSelectedOrg] = useState<BusinessProfile | null>(null);
+  const [selectedOrg, setSelectedOrg] = useState<BusinessProfileFull | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
   const [isSelectLoading, setIsSelectLoading] = useState(false);
@@ -896,8 +904,7 @@ const BusinessAccountSettings = () => {
       formData.business_size.trim() !== '' &&
       formData.location.trim() !== '' &&
       (formData.state || '').trim() !== '' &&
-      formData.country.trim() !== '' &&
-      formData.social_media_handles.length > 0
+      formData.country.trim() !== ''
       // &&
       // formData.logo_url !== ''
     );
@@ -1017,7 +1024,7 @@ const BusinessAccountSettings = () => {
     setLogoFile(null);
   };
 
-  const handleEditOrg = (org: BusinessProfile) => {
+  const handleEditOrg = (org: BusinessProfileFull) => {
     setSelectedOrg(org);
     setShowAddModal(true);
   };
@@ -1062,11 +1069,6 @@ const BusinessAccountSettings = () => {
       // Save business info
       await dispatch(saveOrgInfo(businessData)).unwrap();
 
-      if (!selectedOrg && org?.onboarding_status?.current_step! < 1) {
-        // Update the onboarding current step only for new businesses
-        dispatch(setOnboardingStep(1));
-      }
-
       // Fetch updated organizations
       await dispatch(fetchOrgs({}));
 
@@ -1078,13 +1080,39 @@ const BusinessAccountSettings = () => {
           (o) => o.business_name === businessData.business_name
         );
         if (updatedOrg) {
-          dispatch(switchToOrg(updatedOrg.id));
+          if (
+            !org?.onboarding_status.onboard_processes?.includes(
+              OnboardingProcess.BUSINESS_DETAILS
+            )
+          ) {
+            await dispatch(
+              updateOnboardingProcess({
+                business_id: updatedOrg.id,
+                process: OnboardingProcess.BUSINESS_DETAILS,
+              })
+            );
+          }
+          toast.success('Business account updated successfully');
         }
-        toast.success('Business account updated successfully');
       } else {
         // For new business, select the first org
         const orgs = await dispatch(fetchOrgs({})).unwrap();
-        dispatch(switchToOrg(orgs.organizations[0].id));
+
+        // Update onboarding process for new business
+
+        if (
+          !org?.onboarding_status.onboard_processes?.includes(
+            OnboardingProcess.BUSINESS_DETAILS
+          )
+        ) {
+          await dispatch(
+            updateOnboardingProcess({
+              business_id: orgs.organizations[0].id,
+              process: OnboardingProcess.BUSINESS_DETAILS,
+            })
+          );
+        }
+
         toast.success('Business account created successfully');
       }
 

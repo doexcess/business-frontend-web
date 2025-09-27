@@ -1,5 +1,6 @@
 import {
   PaymentMethod,
+  PaymentStatus,
   ProductType,
   RefundStatus,
   RefundType,
@@ -53,7 +54,7 @@ export interface Payment {
   purchase_id: string | null;
   amount: string;
   discount_applied: string;
-  payment_status: string;
+  payment_status: PaymentStatus;
   transaction_id: string;
   payment_method: string;
   created_at: string;
@@ -210,4 +211,15 @@ export interface PaymentInitResponse {
 export interface VerifyPaymentResponse {
   statusCode: number;
   message: string;
+}
+
+export interface CancelPaymentResponse {
+  statusCode: number;
+  message: string;
+  data: CancelPaymentPayload;
+}
+
+export interface CancelPaymentPayload {
+  payment_id: string;
+  status: PaymentStatus;
 }

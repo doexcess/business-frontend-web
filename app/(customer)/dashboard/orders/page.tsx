@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PageHeading from '@/components/PageHeading';
 import Filter from '@/components/Filter';
@@ -34,14 +34,28 @@ import {
   X,
 } from 'lucide-react';
 import Link from 'next/link';
+import ActionConfirmationModal from '@/components/ActionConfirmationModal';
+import LoadingIcon from '@/components/ui/icons/LoadingIcon';
+import {
+  cancelPayment,
+  fetchClientPayments,
+} from '@/redux/slices/paymentSlice';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '@/redux/store';
+import toast from 'react-hot-toast';
 
 const Orders = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const {
+    q,
+    startDate,
+    endDate,
     payments,
+    perPage,
     count,
     loading,
     error,
@@ -52,6 +66,11 @@ const Orders = () => {
     handleFilterByDateSubmit,
     handleRefresh,
   } = useClientPayments();
+
+  const [cancelOrderOpenModal, setCancelOrderOpenModal] = useState(false);
+  const [allowCancelOrderAction, setAllowCancelOrderAction] = useState(false);
+  const [isSubmittingPaymentCancellation, setIsSubmittingPaymentCancellation] =
+    useState(false);
 
   const handleViewPaymentDetails = (paymentId: string) => {
     const payment = payments.find((p) => p.id === paymentId);
@@ -116,6 +135,46 @@ const Orders = () => {
     link.click();
     link.remove();
   };
+
+  const handleCancelOrder = async () => {
+    try {
+      setIsSubmittingPaymentCancellation(true);
+
+      // Submit logic here
+      const response = await dispatch(
+        cancelPayment({
+          payment_id: selectedPayment?.id!,
+        })
+      ).unwrap();
+
+      // Refresh
+      dispatch(
+        fetchClientPayments({
+          page: currentPage,
+          limit: perPage,
+          ...(q && { q }),
+          ...(startDate && { startDate }),
+          ...(endDate && { endDate }),
+        })
+      ).unwrap();
+
+      toast.success(response.message);
+    } catch (error: any) {
+      console.error('Submission failed:', error);
+      const message = error || error.message;
+      toast.error(message);
+    } finally {
+      setIsSubmittingPaymentCancellation(false);
+      setShowPaymentModal(false);
+    }
+  };
+
+  useEffect(() => {
+    if (allowCancelOrderAction) {
+      handleCancelOrder();
+      setAllowCancelOrderAction(false);
+    }
+  }, [allowCancelOrderAction]);
 
   return (
     <main className='min-h-screen text-gray-900 dark:text-white'>
@@ -190,12 +249,6 @@ const Orders = () => {
                   )}
                 </div>
               ))}
-            </div>
-          )}
-
-          {error && (
-            <div className='text-red-600 dark:text-red-400 text-center py-4'>
-              {error}
             </div>
           )}
 
@@ -419,9 +472,42 @@ const Orders = () => {
                 </div>
               </div>
             </div>
+
+            {/* Cancel Order Section */}
+            {selectedPayment.payment_status === PaymentStatus.PENDING && (
+              <div className='pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-end'>
+                <button
+                  onClick={() => setCancelOrderOpenModal(true)}
+                  className=' bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors duration-200'
+                  disabled={isSubmittingPaymentCancellation}
+                >
+                  {isSubmittingPaymentCancellation ? (
+                    <span className='flex items-center justify-center'>
+                      <LoadingIcon />
+                      Processing...
+                    </span>
+                  ) : (
+                    <>
+                      <X className='w-4 h-4' />
+                      Cancel Order
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </Modal>
+
+      <ActionConfirmationModal
+        body={`Are you sure you want to cancel this order - #${shortenId(
+          selectedPayment?.id!
+        )}`}
+        openModal={cancelOrderOpenModal}
+        setOpenModal={setCancelOrderOpenModal}
+        allowAction={allowCancelOrderAction}
+        setAllowAction={setAllowCancelOrderAction}
+      />
     </main>
   );
 };

@@ -5,17 +5,18 @@ import Profile from './Profile';
 import Link from 'next/link';
 import MobileNav from '../sidebar/MobileNav';
 import RecentNotifications from './RecentNotifications';
-import Search from './Search';
 import Icon from '@/components/ui/Icon';
 import useCart from '@/hooks/page/useCart';
 import { ShoppingCart } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { SystemRole } from '@/lib/utils';
+import { StoreLink } from '@/components/StoreLink';
 
 const Topbar = () => {
   const { count } = useCart();
   const { profile } = useSelector((state: RootState) => state.auth);
+  const { org } = useSelector((state: RootState) => state.org);
 
   const [isOpen, setIsOpen] = useState({
     profileDialog: false,
@@ -23,9 +24,9 @@ const Topbar = () => {
   });
 
   return (
-    <nav className='md:ml-60 px-4 py-2.5 z-50 bg-neutral-2 dark:bg-gray-800 shadow-light'>
+    <nav className='md:ml-60 px-4 py-2.5 z-50 bg-neutral-2 border-b dark:border-none border-gray-200 dark:bg-gray-800 shadow-light'>
       <div className='flex flex-wrap justify-between items-center'>
-        <div className='flex justify-start items-center'>
+        <div className='flex justify-start items-center '>
           <Link
             href=''
             className='flex items-center justify-between mr-4 md:hidden'
@@ -46,6 +47,8 @@ const Topbar = () => {
           {/* <Search /> */}
           {/* Mobile nav */}
           <MobileNav />
+
+          <StoreLink slug={org?.business_slug!} />
         </div>
         <div className='flex items-center lg:order-2 gap-1'>
           <RecentNotifications />

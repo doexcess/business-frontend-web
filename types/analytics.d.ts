@@ -124,6 +124,7 @@ export interface MonthlyRevenueMonth {
   course: RevenueItem;
   ticket: RevenueItem;
   subscription: RevenueItem;
+  digital: RevenueItem;
 }
 
 export interface RevenueItem {

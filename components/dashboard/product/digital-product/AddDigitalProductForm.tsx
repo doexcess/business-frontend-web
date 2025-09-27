@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, Suspense } from 'react';
 import Input from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import {
   CreateDigitalProductProps,
   createDigitalProductSchema,
 } from '@/lib/schema/product.schema';
-import { cn, ProductStatus } from '@/lib/utils';
+import { baseUrl, cn, OnboardingProcess, ProductStatus } from '@/lib/utils';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
@@ -25,11 +25,18 @@ import {
 import 'react-quill/dist/quill.snow.css';
 import dynamic from 'next/dynamic';
 import { createDigitalProduct } from '@/redux/slices/digitalProductSlice';
-import { setOnboardingStep } from '@/redux/slices/orgSlice';
+import {
+  setOnboardingStep,
+  updateOnboardingProcess,
+} from '@/redux/slices/orgSlice';
 import { Badge } from '@/components/ui/badge';
+import TinyMceEditor from '@/components/editor/TinyMceEditor';
+import { Globe } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
 const defaultValue: CreateDigitalProductProps = {
   title: '',
+  slug: uuidv4().split('-')[0],
   description: '',
   category_id: '',
   multimedia_id: '',
@@ -39,12 +46,6 @@ const defaultValue: CreateDigitalProductProps = {
   original_price: 0,
   keywords: '',
 };
-
-// Dynamically import ReactQuill to avoid SSR issues
-const ReactQuillEditor = dynamic(() => import('react-quill'), {
-  ssr: false,
-  loading: () => <p>Loading editor...</p>,
-});
 
 const AddDigitalProductForm = () => {
   const [formData, setFormData] =
@@ -127,17 +128,13 @@ const AddDigitalProductForm = () => {
       };
       reader.readAsDataURL(file);
 
-      const response: any = await dispatch(
+      const response = await dispatch(
         uploadImage({ form_data: formData, business_id: org?.id })
-      );
-
-      if (response.type === 'multimedia-upload/image/rejected') {
-        throw new Error(response.payload.message);
-      }
+      ).unwrap();
 
       setFormData((prev) => ({
         ...prev,
-        multimedia_id: response.payload.multimedia.id,
+        multimedia_id: response.multimedia.id,
       }));
 
       toast.success('Image uploaded successfully');
@@ -174,17 +171,13 @@ const AddDigitalProductForm = () => {
       setZipFilePreview('/icons/zip.png');
       setZipFileName(file.name);
 
-      const response: any = await dispatch(
+      const response = await dispatch(
         uploadRawDocument({ form_data: formData, business_id: org?.id })
-      );
-
-      if (response.type === 'multimedia-upload/raw-document/rejected') {
-        throw new Error(response.payload.message);
-      }
+      ).unwrap();
 
       setFormData((prev) => ({
         ...prev,
-        multimedia_zip_id: response.payload.multimedia.id,
+        multimedia_zip_id: response.multimedia.id,
       }));
 
       toast.success('ZIP file uploaded successfully');
@@ -279,22 +272,27 @@ const AddDigitalProductForm = () => {
       const { error, value } = createDigitalProductSchema.validate(input);
       if (error) throw new Error(error.details[0].message);
 
-      const response: any = await dispatch(
+      const response = await dispatch(
         createDigitalProduct({
           credentials: {
             ...input,
           },
           business_id: org?.id!,
         })
-      );
+      ).unwrap();
 
-      if (response.type === 'product-digital-crud/create/rejected') {
-        throw new Error(response.payload.message);
-      }
-
-      if (org?.onboarding_status?.current_step! < 5) {
-        // Update the onboarding current step
-        dispatch(setOnboardingStep(5));
+      // Update onboarding process
+      if (
+        !org?.onboarding_status.onboard_processes?.includes(
+          OnboardingProcess.PRODUCT_CREATION
+        )
+      ) {
+        await dispatch(
+          updateOnboardingProcess({
+            business_id: org?.id!,
+            process: OnboardingProcess.PRODUCT_CREATION,
+          })
+        );
       }
 
       toast.success('Digital product created successfully!');
@@ -309,6 +307,7 @@ const AddDigitalProductForm = () => {
 
   const isFormValid =
     formData.title &&
+    formData.slug &&
     formData.description &&
     formData.category_id &&
     formData.multimedia_id &&
@@ -349,43 +348,75 @@ const AddDigitalProductForm = () => {
           Description <span className='text-red-500'>*</span>
         </label>
         <div className='quill-container'>
-          <ReactQuillEditor
-            value={formData.description}
-            onChange={(value: string) =>
-              setFormData((prev) => ({ ...prev, description: value }))
-            }
-            className='dark:text-white'
-            theme='snow'
-          />
+          <Suspense fallback={<div>Loading editor...</div>}>
+            <TinyMceEditor
+              value={formData.description}
+              onChange={(value: string) =>
+                setFormData((prev) => ({ ...prev, description: value }))
+              }
+              height={200}
+            />
+          </Suspense>
         </div>
         {errors.description && (
           <p className='text-red-500 text-xs mt-1'>{errors.description}</p>
         )}
       </div>
 
-      {/* Category */}
-      <div>
-        <label className='block text-sm font-medium mb-1'>
-          Category <span className='text-red-500'>*</span>
-        </label>
-        <Select
-          value={formData.category_id}
-          onValueChange={(value) => handleSelectChange('category_id', value)}
-        >
-          <SelectTrigger className={cn(errors.category_id && 'border-red-500')}>
-            <SelectValue placeholder='Select a category' />
-          </SelectTrigger>
-          <SelectContent>
-            {categories?.map((category) => (
-              <SelectItem key={category.id} value={category.id}>
-                {category.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.category_id && (
-          <p className='text-red-500 text-xs mt-1'>{errors.category_id}</p>
-        )}
+      <div className='grid lg:grid-cols-2 gap-2'>
+        <div>
+          <label className='block text-sm font-medium mb-1 text-gray-700 dark:text-white'>
+            Shortlink <span className='text-red-500'>*</span>
+          </label>
+          <div className='relative'>
+            <Globe className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4' />
+            <Input
+              type='text'
+              name='slug'
+              value={formData.slug}
+              onChange={handleInputChange}
+              placeholder='Enter your shortlink'
+              required
+              className='w-full rounded-md pl-9'
+            />
+          </div>
+
+          {/* Live preview */}
+          {formData.slug && (
+            <p className='mt-2 text-sm '>
+              Preview:{' '}
+              <span className='text-primary-main dark:text-primary-faded font-medium'>
+                {baseUrl}/{formData.slug}
+              </span>
+            </p>
+          )}
+        </div>
+        {/* Category */}
+        <div>
+          <label className='block text-sm font-medium mb-1'>
+            Category <span className='text-red-500'>*</span>
+          </label>
+          <Select
+            value={formData.category_id}
+            onValueChange={(value) => handleSelectChange('category_id', value)}
+          >
+            <SelectTrigger
+              className={cn(errors.category_id && 'border-red-500')}
+            >
+              <SelectValue placeholder='Select a category' />
+            </SelectTrigger>
+            <SelectContent>
+              {categories?.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.category_id && (
+            <p className='text-red-500 text-xs mt-1'>{errors.category_id}</p>
+          )}
+        </div>
       </div>
 
       <div className='grid grid-cols-2 gap-2'>
@@ -424,7 +455,6 @@ const AddDigitalProductForm = () => {
             min='0'
             step='0.01'
             className={cn(errors.original_price && 'border-red-500')}
-            required
           />
           {errors.original_price && (
             <p className='text-red-500 text-xs mt-1'>{errors.original_price}</p>
@@ -511,14 +541,14 @@ const AddDigitalProductForm = () => {
           {uploadingImage && (
             <div className='absolute inset-0 bg-[#000]/80 backdrop-blur-sm flex flex-col justify-center items-center z-10 px-4'>
               <p className='font-semibold text-white text-sm mb-3'>
-                Uploading... {uploadProgress}%
+                Uploading...
               </p>
-              <div className='w-full bg-white/30 rounded-full h-2'>
+              {/* <div className='w-full bg-white/30 rounded-full h-2'>
                 <div
                   className='bg-white h-2 rounded-full transition-all duration-300'
                   style={{ width: `${uploadProgress}%` }}
                 />
-              </div>
+              </div> */}
             </div>
           )}
 
@@ -576,14 +606,8 @@ const AddDigitalProductForm = () => {
           {uploadingZipFile && (
             <div className='absolute inset-0 bg-primary-main/90 backdrop-blur-sm flex flex-col justify-center items-center z-10 px-4 rounded-xl'>
               <p className='font-semibold text-white text-sm mb-3'>
-                Uploading... {uploadProgress}%
+                Uploading...
               </p>
-              <div className='w-full bg-white/30 rounded-full h-2'>
-                <div
-                  className='bg-white h-2 rounded-full transition-all duration-300'
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
             </div>
           )}
 

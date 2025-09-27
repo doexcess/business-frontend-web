@@ -210,14 +210,16 @@ const GeneralSettings = () => {
             <div>
               <Label htmlFor='gender'>Select gender</Label>
               <Select
-                name="gender"
+                name='gender'
                 data={Object.values(Gender)}
                 value={formData.gender || ''}
                 onChange={(e: any) =>
-                  setFormData((prev) => ({ ...prev, gender: e.target.value as Gender }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    gender: e.target.value as Gender,
+                  }))
                 }
               />
-
             </div>
             <div>
               <Label htmlFor='address'>Address</Label>

@@ -15,3 +15,7 @@ export interface CreatePaymentPayload {
   currency: string;
   business_id: string;
 }
+
+export interface CancelPaymentPayload {
+  payment_id: string;
+}

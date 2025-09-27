@@ -1,4 +1,5 @@
 import { ChatReadStatus } from '@/lib/utils';
+import { ChatGroup, GroupMember, Unread } from './chat-group';
 
 export interface RetrieveChatsProps {
   token: string;
@@ -24,7 +25,7 @@ export interface Chat {
   last_message: string | null;
   last_message_at: string | null;
   is_archived: boolean;
-  unread: number;
+  unread: Unread[] | number;
   is_group: boolean;
   created_at: string;
   updated_at: string;
@@ -88,25 +89,8 @@ export interface Chat {
       provider: string;
       type: string;
     };
-    group_members: Array<{
-      id: string;
-      member_id: string;
-      is_admin: boolean;
-      group_id: string;
-      created_at: string;
-      updated_at: string;
-      deleted_at: string | null;
-      member: {
-        name: string;
-        role: {
-          name: string;
-          role_id: string;
-        };
-        profile: {
-          profile_picture: string | null;
-        } | null;
-      };
-    }>;
+    group_members: GroupMember[];
+    member_details: GroupMember[];
   } | null;
   messages: Array<{
     id: string;
@@ -134,6 +118,8 @@ export interface Message {
   chat_id: string;
   initiator_id: string;
   chat_buddy_id: string;
+  chat_group_id: string;
+  chat?: Chat;
   initiator?: {
     id: string;
     name: string;
@@ -168,6 +154,12 @@ export interface Message {
       profile_picture: string;
     };
   };
+  chat_group?: ChatGroup;
+}
+
+export interface ChatMessagesStat {
+  totalFilesWithFormats: number;
+  totalMessagesWithLinks: number;
 }
 
 export interface ChatResponse {
@@ -188,6 +180,7 @@ export interface MessagesResponse {
     chatId?: string;
     chat: Chat;
     page?: number;
+    stats: ChatMessagesStat;
   };
 }
 
@@ -201,4 +194,12 @@ export interface RecentChatRetrievedResponse {
   status: string;
   message: string;
   data: Chat & { messages: Message[] };
+}
+
+export interface CreatedChatResponse {
+  statusCode: number;
+  message: string;
+  data: {
+    id: string;
+  };
 }

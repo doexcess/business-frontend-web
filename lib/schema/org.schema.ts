@@ -106,3 +106,12 @@ export enum DocFormat {
   json = 'json',
   xlsx = 'xlsx',
 }
+
+export const updateOnboardingProcess = Joi.object({
+  business_id: Joi.string().required(),
+  process: Joi.string().required(),
+});
+export interface UpdateOnboardingProcessProps {
+  business_id: string;
+  process?: string;
+}

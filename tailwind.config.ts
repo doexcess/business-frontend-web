@@ -78,6 +78,8 @@ const config: Config = {
             main: 'linear-gradient(57deg, #EDEEFC 50%, #E7FDF2 91.95%, #F7F8F8 91.95%))',
           },
           light: 'rgba(64, 69, 225, 0.04)',
+          '20': '#B4B6F3',
+          '22': '#EDEEFC',
         },
         secondary: {
           main: '#0D2352',

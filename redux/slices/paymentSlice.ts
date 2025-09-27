@@ -1,12 +1,17 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '@/lib/api';
 import {
+  CancelPaymentResponse,
   Payment,
   PaymentDetailsResponse,
   PaymentInitResponse,
   PaymentsResponse,
   VerifyPaymentResponse,
 } from '@/types/payment';
+import {
+  CancelPaymentPayload,
+  CreatePaymentPayload,
+} from '@/lib/schema/payment.schema';
 
 interface PaymentState {
   payments: Payment[];
@@ -106,7 +111,7 @@ export const fetchPayment = createAsyncThunk(
 // Async thunk to create a payment
 export const createPayment = createAsyncThunk(
   'payment/create',
-  async (payload: any, { rejectWithValue }) => {
+  async (payload: CreatePaymentPayload, { rejectWithValue }) => {
     try {
       const response = await api.post<PaymentInitResponse>(
         '/payment/create',
@@ -116,6 +121,23 @@ export const createPayment = createAsyncThunk(
     } catch (err: any) {
       return rejectWithValue(
         err.response?.data?.message || 'Failed to create payment'
+      );
+    }
+  }
+);
+
+// Async thunk to cancel a payment
+export const cancelPayment = createAsyncThunk(
+  'payment/cancel/:payment_id',
+  async (payload: CancelPaymentPayload, { rejectWithValue }) => {
+    try {
+      const response = await api.post<CancelPaymentResponse>(
+        `/payment/cancel/${payload.payment_id}`
+      );
+      return response.data;
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data?.message || 'Failed to cancel payment'
       );
     }
   }
@@ -249,6 +271,17 @@ const paymentSlice = createSlice({
       .addCase(fetchClientPayments.rejected, (state, action) => {
         state.error = action.error.message || 'Failed to fetch client payments';
         state.loading = false;
+      })
+      .addCase(cancelPayment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(cancelPayment.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(cancelPayment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

@@ -16,7 +16,7 @@ import {
   CreateCourseProps,
   CreateCourseSchema,
 } from '@/lib/schema/product.schema';
-import { cn } from '@/lib/utils';
+import { cn, OnboardingProcess } from '@/lib/utils';
 import { v4 as uuidv4 } from 'uuid';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import { useDispatch, useSelector } from 'react-redux';
@@ -26,7 +26,10 @@ import { useRouter } from 'next/navigation';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
 import useOrg from '@/hooks/page/useOrg';
 import { createCourse } from '@/redux/slices/courseSlice';
-import { setOnboardingStep } from '@/redux/slices/orgSlice';
+import {
+  setOnboardingStep,
+  updateOnboardingProcess,
+} from '@/redux/slices/orgSlice';
 import { Globe } from 'lucide-react';
 
 const defaultValue = {
@@ -137,7 +140,7 @@ const AddCourseForm = () => {
       if (error) throw new Error(error.details[0].message);
 
       // Submit logic here
-      const response: any = await dispatch(
+      const response = await dispatch(
         createCourse({
           credentials: {
             ...body,
@@ -146,19 +149,24 @@ const AddCourseForm = () => {
           },
           business_id: org?.id!,
         })
-      );
+      ).unwrap();
 
-      if (response.type === 'product-course-crud/create/rejected') {
-        throw new Error(response.payload.message);
-      }
-
-      if (org?.onboarding_status?.current_step! < 4) {
-        // Update the onboarding current step
-        dispatch(setOnboardingStep(4));
+      // Update onboarding process
+      if (
+        !org?.onboarding_status.onboard_processes?.includes(
+          OnboardingProcess.PRODUCT_CREATION
+        )
+      ) {
+        await dispatch(
+          updateOnboardingProcess({
+            business_id: org?.id!,
+            process: OnboardingProcess.PRODUCT_CREATION,
+          })
+        );
       }
 
       toast.success('Course created successfully!');
-      router.push(`/products/courses/${response.payload.data.id}/contents`);
+      router.push(`/products/courses/${response.data.id}/contents`);
     } catch (error: any) {
       console.error('Submission failed:', error);
       toast.error(error.message);

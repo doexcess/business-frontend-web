@@ -21,10 +21,11 @@ import {
   fetchInvites,
   inviteMember,
   setOnboardingStep,
+  updateOnboardingProcess,
 } from '@/redux/slices/orgSlice';
 import toast from 'react-hot-toast';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
-import { BusinessOwnerOrgRole } from '@/lib/utils';
+import { BusinessOwnerOrgRole, OnboardingProcess } from '@/lib/utils';
 
 const defaultValue: InviteContactProps = {
   email: '',
@@ -70,24 +71,29 @@ const Team = () => {
       if (error) throw new Error(error.details[0].message);
 
       // Submit logic here
-      const response: any = await dispatch(
+      const response = await dispatch(
         inviteMember({
           ...body,
         })
-      );
+      ).unwrap();
 
-      if (response.type === 'contact/invite/rejected') {
-        throw new Error(response.payload.message);
+      // Update onboarding process
+      if (
+        !org?.onboarding_status.onboard_processes?.includes(
+          OnboardingProcess.TEAM_MEMBERS_INVITATION
+        )
+      ) {
+        await dispatch(
+          updateOnboardingProcess({
+            business_id: org?.id!,
+            process: OnboardingProcess.TEAM_MEMBERS_INVITATION,
+          })
+        ).unwrap();
       }
 
-      toast.success(response.payload.message);
+      toast.success(response.message);
       setInviteOpen(false);
-      setBody({ ...body, email: '' });
-
-      if (org?.onboarding_status?.current_step! < 3) {
-        // Update the onboarding current step
-        dispatch(setOnboardingStep(3));
-      }
+      setBody({ ...body, name: '', email: '' });
 
       // Fetch
       dispatch(

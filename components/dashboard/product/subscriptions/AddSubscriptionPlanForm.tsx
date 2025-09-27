@@ -11,6 +11,7 @@ import {
 import {
   baseUrl,
   formatMoney,
+  OnboardingProcess,
   ProductStatus,
   SubscriptionPeriod,
 } from '@/lib/utils';
@@ -33,7 +34,10 @@ import {
   fetchSubscriptionPlans,
 } from '@/redux/slices/subscriptionPlanSlice';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
-import { setOnboardingStep } from '@/redux/slices/orgSlice';
+import {
+  setOnboardingStep,
+  updateOnboardingProcess,
+} from '@/redux/slices/orgSlice';
 import useProductCategory from '@/hooks/page/useProductCategory';
 
 const defaultValue: CreateSubscriptionPlanProps = {
@@ -159,18 +163,14 @@ const CreateSubscriptionPlanForm = ({
       };
       reader.readAsDataURL(file);
 
-      const response: any = await dispatch(
+      const response = await dispatch(
         uploadImage({ form_data: body, business_id: org?.id })
-      );
-
-      if (response.type === 'multimedia-upload/image/rejected') {
-        throw new Error(response.payload.message);
-      }
+      ).unwrap();
 
       setBody((prev) => ({
         ...prev,
-        cover_image: response.payload.multimedia.url,
-        multimedia_id: response.payload.multimedia.id,
+        cover_image: response.multimedia.url,
+        multimedia_id: response.multimedia.id,
       }));
 
       toast.success('Image uploaded successfully');
@@ -204,33 +204,36 @@ const CreateSubscriptionPlanForm = ({
         ],
       };
 
-      console.log(raw);
-
       const { error, value } = createSubscriptionPlanSchema.validate(raw);
 
       if (error) throw new Error(error.details[0].message);
 
       // Submit logic here
-      const response: any = await dispatch(
+      const response = await dispatch(
         createSubscriptionPlan({
           credentials: {
             ...raw,
           },
         })
-      );
+      ).unwrap();
 
-      if (response.type === 'subscription-plan/bulk-create/rejected') {
-        throw new Error(response.payload.message);
-      }
-
-      if (org?.onboarding_status?.current_step! < 4) {
-        // Update the onboarding current step
-        dispatch(setOnboardingStep(4));
+      // Update onboarding process
+      if (
+        !org?.onboarding_status.onboard_processes?.includes(
+          OnboardingProcess.PRODUCT_CREATION
+        )
+      ) {
+        await dispatch(
+          updateOnboardingProcess({
+            business_id: org?.id!,
+            process: OnboardingProcess.PRODUCT_CREATION,
+          })
+        );
       }
 
       setBody(defaultValue);
 
-      toast.success(response.payload.message);
+      toast.success(response.message);
       setIsPlanModalOpen(false);
       // dispatch(fetchSubscriptionPlans({ business_id: org?.id! }));
     } catch (error: any) {

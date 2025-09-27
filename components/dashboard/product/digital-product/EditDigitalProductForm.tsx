@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
@@ -23,16 +23,20 @@ import {
   UpdateDigitalProductProps,
   updateDigitalProductSchema,
 } from '@/lib/schema/product.schema';
-import { cn, ProductStatus } from '@/lib/utils';
-import { setOnboardingStep } from '@/redux/slices/orgSlice';
+import { baseUrl, cn, OnboardingProcess, ProductStatus } from '@/lib/utils';
+import {
+  setOnboardingStep,
+  updateOnboardingProcess,
+} from '@/redux/slices/orgSlice';
 import { updateDigitialProduct } from '@/redux/slices/digitalProductSlice';
 import { AppDispatch, RootState } from '@/redux/store';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
-
-const ReactQuillEditor = dynamic(() => import('react-quill'), { ssr: false });
+import TinyMceEditor from '@/components/editor/TinyMceEditor';
+import { Globe } from 'lucide-react';
 
 const defaultValue: UpdateDigitalProductProps = {
   title: '',
+  slug: '',
   description: '',
   category_id: '',
   multimedia_id: '',
@@ -73,19 +77,26 @@ const EditDigitalProductForm = () => {
       const { error } = updateDigitalProductSchema.validate(input);
       if (error) throw new Error(error.details[0].message);
 
-      const response: any = await dispatch(
+      const response = await dispatch(
         updateDigitialProduct({
           id: digital_product?.id!,
           credentials: input,
           business_id: org?.id!,
         })
-      );
+      ).unwrap();
 
-      if (response.type.includes('/rejected'))
-        throw new Error(response.payload.message);
-
-      if (org?.onboarding_status?.current_step! < 5) {
-        dispatch(setOnboardingStep(5));
+      // Update onboarding process
+      if (
+        !org?.onboarding_status.onboard_processes?.includes(
+          OnboardingProcess.PRODUCT_CREATION
+        )
+      ) {
+        await dispatch(
+          updateOnboardingProcess({
+            business_id: org?.id!,
+            process: OnboardingProcess.PRODUCT_CREATION,
+          })
+        );
       }
 
       toast.success('Digital product saved successfully!');
@@ -101,6 +112,7 @@ const EditDigitalProductForm = () => {
     if (digital_product) {
       setFormData({
         title: digital_product.title,
+        slug: digital_product.slug,
         description: digital_product.description,
         price: +digital_product.price,
         original_price: +digital_product.original_price!,
@@ -142,37 +154,70 @@ const EditDigitalProductForm = () => {
           Description <span className='text-red-500'>*</span>
         </label>
         <div className='quill-container'>
-          <ReactQuillEditor
-            value={formData.description}
-            onChange={(val) => setFormData({ ...formData, description: val })}
-            className='dark:text-white'
-            theme='snow'
-          />
+          <Suspense fallback={<div>Loading editor...</div>}>
+            <TinyMceEditor
+              value={formData.description!}
+              onChange={(value: any) =>
+                setFormData((prev) => ({ ...prev, description: value! }))
+              }
+              height={200}
+            />
+          </Suspense>
         </div>
       </div>
 
-      {/* Category */}
-      <div>
-        <label className='block text-sm font-medium mb-1'>
-          Category <span className='text-red-500'>*</span>
-        </label>
-        <Select
-          value={formData.category_id}
-          onValueChange={(val) =>
-            setFormData({ ...formData, category_id: val })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder='Select category' />
-          </SelectTrigger>
-          <SelectContent>
-            {categories?.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className='grid lg:grid-cols-2 gap-2'>
+        <div>
+          <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
+            Shortlink <span className='text-red-500'>*</span>
+          </label>
+          <div className='relative'>
+            <Globe className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4' />
+            <Input
+              type='text'
+              name='slug'
+              value={formData.slug!}
+              onChange={(e: any) =>
+                setFormData((prev) => ({ ...prev, slug: e.target.value }))
+              }
+              required
+              className='w-full rounded-md pl-9'
+            />
+          </div>
+
+          {/* Live preview */}
+          {formData.slug && (
+            <p className='mt-2 text-sm '>
+              Preview:{' '}
+              <span className='text-primary-main dark:text-primary-faded font-medium'>
+                {baseUrl}/{formData.slug}
+              </span>
+            </p>
+          )}
+        </div>
+        {/* Category */}
+        <div>
+          <label className='block text-sm font-medium mb-1'>
+            Category <span className='text-red-500'>*</span>
+          </label>
+          <Select
+            value={formData.category_id}
+            onValueChange={(val) =>
+              setFormData({ ...formData, category_id: val })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder='Select category' />
+            </SelectTrigger>
+            <SelectContent>
+              {categories?.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className='grid grid-cols-2 gap-2'>

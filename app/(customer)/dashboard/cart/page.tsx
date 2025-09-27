@@ -15,7 +15,11 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/redux/store';
 import { emptyCart, fetchCart, removeCartItem } from '@/redux/slices/cartSlice';
 import { Modal } from '@/components/ui/Modal';
-import { createPayment, verifyPayment } from '@/redux/slices/paymentSlice';
+import {
+  cancelPayment,
+  createPayment,
+  verifyPayment,
+} from '@/redux/slices/paymentSlice';
 import {
   CreatePaymentPayload,
   PaymentPurchase,
@@ -26,6 +30,7 @@ import {
   ShoppingBag,
   CheckCircle,
   HelpCircle,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { capitalize } from 'lodash';
@@ -53,66 +58,18 @@ function DashboardCart() {
     }
     return 0;
   };
-  // Calculate the actual total sum based on product type
-  const totalSum = items?.reduce(
-    (sum, item) => sum + getItemPrice(item) * item.quantity,
-    0
-  );
+
   const { profile } = useSelector((state: RootState) => state.auth);
   const { org } = useSelector((state: RootState) => state.org);
 
   // Replace with the logged-in user's email in production
   const userEmail = profile?.email || '';
-  const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_KEY || '';
-  const reference = `ref-${Date.now()}`;
 
   const [isPaying, setIsPaying] = useState(false);
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
-  const [paystackRef, setPaystackRef] = useState<string | null>(null);
+
   const [coupon, setCoupon] = useState('');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
-
-  // Remove launchPaystack and loadPaystackScript
-
-  // Payment logic for checkout CTA
-  const [paystackConfig, setPaystackConfig] = useState<any | null>(null);
-  const [shouldTriggerPayment, setShouldTriggerPayment] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-  const [paystackPayment, setPaystackPayment] = useState<any>(null);
-
-  // Ensure we're on client side before using Paystack
-  // React.useEffect(() => {
-  //   setIsClient(true);
-  // }, []);
-
-  // React.useEffect(() => {
-  //   // Only import on the client
-  //   import('react-paystack').then((mod) => {
-  //     setPaystackPayment(() => mod.usePaystackPayment);
-  //   });
-  // }, []);
-
-  // // Effect to trigger payment when config is ready
-  // React.useEffect(() => {
-  //   if (
-  //     shouldTriggerPayment &&
-  //     paystackConfig &&
-  //     isClient &&
-  //     typeof paystackPayment === 'function'
-  //   ) {
-  //     const initializePayment = paystackPayment(
-  //       paystackConfig || { publicKey }
-  //     );
-  //     initializePayment(paystackConfig);
-  //     setShouldTriggerPayment(false);
-  //   }
-  // }, [
-  //   shouldTriggerPayment,
-  //   paystackConfig,
-  //   paystackPayment,
-  //   isClient,
-  //   publicKey,
-  // ]);
 
   const handleCheckout = async () => {
     if (!userEmail) {
@@ -160,9 +117,10 @@ function DashboardCart() {
       const payload: CreatePaymentPayload = {
         email: userEmail,
         purchases,
-        amount: totalSum,
+        amount: amountToPay,
         currency,
         business_id,
+        ...(coupon && { coupon_code: coupon }),
       };
 
       // 1. Create payment
@@ -171,15 +129,14 @@ function DashboardCart() {
       if (!createRes || !createRes.data || !createRes.data.payment_id) {
         throw new Error('Payment creation failed.');
       }
-      // 2. Get reference and amount
+
       const reference = createRes.data.payment_id;
-      setPaystackRef(reference);
-      // 3. Set up Paystack config and trigger inline payment
+
       const config = {
-        public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_KEY!, // Replace with your actual public key
+        public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY!,
         tx_ref: reference,
-        amount: totalSum, // Paystack expects amount in kobo
-        currency, // Or your desired currency
+        amount: amountToPay,
+        currency,
         customer: {
           email: userEmail,
           phone_number: profile?.phone,
@@ -202,6 +159,8 @@ function DashboardCart() {
             // Clear coupon data
             dispatch(clearCouponData());
 
+            closePaymentModal(); // this will close the modal programmatically
+
             // Show success message
             toast.success('Payment successful! Your order has been placed.');
 
@@ -213,7 +172,8 @@ function DashboardCart() {
             setIsPaying(false);
           }
         },
-        onClose: () => {
+        onClose: async () => {
+          await dispatch(cancelPayment({ payment_id: reference }));
           // handle when modal is closed
           setIsPaying(false);
           toast('Payment window closed');
@@ -244,7 +204,9 @@ function DashboardCart() {
     } catch (err: any) {
       console.log(err);
 
-      toast.error(err.message || 'Failed to apply coupon');
+      const message = err || err?.message;
+
+      toast.error(message || 'Failed to apply coupon');
     } finally {
       setIsApplyingCoupon(false);
     }
@@ -289,16 +251,6 @@ function DashboardCart() {
                   <ShoppingBag className='w-5 h-5 mr-2' />
                   Browse Products
                 </button>
-
-                <button
-                  onClick={() =>
-                    router.push('/dashboard/products/subscription-plans')
-                  }
-                  className='inline-flex items-center justify-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2'
-                >
-                  <CheckCircle className='w-5 h-5 mr-2' />
-                  View Subscriptions
-                </button>
               </div>
 
               <div className='mt-8 text-sm text-gray-500 dark:text-gray-400'>
@@ -306,7 +258,7 @@ function DashboardCart() {
                   <HelpCircle className='w-4 h-4 mr-1' />
                   Need help?{' '}
                   <a
-                    href='/support'
+                    href={`${process.env.NEXT_PUBLIC_WEBSITE_URL}/contact`}
                     className='text-primary-main hover:underline ml-1'
                   >
                     Contact support
@@ -315,7 +267,8 @@ function DashboardCart() {
               </div>
             </div>
           ) : (
-            <div className='flex flex-col gap-6'>
+            <div className='flex flex-col gap-8'>
+              {/* Cart Items */}
               <div className='overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'>
                 <table className='min-w-[600px] w-full divide-y divide-gray-200 dark:divide-gray-700'>
                   <thead>
@@ -374,7 +327,7 @@ function DashboardCart() {
 
                       return (
                         <tr key={item.id}>
-                          <td className='px-4 py-3 '>
+                          <td className='px-4 py-3'>
                             <Link
                               href={`/dashboard/products/${item.product_id}`}
                               className='flex items-center gap-3'
@@ -414,14 +367,64 @@ function DashboardCart() {
                   </tbody>
                 </table>
               </div>
-              <div className='flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3'>
-                <div className='text-lg font-bold flex-1 flex items-center justify-between sm:justify-start'>
-                  <span>Total:</span>
-                  <span className='ml-2'>{formatMoney(totalSum)}</span>
-                </div>
-                <div className='flex gap-2 items-center flex-1 sm:justify-end'>
+
+              {/* Payment Summary  */}
+              <div className='flex flex-col sm:flex-row justify-end'>
+                <div className='w-full sm:w-80 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6'>
+                  {/* Coupon */}
+                  <div className='flex gap-2 mb-4'>
+                    <input
+                      type='text'
+                      placeholder='Enter coupon code'
+                      value={coupon}
+                      onChange={(e) => setCoupon(e.target.value)}
+                      className='flex-1 px-4 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-main dark:bg-gray-900 dark:border-gray-600'
+                    />
+                    <button
+                      onClick={handleApplyCoupon}
+                      disabled={loading || !coupon}
+                      className='px-4 py-2 bg-gray-700 text-white rounded-md text-sm font-medium hover:bg-gray-800 transition disabled:opacity-50'
+                    >
+                      Apply
+                    </button>
+                  </div>
+
+                  {/* Breakdown */}
+                  <div className='space-y-2 text-sm'>
+                    <div className='flex justify-between'>
+                      <span className='text-gray-600 dark:text-gray-300'>
+                        Items ({totals.itemCount})
+                      </span>
+                      <span className='font-medium'>
+                        {/* {formatMoney(totalSum)} */}
+                        {coupon_info.discount
+                          ? `${formatMoney(totals.subtotal)} → ${formatMoney(
+                              coupon_info?.discountedAmount
+                            )}`
+                          : formatMoney(totals.subtotal)}
+                      </span>
+                    </div>
+
+                    {/* {coupon_info.discount > 0 && (
+                      <div className='flex justify-between text-green-600 dark:text-green-400'>
+                        <span>Coupon Discount</span>
+                        <span>-{formatMoney(coupon_info.discount)}</span>
+                      </div>
+                    )} */}
+
+                    <div className='flex justify-between text-base font-bold border-t border-gray-200 dark:border-gray-700 pt-3 mt-2'>
+                      <span>Total</span>
+                      <span>
+                        {coupon_info.discount
+                          ? formatMoney(coupon_info?.discountedAmount)
+                          : formatMoney(totals.subtotal)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Checkout */}
                   <button
-                    className='w-full sm:w-auto bg-primary-main text-white font-bold py-2 px-6 rounded hover:bg-blue-800 transition disabled:opacity-60'
+                    className='mt-6 w-full bg-primary-main text-white font-bold py-3 px-6 rounded hover:bg-blue-800 transition disabled:opacity-60'
                     onClick={handleCheckout}
                     disabled={isPaying || loading}
                   >
@@ -440,6 +443,13 @@ function DashboardCart() {
         title='Remove Item'
         className='text-gray-800 dark:text-gray-200'
       >
+        {/* Close Button */}
+        <button
+          onClick={() => setConfirmRemoveId(null)}
+          className='absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+        >
+          <X className='w-5 h-5' />
+        </button>
         <div className='py-4'>
           <p>Are you sure you want to remove this item from your cart?</p>
           <div className='flex gap-4 mt-6 justify-end'>

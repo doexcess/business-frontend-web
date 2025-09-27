@@ -10,6 +10,7 @@ import {
   ContactInviteResponse,
   ExportUserResponse,
   KYC,
+  UpdateOnboardingProcessResponse,
 } from '@/types/org';
 import {
   AcceptInviteProps,
@@ -19,10 +20,12 @@ import {
   InviteContactProps,
   ResolveAccountProps,
   SaveBankAccountProps,
+  UpdateOnboardingProcessProps,
 } from '@/lib/schema/org.schema';
 import {
   BusinessOwnerOrgRole,
   ContactInviteStatus,
+  onboardingProcesses,
   SystemRole,
 } from '@/lib/utils';
 import {
@@ -39,7 +42,7 @@ import {
 } from '@/types/notification';
 
 interface OrgState {
-  orgs: BusinessProfile[];
+  orgs: BusinessProfileFull[];
   org?: BusinessProfileFull | null;
   invites: ContactInvite[];
   banks: PaystackBank[];
@@ -57,6 +60,7 @@ interface OrgState {
   invite: ContactInvite | null;
   invitesCount: number;
   invitesLoading: boolean;
+  updateOnboardingProcessLoading: boolean;
   invitesError: string | null;
   count: number;
   orgsCount: number;
@@ -74,21 +78,27 @@ const initialState: OrgState = {
   account: null,
   customers: [],
   totalCustomers: 0,
+
   customersLoading: true,
   importUserLoading: true,
   exportUserLoading: true,
-  customer: null,
   customerLoading: true,
   banksLoading: true,
   bankLoading: true,
-  invite: null,
-  invitesCount: 0,
   invitesLoading: true,
-  invitesError: null,
+  updateOnboardingProcessLoading: true,
+  loading: true,
+
+  customer: null,
+  invite: null,
+
+  invitesCount: 0,
   orgsCount: 0,
   count: 0,
-  loading: true,
+
+  invitesError: null,
   error: null,
+
   currentPage: 1,
 };
 
@@ -363,12 +373,11 @@ export const restoreMember = createAsyncThunk(
 
 // Async Thunk to fetch banks
 export const fetchKYC = createAsyncThunk(
-  "auth/fetch-kyc",
+  'auth/fetch-kyc',
   async (business_id: string, { rejectWithValue }) => {
     try {
-
       const { data } = await api.get<KYCResponse>(`/onboard/kyc`, {
-        headers: { "Business-Id": business_id },
+        headers: { 'Business-Id': business_id },
       });
 
       return {
@@ -379,7 +388,6 @@ export const fetchKYC = createAsyncThunk(
     }
   }
 );
-
 
 // Async Thunk to fetch banks
 export const fetchBanks = createAsyncThunk('auth/fetch-banks', async () => {
@@ -560,6 +568,35 @@ export const exportUsers = createAsyncThunk(
   }
 );
 
+// Async thunk to update onboarding process
+export const updateOnboardingProcess = createAsyncThunk(
+  'onboard/update-onboarding-process',
+  async (
+    { business_id, process }: UpdateOnboardingProcessProps,
+    { rejectWithValue }
+  ) => {
+    try {
+      const headers: Record<string, any> = {};
+
+      if (business_id !== undefined) headers['Business-Id'] = business_id;
+
+      const { data } = await api.patch<UpdateOnboardingProcessResponse>(
+        '/onboard/update-onboarding-process',
+        { process },
+        {
+          headers,
+        }
+      );
+
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || 'Failed to update onboarding process'
+      );
+    }
+  }
+);
+
 const orgSlice = createSlice({
   name: 'org',
   initialState,
@@ -570,13 +607,25 @@ const orgSlice = createSlice({
     setPerPage: (state, action: PayloadAction<number>) => {
       // Optional per page setter
     },
-    switchToOrg: (state, action: PayloadAction<string>) => {
-      const orgId = action.payload;
+    switchToOrg: (
+      state,
+      action: PayloadAction<UpdateOnboardingProcessProps>
+    ) => {
+      const { business_id: orgId, process } = action.payload;
+
       const matchedOrg = state.orgs.find((org) => org.id === orgId);
 
       if (matchedOrg) {
         state.org = {
           ...matchedOrg,
+          onboarding_status: {
+            ...matchedOrg.onboarding_status,
+            ...(process && {
+              onboard_processes: Array.from(
+                new Set([...onboardingProcesses(state.org!), process])
+              ),
+            }),
+          },
         } as BusinessProfileFull | any;
       } else {
         state.error = 'Organization not found in local state';
@@ -839,6 +888,29 @@ const orgSlice = createSlice({
       })
       .addCase(exportUsers.rejected, (state, action) => {
         state.exportUserLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateOnboardingProcess.pending, (state) => {
+        state.updateOnboardingProcessLoading = true;
+        state.error = null;
+      })
+      .addCase(updateOnboardingProcess.fulfilled, (state, action) => {
+        state.updateOnboardingProcessLoading = false;
+        state.org = {
+          ...state.org,
+          onboarding_status: {
+            ...state.org?.onboarding_status,
+            onboard_processes: Array.from(
+              new Set([
+                ...onboardingProcesses(state.org!),
+                ...action.payload.data.onboard_processes,
+              ])
+            ),
+          },
+        } as BusinessProfileFull | any;
+      })
+      .addCase(updateOnboardingProcess.rejected, (state, action) => {
+        state.updateOnboardingProcessLoading = false;
         state.error = action.payload as string;
       });
   },

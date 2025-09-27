@@ -290,22 +290,23 @@ export const saveProfile = createAsyncThunk(
 
 // Async Thunk to save KYC information
 export const submitKYC = createAsyncThunk(
-  'auth/submit-kyc',
+  'onboard/kyc',
   async (
     { kycData, businessId }: { kycData: KYCProps; businessId: string },
     { rejectWithValue }
   ) => {
     try {
-      const { data } = await api.post('/onboard/kyc', kycData, {
-        headers: {
-          'Business-Id': businessId,
-        },
-      });
+      const { data } = await api.post<GenericResponse>(
+        '/onboard/kyc',
+        kycData,
+        {
+          headers: {
+            'Business-Id': businessId,
+          },
+        }
+      );
 
-      return {
-        message: data.message,
-        statusCode: data.statusCode,
-      };
+      return data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || 'Failed to submit KYC');
     }
@@ -534,6 +535,16 @@ const authSlice = createSlice({
         state.loading = false;
       })
       .addCase(setPasswordByToken.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(submitKYC.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(submitKYC.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(submitKYC.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

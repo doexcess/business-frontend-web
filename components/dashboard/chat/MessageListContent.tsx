@@ -2,6 +2,7 @@ import Icon from '@/components/ui/Icon';
 import { getAvatar, SystemRole } from '@/lib/utils';
 import { AppDispatch, RootState } from '@/redux/store';
 import { Chat } from '@/types/chat';
+import { Unread } from '@/types/chat-group';
 import clsx from 'clsx';
 import moment from 'moment';
 import Image from 'next/image';
@@ -55,24 +56,25 @@ const MessageListContent = ({
   const { id: chatId }: { id: string } = useParams();
 
   const openChat = () => {
+    let url = '';
     if (chat.is_group && chat.chat_group) {
-      const url =
+      url =
         profile?.role.role_id === SystemRole.USER
-          ? `/dashboard/messages/${chat.id}/chat/${chat.chat_group.id}`
-          : `/messages/${chat.id}/chat/${chat.chat_group.id}`;
-      router.push(url);
+          ? `/dashboard/messages/${chat.id}/chat-group/${chat.chat_group.id}`
+          : `/messages/${chat.id}/chat-group/${chat.chat_group.id}`;
     } else if (chat.chat_buddy) {
-      const url =
+      url =
         profile?.role.role_id === SystemRole.USER
           ? `/dashboard/messages/${chat.id}/chat/${chat.chat_buddy.id}`
           : `/messages/${chat.id}/chat/${chat.chat_buddy.id}`;
-      router.push(url);
     }
+
+    router.push(url);
   };
 
   const getChatName = () => {
-    if (chat.is_group && chat.chat_group) {
-      return chat.chat_group.name;
+    if (chat?.is_group || chat?.chat_group) {
+      return chat?.chat_group?.name;
     } else if (chat.chat_buddy) {
       return chat.chat_buddy.name;
     }
@@ -80,8 +82,8 @@ const MessageListContent = ({
   };
 
   const getChatAvatar = () => {
-    if (chat.is_group && chat.chat_group?.multimedia?.url) {
-      return chat.chat_group.multimedia.url;
+    if (chat?.is_group || chat.chat_group?.multimedia?.url) {
+      return chat?.chat_group?.multimedia.url;
     } else if (chat.chat_buddy) {
       return getAvatar(
         chat.chat_buddy?.profile?.profile_picture,
@@ -90,6 +92,12 @@ const MessageListContent = ({
     }
     return getAvatar('', 'Group');
   };
+
+  // const myUnread = JSON.parse(chat?.unread as Unread[]).find(
+  //   (unread_data: Unread) => unread_data.user_id === profile?.id
+  // );
+
+  // console.log(myUnread);
 
   return (
     <div
@@ -100,7 +108,7 @@ const MessageListContent = ({
         index === chats.length - 1 && 'border-b-0',
         index === 0 && 'pb-3'
       )}
-      onClick={openChat}
+      onClick={() => openChat()}
     >
       <img
         src={getChatAvatar()}
@@ -118,22 +126,18 @@ const MessageListContent = ({
             {getChatName()}
           </p>
           <span className={clsx('text-xs font-medium')}>
-            {formatLastMessageTime(
-              chat.messages[0]?.updated_at || chat.last_message_at
-            )}
+            {formatLastMessageTime(chat.last_message_at)}
           </span>
         </div>
         <div className='flex justify-between items-center'>
-          <p className={clsx('text-sm truncate')}>
-            {chat.last_message}
-          </p>
-          {chat.unread > 0 && (
+          <p className={clsx('text-sm truncate')}>{chat.last_message}</p>
+          {Boolean(chat?.unread) && (
             <span
               className={clsx(
                 'ml-2 text-xs px-2 py-1 rounded-full bg-indigo-100 text-primary-main font-semibold'
               )}
             >
-              {chat.unread}
+              {chat?.unread as number}
             </span>
           )}
           {chat.messages[0]?.read && <Icon url='/icons/chat/check.svg' />}

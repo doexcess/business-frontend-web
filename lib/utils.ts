@@ -8,7 +8,11 @@ import crypto from 'crypto';
 import { ProductDetails, TicketTier } from '@/types/product';
 import Joi from 'joi';
 import slugify from 'slugify';
-import { Product, SubscriptionPlanPrice } from '@/types/org';
+import {
+  BusinessProfileFull,
+  Product,
+  SubscriptionPlanPrice,
+} from '@/types/org';
 import { Cart } from '@/types/cart';
 
 export function cn(...inputs: ClassValue[]) {
@@ -61,6 +65,7 @@ export enum PaymentStatus {
   SUCCESS = 'SUCCESS',
   PENDING = 'PENDING',
   FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
 }
 
 export enum PaymentMethod {
@@ -530,3 +535,60 @@ export const lowestTicketTier = (ticket_tiers: TicketTier[]) => {
 };
 
 export const baseUrl = process.env.NEXT_PUBLIC_WEBSITE_URL; // change to your actual base URL
+
+export enum ChatTab {
+  ALL = 'all',
+  UNREAD = 'unread',
+  CONTACTS = 'contacts',
+  GROUPS = 'groups',
+}
+
+export const pluralizeText = (word: string, count: number) => {
+  const pluralChar = count > 1 ? 's' : '';
+  return `${word}${pluralChar}`;
+};
+
+export enum OnboardingProcess {
+  BUSINESS_DETAILS = 'BUSINESS_DETAILS',
+  KYC = 'KYC',
+  WITHDRAWAL_ACCOUNT = 'WITHDRAWAL_ACCOUNT',
+  TEAM_MEMBERS_INVITATION = 'TEAM_MEMBERS_INVITATION',
+  PRODUCT_CREATION = 'PRODUCT_CREATION',
+}
+
+export interface OnboardingStep {
+  id: number;
+  process: OnboardingProcess;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  action: string;
+  path?: string;
+}
+
+export const onboardingProcesses = (org: BusinessProfileFull) => {
+  return (org?.onboarding_status?.onboard_processes as string[]) ?? [];
+};
+
+// helper to format nicely
+export const formatLabel = (val: string) =>
+  val
+    .split('-')
+    .map((word) =>
+      word.toUpperCase() === 'NIN'
+        ? 'NIN'
+        : word.charAt(0).toUpperCase() + word.slice(1)
+    )
+    .join(' ');
+
+export const areAllOnboardingStepsPresent = (
+  steps: OnboardingStep[],
+  onboard_processes: BusinessProfileFull['onboarding_status']['onboard_processes']
+): boolean => {
+  for (let i = 0; i < steps.length; i++) {
+    if (!onboard_processes?.includes(steps[i].process)) {
+      return false; // break immediately if not found
+    }
+  }
+  return true; // all items are present
+};

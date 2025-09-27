@@ -288,6 +288,21 @@ const couponSlice = createSlice({
       .addCase(deleteCoupon.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to delete coupon';
+      })
+      .addCase(applyCoupon.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(applyCoupon.fulfilled, (state, action) => {
+        state.loading = false;
+        state.coupon_info = {
+          discountedAmount: action.payload.data.discountedAmount,
+          discount: action.payload.data.discount,
+        };
+      })
+      .addCase(applyCoupon.rejected, (state, action) => {
+        state.error = action.error.message || 'Failed to apply coupon';
+        state.loading = false;
       });
   },
 });

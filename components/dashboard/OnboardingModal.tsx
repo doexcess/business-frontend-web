@@ -1,27 +1,14 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-import {
-  FaBuilding,
-  FaCreditCard,
-  FaUsers,
-  FaShoppingBag,
-  FaCheckCircle,
-} from 'react-icons/fa';
+import { FaCheckCircle } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/progress';
 import { Modal } from '@/components/ui/Modal';
-
-interface OnboardingStep {
-  id: number;
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  action: string;
-  path?: string;
-  isCompleted: boolean;
-}
+import { onboardingProcesses, OnboardingStep } from '@/lib/utils';
+import { OnboardingSteps } from '@/components/OnboardingSteps';
+import { XCircle } from 'lucide-react';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -29,55 +16,11 @@ interface OnboardingModalProps {
 }
 const OnboardingModal = ({ isOpen, setIsOpen }: OnboardingModalProps) => {
   const router = useRouter();
-  const { orgs, org } = useSelector((state: RootState) => state.org);
+  const { org } = useSelector((state: RootState) => state.org);
 
-  const steps: OnboardingStep[] = [
-    {
-      id: 1,
-      title: 'Business Information',
-      description: 'Provide your business details to get started',
-      icon: <FaBuilding className='w-6 h-6 text-blue-500' />,
-      action: 'Complete Profile',
-      path: '/settings?tab=business-account',
-      isCompleted: org?.onboarding_status?.current_step! >= 1,
-    },
-    {
-      id: 2,
-      title: 'KYC Verification',
-      description: 'Verify your identity to unlock full access',
-      icon: <FaCheckCircle className='w-6 h-6 text-indigo-500' />,
-      action: 'Verify KYC',
-      path: '/settings?tab=kyc',
-      isCompleted: org?.onboarding_status?.current_step! >= 2,
-    },
-    {
-      id: 3,
-      title: 'Withdrawal Account',
-      description: 'Set up your bank account for receiving payments',
-      icon: <FaCreditCard className='w-6 h-6 text-green-500' />,
-      action: 'Add Account',
-      path: '/settings?tab=bank-account',
-      isCompleted: org?.onboarding_status?.current_step! >= 2,
-    },
-    {
-      id: 4,
-      title: 'Invite Team Members',
-      description: 'Add your team members to collaborate',
-      icon: <FaUsers className='w-6 h-6 text-purple-500' />,
-      action: 'Invite Team',
-      path: '/team',
-      isCompleted: org?.onboarding_status?.current_step! >= 3,
-    },
-    {
-      id: 5,
-      title: 'Create Your First Product',
-      description: 'Start by creating a course, event, or subscription',
-      icon: <FaShoppingBag className='w-6 h-6 text-orange-500' />,
-      action: 'Create Product',
-      path: '/products',
-      isCompleted: Boolean(),
-    },
-  ];
+  const processes = onboardingProcesses(org!);
+
+  const steps = OnboardingSteps;
 
   const handleStepClick = (step: OnboardingStep) => {
     if (step.path) {
@@ -86,7 +29,9 @@ const OnboardingModal = ({ isOpen, setIsOpen }: OnboardingModalProps) => {
   };
 
   const getProgressPercentage = () => {
-    const completedSteps = steps.filter((step) => step.isCompleted).length;
+    const completedSteps = steps.filter((step) =>
+      processes.includes(step.process)
+    ).length;
     return (completedSteps / steps.length) * 100;
   };
 
@@ -97,6 +42,13 @@ const OnboardingModal = ({ isOpen, setIsOpen }: OnboardingModalProps) => {
       title='Welcome to Your Business Dashboard'
       className='max-w-xl w-[95%] sm:w-full'
     >
+      {/* X Close Button */}
+      <button
+        onClick={() => setIsOpen(false)}
+        className='absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+      >
+        <XCircle className='w-5 h-5' />
+      </button>
       <div className=''>
         {/* Progress Bar */}
         <div className='w-full space-y-2'>
@@ -111,17 +63,18 @@ const OnboardingModal = ({ isOpen, setIsOpen }: OnboardingModalProps) => {
           {steps.map((step) => (
             <div
               key={step.id}
-              className={`p-3 sm:p-4 rounded-lg cursor-pointer transition-all ${step.isCompleted
-                ? 'bg-green-50 dark:bg-green-900/20'
-                : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                }`}
+              className={`p-3 sm:p-4 rounded-lg cursor-pointer transition-all ${
+                processes.includes(step.process)
+                  ? 'bg-green-50 dark:bg-green-900/20'
+                  : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+              }`}
               onClick={() => handleStepClick(step)}
             >
               <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4'>
                 <div className='flex items-start sm:items-center gap-3 sm:gap-4'>
                   <div className='relative flex-shrink-0'>
                     {step.icon}
-                    {step.isCompleted && (
+                    {processes.includes(step.process) && (
                       <FaCheckCircle className='absolute -top-2 -right-2 text-green-500 w-4 h-4' />
                     )}
                   </div>
@@ -135,24 +88,16 @@ const OnboardingModal = ({ isOpen, setIsOpen }: OnboardingModalProps) => {
                   </div>
                 </div>
                 <Button
-                  variant={step.isCompleted ? 'outline' : 'primary'}
+                  variant={
+                    processes.includes(step.process) ? 'outline' : 'primary'
+                  }
                   className='w-full sm:w-auto min-w-[120px] text-sm'
                 >
-                  {step.isCompleted ? 'Completed' : step.action}
+                  {processes.includes(step.process) ? 'Completed' : step.action}
                 </Button>
               </div>
             </div>
           ))}
-        </div>
-
-        <div className='flex justify-end mt-6'>
-          <Button
-            variant='outline'
-            onClick={() => setIsOpen(false)}
-            className='w-full sm:w-auto text-sm text-gray-800 dark:text-white hover:text-white hover:bg-gray-800  dark:hover:bg-gray-400'
-          >
-            I'll do this later
-          </Button>
         </div>
       </div>
     </Modal>
