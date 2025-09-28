@@ -21,9 +21,11 @@ import {
   resolveAccount,
   saveWithdrawalAccount,
   setOnboardingStep,
+  updateOnboardingProcess,
 } from '@/redux/slices/orgSlice';
 import toast from 'react-hot-toast';
 import LoadingIcon from '../ui/icons/LoadingIcon';
+import { OnboardingProcess } from '@/lib/utils';
 
 const defaultValue = {
   business_id: '',
@@ -94,20 +96,26 @@ const BankAccountSettings = () => {
 
     try {
       setIsSubmitting(true);
-      const response: any = await dispatch(saveWithdrawalAccount(body));
+      const response = await dispatch(saveWithdrawalAccount(body)).unwrap();
 
-      if (response.type === 'onboard/save-withdrawal-account/rejected')
-        throw new Error(response.payload);
-
-      if (org?.onboarding_status?.current_step! < 2) {
-        // Update the onboarding current step
-        dispatch(setOnboardingStep(2));
+      if (
+        !org?.onboarding_status.onboard_processes?.includes(
+          OnboardingProcess.WITHDRAWAL_ACCOUNT
+        )
+      ) {
+        // Update onboarding process
+        await dispatch(
+          updateOnboardingProcess({
+            business_id: org?.id!,
+            process: OnboardingProcess.WITHDRAWAL_ACCOUNT,
+          })
+        );
       }
 
       // Refetch org details
       dispatch(fetchOrg(org?.id!));
 
-      toast.success(response?.payload?.message);
+      toast.success(response?.message);
     } catch (error: any) {
       console.error(error);
       toast.error(error.message);

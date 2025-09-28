@@ -16,7 +16,8 @@ import {
   CreateCourseProps,
   CreateCourseSchema,
 } from '@/lib/schema/product.schema';
-import { cn } from '@/lib/utils';
+import { cn, OnboardingProcess } from '@/lib/utils';
+import { v4 as uuidv4 } from 'uuid';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
@@ -25,15 +26,23 @@ import { useRouter } from 'next/navigation';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
 import useOrg from '@/hooks/page/useOrg';
 import { createCourse } from '@/redux/slices/courseSlice';
-import { setOnboardingStep } from '@/redux/slices/orgSlice';
+import {
+  setOnboardingStep,
+  updateOnboardingProcess,
+} from '@/redux/slices/orgSlice';
+import { Globe } from 'lucide-react';
 
 const defaultValue = {
   title: '',
+  slug: uuidv4().split('-')[0],
   description: '',
   multimedia_id: '',
-  price: null,
+  price: 0,
+  original_price: 0,
   category_id: '',
 };
+
+const baseUrl = process.env.NEXT_PUBLIC_WEBSITE_URL; // change to your actual base URL
 
 const AddCourseForm = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -84,12 +93,13 @@ const AddCourseForm = () => {
           form_data: formData,
           business_id: org?.id,
           onUploadProgress: (event) => {
-            const percent = Math.round((event.loaded * 100) / (event.total || 1));
+            const percent = Math.round(
+              (event.loaded * 100) / (event.total || 1)
+            );
             setUploadProgress(percent);
-          }
+          },
         })
       );
-
 
       if (response.type === 'multimedia-upload/image/rejected') {
         throw new Error(response.payload.message);
@@ -104,7 +114,7 @@ const AddCourseForm = () => {
     } catch (error) {
       toast.error('Failed to upload image');
     } finally {
-      setUploadProgress(0)
+      setUploadProgress(0);
       setUploadingImage(false);
     }
   };
@@ -130,24 +140,33 @@ const AddCourseForm = () => {
       if (error) throw new Error(error.details[0].message);
 
       // Submit logic here
-      const response: any = await dispatch(
+      const response = await dispatch(
         createCourse({
-          credentials: { ...body, price: +body.price! },
+          credentials: {
+            ...body,
+            price: +body.price!,
+            original_price: +body.original_price!,
+          },
           business_id: org?.id!,
         })
-      );
+      ).unwrap();
 
-      if (response.type === 'product-course-crud/create/rejected') {
-        throw new Error(response.payload.message);
-      }
-
-      if (org?.onboarding_status?.current_step! < 4) {
-        // Update the onboarding current step
-        dispatch(setOnboardingStep(4));
+      // Update onboarding process
+      if (
+        !org?.onboarding_status.onboard_processes?.includes(
+          OnboardingProcess.PRODUCT_CREATION
+        )
+      ) {
+        await dispatch(
+          updateOnboardingProcess({
+            business_id: org?.id!,
+            process: OnboardingProcess.PRODUCT_CREATION,
+          })
+        );
       }
 
       toast.success('Course created successfully!');
-      router.push(`/products/courses/${response.payload.data.id}/contents`);
+      router.push(`/products/courses/${response.data.id}/contents`);
     } catch (error: any) {
       console.error('Submission failed:', error);
       toast.error(error.message);
@@ -158,9 +177,11 @@ const AddCourseForm = () => {
 
   const isFormValid =
     body.title &&
+    body.slug &&
     body.description &&
     body.category_id &&
     body.price &&
+    body.original_price &&
     body.multimedia_id;
 
   return (
@@ -183,7 +204,6 @@ const AddCourseForm = () => {
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
         >
-        
           {imagePreview ? (
             <img
               src={imagePreview}
@@ -198,7 +218,9 @@ const AddCourseForm = () => {
                 className='mb-2 w-10 h-10'
               />
               <p className='font-medium'>Upload, Drag or drop image</p>
-              <p className='text-xs'>Supported Format: png, jpeg. Max size is 5MB</p>
+              <p className='text-xs'>
+                Supported Format: png, jpeg. Max size is 5MB
+              </p>
             </>
           )}
 
@@ -226,13 +248,11 @@ const AddCourseForm = () => {
           />
         </div>
 
-
-
         {/* Category and Price Fields */}
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
           <div>
             <label className='text-sm font-medium mb-1 block'>
-              CATEGORY <span className='text-red-500'>*</span>
+              Category <span className='text-red-500'>*</span>
             </label>
             <Select
               value={body.category_id}
@@ -255,7 +275,7 @@ const AddCourseForm = () => {
           </div>
           <div>
             <label className='text-sm font-medium mb-1 block'>
-              PRICE <span className='text-red-500'>*</span>
+              Price <span className='text-red-500'>*</span>
             </label>
             <Input
               type='text'
@@ -265,13 +285,53 @@ const AddCourseForm = () => {
               onChange={handleChange}
               required
             />
+            <p className='mt-2 text-xs'>Zero (0) represents a free product</p>
+          </div>
+          <div>
+            <label className='text-sm font-medium mb-1 block'>
+              Crossed-out Price (Optional)
+            </label>
+            <Input
+              type='text'
+              name='original_price'
+              className='w-full rounded-md py-3'
+              value={body.original_price!}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <label className='text-sm font-medium mb-1 block'>
+              Shortlink <span className='text-red-500'>*</span>
+            </label>
+            <div className='relative'>
+              <Globe className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4' />
+              <Input
+                type='text'
+                name='slug'
+                className='w-full rounded-md pl-9'
+                value={body.slug!}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            {/* Live preview */}
+            {body.slug && (
+              <p className='mt-2 text-sm '>
+                Preview:{' '}
+                <span className='text-primary-main dark:text-primary-faded font-medium'>
+                  {baseUrl}/{body.slug}
+                </span>
+              </p>
+            )}
           </div>
         </div>
 
         {/* Description */}
         <div>
           <label className='text-sm font-medium mb-1 block'>
-            DESCRIPTION <span className='text-red-500'>*</span>
+            Description <span className='text-red-500'>*</span>
           </label>
           <Textarea
             rows={3}

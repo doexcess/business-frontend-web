@@ -47,5 +47,25 @@ export interface GenericResponse {
   message: string;
 }
 
+export interface GenericResponseAlt<T> {
+  statusCode: number;
+  message: string;
+  data: T;
+}
+
+export interface PaginationProps {
+  page?: number;
+  limit?: number;
+  q?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface ErrorResponse {
+  error: string;
+  message: string;
+  statusCode: number;
+}
+
 // Export order types
 export * from './order';

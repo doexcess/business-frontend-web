@@ -70,6 +70,10 @@ export const sidebarLinks = [
         route: '/products/subscriptions',
         label: 'Subscriptions',
       },
+      {
+        route: '/products/digital-products',
+        label: 'Digital Products',
+      },
     ],
   },
   {
@@ -91,6 +95,10 @@ export const sidebarLinks = [
       {
         route: '/dashboard/products/subscription-plans',
         label: 'Subscription Plans',
+      },
+      {
+        route: '/dashboard/products/digital-products',
+        label: 'Digital Products',
       },
     ],
   },

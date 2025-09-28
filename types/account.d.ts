@@ -117,6 +117,11 @@ export interface BanksResponse {
   data: PaystackBanksResponse;
 }
 
+export interface KYCResponse {
+  statusCode: number;
+  data: KYC;
+}
+
 // Resolve bank account
 export interface RecipientDetails {
   authorization_code: string | null;
@@ -173,4 +178,17 @@ export interface VerifyEmailResponse {
   data: {
     role: string;
   };
+}
+
+export interface VerificationTokenDetails {
+  expires_at: string;
+  is_verified: boolean;
+  created_at: string;
+  email: string;
+}
+
+export interface VerifyEmailByTokenResponse {
+  statusCode: number;
+  message: string;
+  data?: VerificationTokenDetails;
 }

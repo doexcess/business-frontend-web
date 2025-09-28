@@ -17,6 +17,7 @@ const Filter = ({
   enableRightSearchBar = false,
   showFullSearchWidth = false,
   showFilterByDate = true,
+  showRefresh = true,
   searchPlaceholder = 'Search',
   showPeriod = true,
   handleSearchSubmit,
@@ -32,6 +33,7 @@ const Filter = ({
   searchPlaceholder?: string;
   showPeriod?: boolean;
   showFilterByDate?: boolean;
+  showRefresh?: boolean
   handleSearchSubmit?: (input: string) => void;
   handleFilterByDateSubmit?: (
     startDate: string,
@@ -138,15 +140,19 @@ const Filter = ({
               <HiDotsVertical size={20} className={'text-2xl'} />
             </Button>
           )}
+
+          { showRefresh && (
           <Button
             title='Refresh'
             size='icon'
             variant='primary'
             className='text-white bg-primary-main hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-2 py-2 dark:bg-primary-main dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 flex gap-1 items-center'
-            onClick={handleRefreshClick}
-          >
+            onClick={handleRefreshClick}>
             <HiRefresh size={20} className={'text-2xl'} />
           </Button>
+          ) }
+
+
           {showPeriod && (
             <form className='w-full'>
               <select

@@ -9,7 +9,14 @@ import {
   UpdateSubscriptionPlanProps,
   updateSubscriptionPlanSchema,
 } from '@/lib/schema/subscription.schema';
-import { cn, formatMoney, SubscriptionPeriod } from '@/lib/utils';
+import {
+  baseUrl,
+  cn,
+  formatMoney,
+  OnboardingProcess,
+  ProductStatus,
+  SubscriptionPeriod,
+} from '@/lib/utils';
 import {
   Select,
   SelectContent,
@@ -17,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PlusIcon, XIcon } from 'lucide-react';
+import { Globe, PlusIcon, XIcon } from 'lucide-react';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
 import { toast } from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
@@ -32,6 +39,8 @@ import useSubscriptionPlan from '@/hooks/page/useSubscriptionPlan';
 import { useParams } from 'next/navigation';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
+import useProductCategory from '@/hooks/page/useProductCategory';
+import { updateOnboardingProcess } from '@/redux/slices/orgSlice';
 
 interface Props {
   setIsPlanModalOpen: (value: React.SetStateAction<boolean>) => void;
@@ -40,6 +49,9 @@ interface Props {
 const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
   const params = useParams();
   const dispatch = useDispatch<AppDispatch>();
+
+  const { categories } = useProductCategory();
+
   const { profile } = useSelector((state: RootState) => state.auth);
   const { org } = useSelector((state: RootState) => state.org);
   const { subscription_plan: plan } = useSelector(
@@ -133,15 +145,14 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
       reader.onloadend = () => setImagePreview(reader.result as string);
       reader.readAsDataURL(file);
 
-      const response: any = await dispatch(
+      const response = await dispatch(
         uploadImage({ form_data: formData, business_id: org?.id })
-      );
-      if (response.type === 'multimedia-upload/image/rejected')
-        throw new Error(response.payload.message);
+      ).unwrap();
 
       setBody((prev) => ({
         ...prev!,
-        cover_image: response.payload.multimedia.url,
+        cover_image: response.multimedia.url,
+        multimedia_id: response.multimedia.id,
       }));
       toast.success('Image uploaded successfully');
     } catch (error) {
@@ -154,6 +165,7 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!isFormValid) return;
 
     setIsSubmitting(true);
@@ -184,15 +196,25 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
       const { error } = updateSubscriptionPlanSchema.validate(raw);
       if (error) throw new Error(error.details[0].message);
 
-      const response: any = await dispatch(
+      const response = await dispatch(
         updateSubscriptionPlan({ id: subscription_plan?.id!, credentials: raw })
-      );
+      ).unwrap();
 
-      if (response.type === 'subscription-plan/:id/bulk-update/rejected') {
-        throw new Error(response.payload.message);
+      // Update onboarding process
+      if (
+        !org?.onboarding_status.onboard_processes?.includes(
+          OnboardingProcess.PRODUCT_CREATION
+        )
+      ) {
+        await dispatch(
+          updateOnboardingProcess({
+            business_id: org?.id!,
+            process: OnboardingProcess.PRODUCT_CREATION,
+          })
+        );
       }
 
-      toast.success(response.payload.message);
+      toast.success(response.message);
       setIsPlanModalOpen(false);
       dispatch(fetchSubscriptionPlans({ business_id: org?.id! }));
     } catch (error: any) {
@@ -204,10 +226,11 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
 
   const isFormValid =
     body?.name &&
+    body?.slug &&
     body?.description &&
-    body?.cover_image &&
-    (body?.subscription_plan_prices?.length || 0) > 0 &&
-    (body?.subscription_plan_roles?.length || 0) > 0;
+    body?.category_id &&
+    // body?.cover_image &&
+    (body?.subscription_plan_prices?.length || 0) > 0;
 
   const periods = Object.values(SubscriptionPeriod).filter(
     (period) => period !== SubscriptionPeriod.FREE
@@ -219,15 +242,11 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
       setIsSubmitting(true);
 
       // Submit logic here
-      const response: any = await dispatch(
+      const response = await dispatch(
         deleteSubscriptionPlan({ id: subscription_plan?.id! })
-      );
+      ).unwrap();
 
-      if (response.type === 'subscription-plan/:id/delete/rejected') {
-        throw new Error(response.payload.message);
-      }
-
-      toast.success(response.payload.message);
+      toast.success(response.message);
       setIsPlanModalOpen(false);
       dispatch(fetchSubscriptionPlans({ business_id: org?.id! }));
     } catch (error: any) {
@@ -255,13 +274,9 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
         setIsSubmitting(true);
 
         // Submit logic here
-        const response: any = await dispatch(
+        const response = await dispatch(
           deletePlanPrice({ id: planPrice.id })
-        );
-
-        if (response.type === 'subscription-plan-price/:id/delete/rejected') {
-          throw new Error(response.payload.message);
-        }
+        ).unwrap();
 
         const updatedPlanPrices = body?.subscription_plan_prices!.filter(
           (_, i) => i !== planPriceIndex
@@ -288,8 +303,11 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
         name: subscription_plan.name || '',
         description: subscription_plan.description || '',
         cover_image: subscription_plan.cover_image || '',
+        category_id: subscription_plan?.product?.category.id || '',
+        status: subscription_plan?.product?.status || ProductStatus.DRAFT,
+        multimedia_id: subscription_plan?.product?.multimedia.id || '',
         subscription_plan_prices: (
-          subscription_plan.subscription_plan_prices || []
+          subscription_plan?.subscription_plan_prices || []
         ).map((price) => ({
           ...price,
           id: price.id,
@@ -299,6 +317,7 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
         })),
         subscription_plan_roles:
           subscription_plan.subscription_plan_roles || [],
+        slug: subscription_plan?.product.slug,
       });
 
       setImagePreview(subscription_plan.cover_image);
@@ -337,6 +356,59 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
             required
           />
         </div>
+
+        <div>
+          <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
+            Shortlink <span className='text-red-500'>*</span>
+          </label>
+          <div className='relative'>
+            <Globe className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4' />
+            <Input
+              type='text'
+              name='slug'
+              value={body?.slug!}
+              onChange={handleInputChange}
+              required
+              className='w-full rounded-md pl-9'
+            />
+          </div>
+
+          {/* Live preview */}
+          {body?.slug && (
+            <p className='mt-2 text-sm '>
+              Preview:{' '}
+              <span className='text-primary-main dark:text-primary-faded font-medium'>
+                {baseUrl}/{body.slug}
+              </span>
+            </p>
+          )}
+        </div>
+
+        {/* Category and Price Fields */}
+        <div>
+          <label className='text-sm font-medium mb-1 block'>
+            Category <span className='text-red-500'>*</span>
+          </label>
+          <Select
+            value={body?.category_id!}
+            onValueChange={(value) =>
+              setBody((prev) => ({ ...prev, category_id: value }))
+            }
+            required
+          >
+            <SelectTrigger id='category' className='w-full'>
+              <SelectValue placeholder='Select your category' />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category, index) => (
+                <SelectItem key={index} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <div>
           <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
             Description
@@ -478,6 +550,33 @@ const UpdateSubscriptionPlanForm = ({ setIsPlanModalOpen }: Props) => {
           </div>
         ))}
       </section>
+
+      <div>
+        <label className='font-medium mb-1 block text-gray-700 dark:text-white'>
+          Make Public? <span className='text-red-500'>*</span>
+        </label>
+        <Select
+          value={body?.status!}
+          onValueChange={(value) =>
+            setBody((prev) => ({ ...prev, status: value as any }))
+          }
+          required
+        >
+          <SelectTrigger id='status' className='w-full'>
+            <SelectValue placeholder='Select status' />
+          </SelectTrigger>
+          <SelectContent>
+            {[
+              [ProductStatus.DRAFT, 'No'],
+              [ProductStatus.PUBLISHED, 'Yes'],
+            ].map((status, index) => (
+              <SelectItem key={index} value={status[0]}>
+                {status[1]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* Submit */}
       <div className=' flex gap-2'>

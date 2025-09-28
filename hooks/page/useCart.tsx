@@ -9,6 +9,17 @@ const useCart = () => {
     (state: RootState) => state.cart
   );
 
+  // Calculate totals
+  const totals = {
+    subtotal:
+      cart?.items?.reduce((total, item) => {
+        return total + parseFloat(item.price_at_time) * item.quantity;
+      }, 0) || 0,
+    itemCount: cart?.items?.length || 0,
+    totalQuantity:
+      cart?.items?.reduce((total, item) => total + item.quantity, 0) || 0,
+  };
+
   useEffect(() => {
     dispatch(fetchCart());
   }, [dispatch]);
@@ -18,6 +29,7 @@ const useCart = () => {
     count,
     loading,
     error,
+    totals,
   };
 };
 

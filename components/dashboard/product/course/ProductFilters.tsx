@@ -19,7 +19,7 @@ interface CourseFiltersProps {
   onPriceRangeChange: (value: string) => void;
 }
 
-const CourseFilters = ({
+const ProductFilters = ({
   search,
   priceRange,
   onSearch,
@@ -62,4 +62,4 @@ const CourseFilters = ({
   );
 };
 
-export default CourseFilters;
+export default ProductFilters;

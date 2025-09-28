@@ -2,11 +2,12 @@
 
 import PageHeading from '@/components/PageHeading';
 import React, { useState } from 'react';
-import CourseFilters from '@/components/dashboard/product/course/CourseFilters';
-import PublicCourseGridItem from '@/components/dashboard/product/course/PublicCourseGridItem';
+import ProductFilters from '@/components/dashboard/product/course/ProductFilters';
+import PublicProductGridItem from '@/components/dashboard/product/course/PublicCourseGridItem';
 import useProducts from '@/hooks/page/useProducts';
 import Pagination from '@/components/Pagination';
 import NotFound from '@/components/ui/NotFound';
+import { ProductType } from '@/lib/utils';
 
 const Courses = () => {
   const [search, setSearch] = useState('');
@@ -22,7 +23,7 @@ const Courses = () => {
     handleRefresh,
     limit = 10,
     currentPage,
-  } = useProducts('COURSE', search, priceRange);
+  } = useProducts(ProductType.COURSE, search, priceRange);
 
   // Optionally filter products by price range here if needed
 
@@ -39,7 +40,7 @@ const Courses = () => {
           layer3Link='/products/courses'
         />
         <div className='flex flex-col gap-4 mt-2'>
-          <CourseFilters
+          <ProductFilters
             search={search}
             priceRange={priceRange}
             onSearch={setSearch}
@@ -69,24 +70,24 @@ const Courses = () => {
             />
           ) : (
             <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
-              {products.map((course: any) => (
-                <PublicCourseGridItem
+              {products?.map((course) => (
+                <PublicProductGridItem
                   key={course.id}
                   id={course.id}
+                  details={course}
+                  type={course.type}
                   title={course.title}
                   imageSrc={
-                    course.imageSrc ||
-                    course.multimedia?.url ||
-                    '/images/course/course1.png'
+                    course.multimedia?.url || '/images/course/course1.png'
                   }
-                  price={course.price}
-                  onView={() => { }}
-                  onBuy={() => { }}
+                  price={course.price!}
+                  onView={() => {}}
+                  onBuy={() => {}}
                 />
               ))}
             </div>
           )}
-          
+
           {!loading && count > limit && (
             <Pagination
               currentPage={currentPage}
@@ -95,7 +96,6 @@ const Courses = () => {
               onClickPrev={onClickPrev}
             />
           )}
-
         </div>
       </div>
     </main>

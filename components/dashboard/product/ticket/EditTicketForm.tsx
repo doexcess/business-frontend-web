@@ -8,9 +8,16 @@ import {
 import { uploadImage } from '@/redux/slices/multimediaSlice';
 import { deleteTicketTier, updateTicket } from '@/redux/slices/ticketSlice';
 import { AppDispatch, RootState } from '@/redux/store';
-import { TicketTierStatus, EventType, cn, ProductStatus } from '@/lib/utils';
+import {
+  TicketTierStatus,
+  EventType,
+  cn,
+  ProductStatus,
+  baseUrl,
+  OnboardingProcess,
+} from '@/lib/utils';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
 import ReactQuill from 'react-quill';
@@ -30,9 +37,14 @@ import ActionConfirmationModal from '@/components/ActionConfirmationModal';
 import moment from 'moment-timezone';
 import XIcon from '@/components/ui/icons/XIcon';
 import ThemeDiv from '@/components/ui/ThemeDiv';
+import CkEditor from '@/components/CkEditor';
+import TinyMceEditor from '@/components/editor/TinyMceEditor';
+import { Globe } from 'lucide-react';
+import { updateOnboardingProcess } from '@/redux/slices/orgSlice';
 
 const defaultValue: UpdateTicketProps = {
   title: '',
+  slug: '',
   description: '',
   keywords: '',
   metadata: '',
@@ -166,7 +178,7 @@ const EditTicketForm = () => {
     setBody((prev) => ({
       ...prev,
       ticket_tiers: [
-        ...prev?.ticket_tiers!,
+        ...(prev?.ticket_tiers! || []),
         {
           name: '',
           amount: null,
@@ -250,7 +262,7 @@ const EditTicketForm = () => {
       if (error) throw new Error(error.details[0].message);
 
       // Submit logic here
-      const response: any = await dispatch(
+      const response = await dispatch(
         updateTicket({
           id: ticket?.id!,
           credentials: {
@@ -263,10 +275,20 @@ const EditTicketForm = () => {
           },
           business_id: org?.id!,
         })
-      );
+      ).unwrap();
 
-      if (response.type === 'product-ticket-crud/:id/update/rejected') {
-        throw new Error(response.payload.message);
+      // Update onboarding process
+      if (
+        !org?.onboarding_status.onboard_processes?.includes(
+          OnboardingProcess.PRODUCT_CREATION
+        )
+      ) {
+        await dispatch(
+          updateOnboardingProcess({
+            business_id: org?.id!,
+            process: OnboardingProcess.PRODUCT_CREATION,
+          })
+        );
       }
 
       toast.success('Ticket updated successfully!');
@@ -281,6 +303,7 @@ const EditTicketForm = () => {
 
   const isFormValid =
     body.title &&
+    body.slug &&
     body.description &&
     body.category_id &&
     body.event_end_date &&
@@ -296,18 +319,19 @@ const EditTicketForm = () => {
     if (ticket) {
       setBody({
         title: ticket.title || '',
+        slug: ticket.slug || '',
         description: ticket.description || '',
         multimedia_id: ticket.multimedia?.id,
         category_id: ticket.category.id,
-        event_end_date: ticket.ticket.event_end_date,
-        event_start_date: ticket.ticket.event_start_date,
-        event_location: ticket.ticket.event_location,
-        event_type: ticket.ticket.event_type,
-        auth_details: ticket.ticket.auth_details!,
-        event_time: ticket.ticket.event_time!,
+        event_end_date: ticket.ticket?.event_end_date,
+        event_start_date: ticket.ticket?.event_start_date,
+        event_location: ticket.ticket?.event_location,
+        event_type: ticket.ticket?.event_type,
+        auth_details: ticket.ticket?.auth_details!,
+        event_time: ticket.ticket?.event_time!,
         status: ticket.status,
         keywords: ticket.keywords!,
-        ticket_tiers: ticket.ticket.ticket_tiers.map((tier) => ({
+        ticket_tiers: ticket.ticket?.ticket_tiers.map((tier) => ({
           id: tier.id,
           name: tier.name,
           amount: +tier.amount,
@@ -365,17 +389,45 @@ const EditTicketForm = () => {
           />
         </div>
 
-        <div>
-          <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
-            Event Location
-          </label>
-          <Input
-            type='text'
-            name='event_location'
-            value={body.event_location}
-            onChange={handleChange}
-            required
-          />
+        <div className='grid lg:grid-cols-2 gap-2'>
+          <div>
+            <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
+              Shortlink <span className='text-red-500'>*</span>
+            </label>
+            <div className='relative'>
+              <Globe className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4' />
+              <Input
+                type='text'
+                name='slug'
+                value={body.slug}
+                onChange={handleChange}
+                required
+                className='w-full rounded-md pl-9'
+              />
+            </div>
+
+            {/* Live preview */}
+            {body.slug && (
+              <p className='mt-2 text-sm '>
+                Preview:{' '}
+                <span className='text-primary-main dark:text-primary-faded font-medium'>
+                  {baseUrl}/{body.slug}
+                </span>
+              </p>
+            )}
+          </div>
+          <div>
+            <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
+              Event Location
+            </label>
+            <Input
+              type='text'
+              name='event_location'
+              value={body.event_location}
+              onChange={handleChange}
+              required
+            />
+          </div>
         </div>
 
         {/* Category*/}
@@ -409,16 +461,16 @@ const EditTicketForm = () => {
           <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
             Event Description
           </label>
-          <div className='quill-container'>
-            <ReactQuill
-              value={body.description}
-              onChange={(value: string) =>
-                setBody((prev) => ({ ...prev, description: value }))
+
+          <Suspense fallback={<div>Loading editor...</div>}>
+            <TinyMceEditor
+              value={body.description!}
+              onChange={(value: any) =>
+                setBody((prev) => ({ ...prev, description: value! }))
               }
-              className='dark:text-white'
-              theme='snow'
+              height={200}
             />
-          </div>
+          </Suspense>
         </div>
 
         <div>
@@ -632,7 +684,7 @@ const EditTicketForm = () => {
             Ticket Tiers
           </h3>
 
-          {body?.ticket_tiers!.map((tier, index) => (
+          {body?.ticket_tiers?.map((tier, index) => (
             <div key={index} className='grid md:grid-cols-4 gap-4 items-center'>
               <Input
                 type='text'

@@ -16,7 +16,7 @@ import {
   UpdateCourseProps,
   UpdateCourseSchema,
 } from '@/lib/schema/product.schema';
-import { cn } from '@/lib/utils';
+import { cn, OnboardingProcess } from '@/lib/utils';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
@@ -24,14 +24,20 @@ import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
 import { updateCourse } from '@/redux/slices/courseSlice';
+import { Globe } from 'lucide-react';
+import { updateOnboardingProcess } from '@/redux/slices/orgSlice';
 
 const defaultValue = {
   title: '',
+  slug: '',
   description: '',
   multimedia_id: '',
-  price: null,
+  price: 0,
+  original_price: 0,
   category_id: '',
 };
+
+const baseUrl = process.env.NEXT_PUBLIC_WEBSITE_URL; // change to your actual base URL
 
 const EditCourseForm = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -125,16 +131,30 @@ const EditCourseForm = () => {
       if (error) throw new Error(error.details[0].message);
 
       // Submit logic here
-      const response: any = await dispatch(
+      const response = await dispatch(
         updateCourse({
           id: course?.id!,
-          credentials: { ...body, price: +body.price! },
+          credentials: {
+            ...body,
+            price: +body.price!,
+            original_price: +body.original_price!,
+          },
           business_id: org?.id!,
         })
-      );
+      ).unwrap();
 
-      if (response.type === 'product-course-crud/:id/update/rejected') {
-        throw new Error(response.payload.message);
+      // Update onboarding process
+      if (
+        !org?.onboarding_status.onboard_processes?.includes(
+          OnboardingProcess.PRODUCT_CREATION
+        )
+      ) {
+        await dispatch(
+          updateOnboardingProcess({
+            business_id: org?.id!,
+            process: OnboardingProcess.PRODUCT_CREATION,
+          })
+        );
       }
 
       toast.success('Course updated successfully!');
@@ -149,6 +169,7 @@ const EditCourseForm = () => {
 
   const isFormValid =
     body.title &&
+    body.slug &&
     body.description &&
     body.category_id &&
     body.price &&
@@ -159,8 +180,10 @@ const EditCourseForm = () => {
     if (course) {
       setBody({
         title: course.title || '',
+        slug: course.slug || '',
         description: course.description || '',
         price: +course.price,
+        original_price: +course.original_price,
         multimedia_id: course.multimedia?.id,
         category_id: course.category.id,
       });
@@ -219,10 +242,10 @@ const EditCourseForm = () => {
         </div>
 
         {/* Category and Price Fields */}
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
           <div>
             <label className='text-sm font-medium mb-1 block'>
-              CATEGORY <span className='text-red-500'>*</span>
+              Category <span className='text-red-500'>*</span>
             </label>
             <Select
               value={body.category_id}
@@ -247,7 +270,7 @@ const EditCourseForm = () => {
           </div>
           <div>
             <label className='text-sm font-medium mb-1 block'>
-              PRICE <span className='text-red-500'>*</span>
+              Price <span className='text-red-500'>*</span>
             </label>
             <Input
               type='text'
@@ -258,12 +281,51 @@ const EditCourseForm = () => {
               required
             />
           </div>
+          <div>
+            <label className='text-sm font-medium mb-1 block'>
+              Crossed-out Price (Optional)
+            </label>
+            <Input
+              type='text'
+              name='original_price'
+              className='w-full rounded-md py-3'
+              value={body.original_price!}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <label className='text-sm font-medium mb-1 block'>
+              Shortlink <span className='text-red-500'>*</span>
+            </label>
+            <div className='relative'>
+              <Globe className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4' />
+              <Input
+                type='text'
+                name='slug'
+                className='w-full rounded-md py-3 pl-9'
+                value={body.slug!}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            {/* Live preview */}
+            {body.slug && (
+              <p className='mt-2 text-sm '>
+                Preview:{' '}
+                <span className='text-primary-main dark:text-primary-faded font-medium'>
+                  {baseUrl}/{body.slug}
+                </span>
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Description */}
         <div>
           <label className='text-sm font-medium mb-1 block'>
-            DESCRIPTION <span className='text-red-500'>*</span>
+            Description <span className='text-red-500'>*</span>
           </label>
           <Textarea
             rows={3}

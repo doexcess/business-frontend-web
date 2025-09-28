@@ -1,4 +1,5 @@
 import { ChatReadStatus } from '@/lib/utils';
+import { ChatGroup, GroupMember, Unread } from './chat-group';
 
 export interface RetrieveChatsProps {
   token: string;
@@ -21,16 +22,18 @@ export interface SendMessageProps {
 
 export interface Chat {
   id: string;
-  last_message: string;
-  last_message_at: string;
+  last_message: string | null;
+  last_message_at: string | null;
   is_archived: boolean;
-  unread: number;
+  unread: Unread[] | number;
+  is_group: boolean;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
   initiator_id: string;
-  chat_buddy_id: string;
-  chat_buddy: {
+  chat_buddy_id: string | null;
+  chat_group_id: string | null;
+  initiator: {
     id: string;
     name: string;
     role: {
@@ -47,6 +50,48 @@ export interface Chat {
       profile_picture: string;
     };
   };
+  chat_buddy: {
+    id: string;
+    name: string;
+    role: {
+      id: string;
+      name: string;
+      role_group_id: string;
+      description: string;
+      created_at: string;
+      updated_at: string;
+      role_id: string;
+      deleted_at: string | null;
+    };
+    profile: {
+      profile_picture: string | null;
+    };
+  } | null;
+  chat_group: {
+    id: string;
+    name: string;
+    description: string;
+    multimedia_id: string;
+    auto_created: boolean;
+    subscription_plan_id: string | null;
+    creator_id: string;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+    multimedia: {
+      id: string;
+      url: string;
+      creator_id: string;
+      business_id: string | null;
+      created_at: string;
+      updated_at: string;
+      deleted_at: string | null;
+      provider: string;
+      type: string;
+    };
+    group_members: GroupMember[];
+    member_details: GroupMember[];
+  } | null;
   messages: Array<{
     id: string;
     message: string;
@@ -57,7 +102,8 @@ export interface Chat {
     deleted_at: string | null;
     chat_id: string;
     initiator_id: string;
-    chat_buddy_id: string;
+    chat_buddy_id: string | null;
+    chat_group_id: string | null;
   }>;
 }
 
@@ -72,6 +118,8 @@ export interface Message {
   chat_id: string;
   initiator_id: string;
   chat_buddy_id: string;
+  chat_group_id: string;
+  chat?: Chat;
   initiator?: {
     id: string;
     name: string;
@@ -106,6 +154,12 @@ export interface Message {
       profile_picture: string;
     };
   };
+  chat_group?: ChatGroup;
+}
+
+export interface ChatMessagesStat {
+  totalFilesWithFormats: number;
+  totalMessagesWithLinks: number;
 }
 
 export interface ChatResponse {
@@ -126,6 +180,7 @@ export interface MessagesResponse {
     chatId?: string;
     chat: Chat;
     page?: number;
+    stats: ChatMessagesStat;
   };
 }
 
@@ -139,4 +194,12 @@ export interface RecentChatRetrievedResponse {
   status: string;
   message: string;
   data: Chat & { messages: Message[] };
+}
+
+export interface CreatedChatResponse {
+  statusCode: number;
+  message: string;
+  data: {
+    id: string;
+  };
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import PageHeading from '@/components/PageHeading';
 import Filter from '@/components/Filter';
@@ -10,7 +10,12 @@ import ClientPaymentItem from '@/components/dashboard/payment/ClientPaymentItem'
 import { Modal } from '@/components/ui/Modal';
 import useClientPayments from '@/hooks/page/useClientPayments';
 import { Payment } from '@/types/payment';
-import { formatMoney } from '@/lib/utils';
+import {
+  formatMoney,
+  PaymentStatus,
+  ProductType,
+  shortenId,
+} from '@/lib/utils';
 import {
   Package,
   Calendar,
@@ -25,15 +30,32 @@ import {
   CheckCircle,
   Lock,
   Clock,
+  DownloadIcon,
+  X,
 } from 'lucide-react';
+import Link from 'next/link';
+import ActionConfirmationModal from '@/components/ActionConfirmationModal';
+import LoadingIcon from '@/components/ui/icons/LoadingIcon';
+import {
+  cancelPayment,
+  fetchClientPayments,
+} from '@/redux/slices/paymentSlice';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '@/redux/store';
+import toast from 'react-hot-toast';
 
 const Orders = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const {
+    q,
+    startDate,
+    endDate,
     payments,
+    perPage,
     count,
     loading,
     error,
@@ -44,6 +66,11 @@ const Orders = () => {
     handleFilterByDateSubmit,
     handleRefresh,
   } = useClientPayments();
+
+  const [cancelOrderOpenModal, setCancelOrderOpenModal] = useState(false);
+  const [allowCancelOrderAction, setAllowCancelOrderAction] = useState(false);
+  const [isSubmittingPaymentCancellation, setIsSubmittingPaymentCancellation] =
+    useState(false);
 
   const handleViewPaymentDetails = (paymentId: string) => {
     const payment = payments.find((p) => p.id === paymentId);
@@ -75,6 +102,8 @@ const Orders = () => {
         return 'Course';
       case 'SUBSCRIPTION':
         return 'Subscription';
+      case 'DIGITAL_PRODUCT':
+        return 'Digital Product';
       case 'PRODUCT':
         return 'Product';
       default:
@@ -94,6 +123,58 @@ const Orders = () => {
     );
     return courseItem?.product_id;
   };
+
+  const handleDownload = (url: string) => {
+    // Path to your zip file (public folder in Next.js)
+    const fileUrl = url; // put the .zip inside /public/files/
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    const filename = url.split('/')[url.split('/').length - 1];
+    link.setAttribute('download', filename); // optional, forces the name
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+
+  const handleCancelOrder = async () => {
+    try {
+      setIsSubmittingPaymentCancellation(true);
+
+      // Submit logic here
+      const response = await dispatch(
+        cancelPayment({
+          payment_id: selectedPayment?.id!,
+        })
+      ).unwrap();
+
+      // Refresh
+      dispatch(
+        fetchClientPayments({
+          page: currentPage,
+          limit: perPage,
+          ...(q && { q }),
+          ...(startDate && { startDate }),
+          ...(endDate && { endDate }),
+        })
+      ).unwrap();
+
+      toast.success(response.message);
+    } catch (error: any) {
+      console.error('Submission failed:', error);
+      const message = error || error.message;
+      toast.error(message);
+    } finally {
+      setIsSubmittingPaymentCancellation(false);
+      setShowPaymentModal(false);
+    }
+  };
+
+  useEffect(() => {
+    if (allowCancelOrderAction) {
+      handleCancelOrder();
+      setAllowCancelOrderAction(false);
+    }
+  }, [allowCancelOrderAction]);
 
   return (
     <main className='min-h-screen text-gray-900 dark:text-white'>
@@ -171,12 +252,6 @@ const Orders = () => {
             </div>
           )}
 
-          {error && (
-            <div className='text-red-600 dark:text-red-400 text-center py-4'>
-              {error}
-            </div>
-          )}
-
           {/* Pagination */}
           {!loading && count > 0 && (
             <Pagination
@@ -188,7 +263,6 @@ const Orders = () => {
               paddingRequired={false}
             />
           )}
-
         </div>
       </div>
 
@@ -196,9 +270,16 @@ const Orders = () => {
       <Modal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
-        title={`Payment #${selectedPayment?.transaction_id}`}
+        title={`Payment #${shortenId(selectedPayment?.id!)}`}
         className='max-w-4xl'
       >
+        {/* X Close Button */}
+        <button
+          onClick={() => setShowPaymentModal(false)}
+          className='absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+        >
+          <X className='w-5 h-5' />
+        </button>
         {selectedPayment && (
           <div className='space-y-6'>
             {/* Payment Summary */}
@@ -237,15 +318,17 @@ const Orders = () => {
                     </span>
                   </span>
                 </div>
-                <div className='flex items-center gap-2'>
-                  <User className='w-4 h-4 text-gray-500' />
-                  <span className='text-sm text-gray-600 dark:text-gray-400'>
-                    Transaction ID:{' '}
-                    <span className='font-medium text-gray-900 dark:text-white'>
-                      {selectedPayment.transaction_id}
-                    </span>
-                  </span>
-                </div>
+                {selectedPayment.transaction_id && (
+                  <div className='flex items-center gap-2'>
+                    <User className='w-4 h-4 text-gray-500' />
+                    <div className='text-sm text-gray-600 dark:text-gray-400'>
+                      Transaction ID:{' '}
+                      <span className='font-medium text-gray-900 dark:text-white'>
+                        {selectedPayment.transaction_id}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -301,7 +384,7 @@ const Orders = () => {
                 Purchase Items ({selectedPayment.purchase?.items.length})
               </h3>
               <div className='space-y-3'>
-                {selectedPayment.purchase?.items.map((item) => (
+                {selectedPayment.purchase?.items.map((item, index) => (
                   <div
                     key={item.id}
                     className='bg-gray-50 dark:bg-gray-800 rounded-lg p-4'
@@ -327,20 +410,41 @@ const Orders = () => {
                       </div>
                     </div>
                     {/* Course Learning Button in Modal */}
-                    {item.purchase_type === 'COURSE' && (
-                      <div className='mt-3 pt-3 border-t border-gray-200 dark:border-gray-700'>
-                        <button
-                          onClick={() => {
-                            handlePreviewCourse(item.product_id);
-                            setShowPaymentModal(false);
-                          }}
-                          className='bg-primary-main hover:bg-primary-dark text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors duration-200'
-                        >
-                          <BookOpen className='w-4 h-4' />
-                          Start Learning
-                        </button>
-                      </div>
-                    )}
+                    {item.purchase_type === ProductType.COURSE &&
+                      selectedPayment.payment_status ===
+                        PaymentStatus.SUCCESS && (
+                        <div className='mt-3 pt-3 border-t border-gray-200 dark:border-gray-700'>
+                          <button
+                            onClick={() => {
+                              handlePreviewCourse(item.product_id);
+                              setShowPaymentModal(false);
+                            }}
+                            className='bg-primary-main hover:bg-primary-dark text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors duration-200'
+                          >
+                            <BookOpen className='w-4 h-4' />
+                            Start Learning
+                          </button>
+                        </div>
+                      )}
+                    {item.purchase_type === ProductType.DIGITAL_PRODUCT &&
+                      selectedPayment.payment_status ===
+                        PaymentStatus.SUCCESS && (
+                        <div className='mt-3 pt-3 border-t border-gray-200 dark:border-gray-700'>
+                          <button
+                            className='bg-primary-main hover:bg-primary-dark text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors duration-200'
+                            onClick={() =>
+                              handleDownload(
+                                selectedPayment?.full_purchases_details?.items[
+                                  index
+                                ]?.details?.product?.zip_file.url
+                              )
+                            }
+                          >
+                            <DownloadIcon className='w-4 h-4' />
+                            Download
+                          </button>
+                        </div>
+                      )}
                   </div>
                 ))}
               </div>
@@ -355,26 +459,55 @@ const Orders = () => {
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                   <div>
                     <p className='text-sm text-gray-600 dark:text-gray-400'>
-                      Business ID
+                      Business Name
                     </p>
-                    <p className='font-medium text-gray-900 dark:text-white'>
-                      {selectedPayment.purchase?.business_id}
-                    </p>
-                  </div>
-                  <div>
-                    <p className='text-sm text-gray-600 dark:text-gray-400'>
-                      Coupon Applied
-                    </p>
-                    <p className='font-medium text-gray-900 dark:text-white'>
-                      {selectedPayment.purchase?.coupon_id || 'None'}
-                    </p>
+                    <Link
+                      href={`${process.env.NEXT_PUBLIC_WEBSITE_URL}/b/${selectedPayment.business_info.business_slug}`}
+                      target='_blank'
+                      className='hover:underline font-medium text-gray-900 dark:text-white'
+                    >
+                      {selectedPayment.business_info.business_name}
+                    </Link>
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Cancel Order Section */}
+            {selectedPayment.payment_status === PaymentStatus.PENDING && (
+              <div className='pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-end'>
+                <button
+                  onClick={() => setCancelOrderOpenModal(true)}
+                  className=' bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors duration-200'
+                  disabled={isSubmittingPaymentCancellation}
+                >
+                  {isSubmittingPaymentCancellation ? (
+                    <span className='flex items-center justify-center'>
+                      <LoadingIcon />
+                      Processing...
+                    </span>
+                  ) : (
+                    <>
+                      <X className='w-4 h-4' />
+                      Cancel Order
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </Modal>
+
+      <ActionConfirmationModal
+        body={`Are you sure you want to cancel this order - #${shortenId(
+          selectedPayment?.id!
+        )}`}
+        openModal={cancelOrderOpenModal}
+        setOpenModal={setCancelOrderOpenModal}
+        allowAction={allowCancelOrderAction}
+        setAllowAction={setAllowCancelOrderAction}
+      />
     </main>
   );
 };

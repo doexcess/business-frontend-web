@@ -5,7 +5,11 @@ import { LineChart } from '@/components/dashboard/LineChart';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { Button } from '@/components/ui/Button';
 import Icon from '@/components/ui/Icon';
-import { PurchaseItemType, SystemRole } from '@/lib/utils';
+import {
+  areAllOnboardingStepsPresent,
+  PurchaseItemType,
+  SystemRole,
+} from '@/lib/utils';
 import { RootState } from '@/redux/store';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
@@ -18,6 +22,8 @@ import {
   getMonthlyProductRevenue,
 } from '@/redux/slices/analyticsSlice';
 import { AppDispatch } from '@/redux/store';
+import { ErrorResponse } from '@/types';
+import { OnboardingSteps } from '@/components/OnboardingSteps';
 
 const Home = () => {
   const router = useRouter();
@@ -47,8 +53,6 @@ const Home = () => {
   }, [dispatch, org]);
 
   useEffect(() => {
-    // console.log(profile?.role);
-
     // Redirect based on role
     if (profile?.role?.role_id === SystemRole.USER) {
       router.replace('/dashboard/home');
@@ -99,7 +103,7 @@ const Home = () => {
     }[];
   };
   let chartData: ChartDataType = { labels: [], datasets: [] };
-  if (analytics.monthlyRevenue) {
+  if (analytics?.monthlyRevenue) {
     chartData.labels = analytics.monthlyRevenue.months.map((m) => m.month);
     chartData.datasets = [
       {
@@ -126,6 +130,14 @@ const Home = () => {
         borderColor: '#4f46e5',
         backgroundColor: '#4f46e5',
       },
+      {
+        label: 'Digital Products',
+        data: analytics.monthlyRevenue.months.map((m) =>
+          Number(m.digital.amount)
+        ),
+        borderColor: '#06b6d4',
+        backgroundColor: '#06b6d4',
+      },
     ];
   } else {
     chartData = {
@@ -148,6 +160,12 @@ const Home = () => {
           data: [0, 0, 0, 0],
           borderColor: '#4f46e5',
           backgroundColor: '#4f46e5',
+        },
+        {
+          label: 'Digital Products',
+          data: [0, 0, 0, 0],
+          borderColor: '#06b6d4',
+          backgroundColor: '#06b6d4',
         },
       ],
     };
@@ -195,6 +213,22 @@ const Home = () => {
     // Add more requests as needed
   ];
 
+  const performanceHtml = analytics && (
+    <>
+      {analytics?.monthlyRevenueLoading ? (
+        <div className='h-64 flex items-center justify-center'>
+          <span className='text-gray-400'>Loading chart...</span>
+        </div>
+      ) : analytics?.monthlyRevenueError ? (
+        <div className='h-64 flex items-center justify-center text-red-500'>
+          {analytics?.monthlyRevenueError?.message}
+        </div>
+      ) : (
+        <LineChart data={chartData} />
+      )}
+    </>
+  );
+
   return (
     <main className='section-container'>
       <div className='h-full'>
@@ -202,7 +236,10 @@ const Home = () => {
         <div className='flex-1 text-black-1 dark:text-white'>
           {/* Profile Completion Banner */}
           {profile?.role?.role_id === SystemRole.BUSINESS_SUPER_ADMIN &&
-            (!orgs.length || org?.onboarding_status?.current_step !== 4) && (
+            !areAllOnboardingStepsPresent(
+              OnboardingSteps,
+              org?.onboarding_status.onboard_processes!
+            ) && (
               <>
                 <div className='mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'>
                   <div className='flex flex-col md:flex-row gap-2 items-center justify-between'>
@@ -277,14 +314,14 @@ const Home = () => {
 
           {/* Stats */}
           <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6'>
-            {analytics.loading
+            {analytics?.loading
               ? Array.from({ length: 4 }).map((_, index) => (
                   <div
                     key={index}
                     className='bg-white dark:bg-gray-800 p-4 rounded-md space-y-3 border border-neutral-3 dark:border-black-2 animate-pulse h-24'
                   ></div>
                 ))
-              : analytics.stats &&
+              : analytics?.stats &&
                 [
                   {
                     label: 'Total Revenue',
@@ -338,7 +375,7 @@ const Home = () => {
                     </div>
                   </div>
                 ))}
-            {analytics.error && (
+            {analytics?.error && (
               <div className='col-span-4 text-red-500 text-center mt-2'>
                 {typeof analytics.error === 'string'
                   ? analytics.error
@@ -351,17 +388,7 @@ const Home = () => {
             <div className='grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6'>
               <div className='col-span-1 xl:col-span-2 bg-white border border-gray-200 dark:bg-gray-800 dark:border-0 p-4 rounded-md'>
                 <h3 className='font-semibold'>Performance</h3>
-                {analytics.monthlyRevenueLoading ? (
-                  <div className='h-64 flex items-center justify-center'>
-                    <span className='text-gray-400'>Loading chart...</span>
-                  </div>
-                ) : analytics.monthlyRevenueError ? (
-                  <div className='h-64 flex items-center justify-center text-red-500'>
-                    {analytics.monthlyRevenueError}
-                  </div>
-                ) : (
-                  <LineChart data={chartData} />
-                )}
+                {performanceHtml}
               </div>
               <div className='bg-white dark:bg-gray-800 p-4 rounded-md border border-gray-200 dark:border-0'>
                 <h3 className='font-semibold mb-4'>Recent Activity</h3>

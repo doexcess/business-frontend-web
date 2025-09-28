@@ -1,5 +1,6 @@
 import { ProductStatus, ProductType, TicketTierStatus } from '@/lib/utils';
 import { Media } from './multimedia';
+import { Product } from './org';
 
 export interface BusinessInfo {
   id: string;
@@ -90,6 +91,7 @@ export interface Ticket {
 export enum Productinterface {
   COURSE = 'COURSE',
   TICKET = 'TICKET',
+  DIGITAL_PRODUCT = 'DIGITAL_PRODUCT',
 }
 
 // export enum ProductStatus {
@@ -101,20 +103,22 @@ export enum Productinterface {
 export interface ProductDetails {
   id: string;
   title: string;
+  slug: string;
   description: string | null;
   price: string | null;
+  original_price: string | null;
   currency: string;
   keywords: string | null;
   metadata: any | null;
   status: ProductStatus;
-  type: Productinterface;
+  type: ProductType;
   published_at: string;
   archived_at: string | null;
   creator_id: string;
   created_at: string;
   creator: Creator;
   category: Category;
-  multimedia: Multimedia;
+  multimedia: Media;
   ticket: Ticket;
   business_id: string;
   business_info: BusinessInfo;
@@ -122,7 +126,7 @@ export interface ProductDetails {
 
 export interface ProductsResponse {
   statusCode: number;
-  data: ProductDetails[];
+  data: Product[];
   count: number;
 }
 
@@ -156,8 +160,10 @@ export interface CreateProductResponse {
 export interface Course {
   id: string;
   title: string;
+  slug: string;
   description: string;
   price: string; // You can change this to `number` if it's numeric in actual use
+  original_price: string; // You can change this to `number` if it's numeric in actual use
   currency: string;
   keywords: string | null;
   metadata: any | null; // Define a specific shape if metadata has a known structure
@@ -181,8 +187,10 @@ export interface CourseResponse {
 export interface CourseDetails {
   id: string;
   title: string;
+  slug: string;
   description: string;
   price: string;
+  original_price: string;
   currency: string;
   keywords: string | null;
   metadata: any | null;
@@ -221,7 +229,9 @@ export interface EnrolledCourseData {
     id: string;
     business_id: string;
     title: string;
+    slug: string;
     price: string;
+    original_price: string;
     description: string;
     keywords: string | null;
     metadata: any | null;
@@ -274,6 +284,7 @@ export interface Module {
     category_id: string;
     creator_id: string;
     title: string;
+    slug: string;
     description: string;
     keywords: string | null;
     metadata: any; // Use a more specific type if known
@@ -282,6 +293,7 @@ export interface Module {
     published_at: string;
     archived_at: string | null;
     price: string;
+    original_price: string;
     currency: string;
     original_price: string | null;
     multimedia_id: string;
@@ -378,6 +390,7 @@ export interface TicketPurchase {
 export interface TicketProduct {
   id: string;
   title: string;
+  slug: string;
   description: string;
   keywords: string | null;
   metadata: any;
@@ -385,6 +398,7 @@ export interface TicketProduct {
   published_at: string;
   archived_at: string | null;
   price: string;
+  original_price: string;
   currency: string;
   multimedia_id: string;
   creator_id: string;
@@ -437,6 +451,7 @@ export interface TicketTierWithTicketAndProduct {
   id: string;
   ticket_id: string;
   name: string;
+  slug: string;
   description: string | null;
   quantity: number | null;
   remaining_quantity: number | null;
@@ -467,6 +482,7 @@ export interface TicketTierWithTicketAndProduct {
       category_id: string;
       creator_id: string;
       title: string;
+      slug: string;
       description: string;
       keywords: string | null;
       metadata: any;
@@ -476,6 +492,7 @@ export interface TicketTierWithTicketAndProduct {
       published_at: string;
       archived_at: string | null;
       price: string;
+      original_price: string;
       currency: string;
       original_price: string | null;
       multimedia_id: string;
@@ -486,4 +503,64 @@ export interface TicketTierWithTicketAndProduct {
       multimedia: Media;
     };
   };
+}
+
+// DIGITAL PRODUCT
+export interface DigitalProduct {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  price: string;
+  original_price?: string;
+  currency: string;
+  keywords: string | null;
+  metadata: any | null;
+  status: ProductStatus;
+  published_at: string | null;
+  archived_at: string | null;
+  creator_id: string;
+  created_at: string;
+  updated_at: string;
+  category_id: string;
+  business_id: string;
+  purchased_digital_products: PurchasedDigitalProduct[];
+  creator: CreatorBasic;
+  multimedia: Media;
+  zip_file: Media;
+  category: Category;
+  business_info: BusinessInfo;
+}
+
+export interface PurchasedDigitalProduct {
+  id: string;
+  quantity: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DigitalProductResponse {
+  statusCode: number;
+  data: DigitalProduct[];
+  count: number;
+}
+
+export interface DigitalProductDetailsResponse {
+  statusCode: number;
+  data: DigitalProduct;
+}
+
+export interface DeleteDigitalProductResponse {
+  statusCode: number;
+  message: string;
+  data: {
+    id: string;
+    deleted: boolean;
+  };
+}
+
+export interface UpdateDigitalProductResponse {
+  statusCode: number;
+  message: string;
+  data: DigitalProductDetails;
 }

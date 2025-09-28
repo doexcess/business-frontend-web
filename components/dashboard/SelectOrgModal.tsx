@@ -15,7 +15,7 @@ const SelectOrgModal = ({ isOpen, organizations }: SelectOrgModalProps) => {
   const router = useRouter();
 
   const handleSelectOrg = (orgId: string) => {
-    dispatch(switchToOrg(orgId));
+    dispatch(switchToOrg({ business_id: orgId }));
   };
 
   const navigateToBusinessPage = () => {

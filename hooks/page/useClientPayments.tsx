@@ -43,9 +43,13 @@ const useClientPayments = () => {
   }, [dispatch, currentPage, perPage, q, startDate, endDate]);
 
   return {
+    q,
+    startDate,
+    endDate,
     payments,
     count,
     currentPage,
+    perPage,
     total_credit,
     total_debit,
     total_trx,

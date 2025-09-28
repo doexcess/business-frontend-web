@@ -168,10 +168,9 @@ const Profile = ({
                     </li>
                   ))}
 
-                {[
-                  SystemRole.BUSINESS_SUPER_ADMIN,
-                  SystemRole.BUSINESS_ADMIN,
-                ].includes(profile?.role.role_id as SystemRole) && (
+                {[SystemRole.BUSINESS_SUPER_ADMIN].includes(
+                  profile?.role.role_id as SystemRole
+                ) && (
                   <li>
                     <Link
                       href='/settings?tab=business-account'

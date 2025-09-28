@@ -6,16 +6,23 @@ import {
   updateMessageStatus,
   userOnline,
   userOffline,
+  recentChatRetrieved,
 } from '@/redux/slices/chatSlice';
 import {
   RetrieveChatsProps,
+  RetrieveGroupChatsProps,
   RetrieveMessagesProps,
   SendMessageProps,
+  createGroupChatSchema,
+  leaveGroupChatSchema,
+  retrieveChatGroupsSchema,
   retrieveChatsSchema,
   retrieveMessagesSchema,
   sendMessageSchema,
+  updateGroupChatSchema,
 } from '@/lib/schema/chat.schema';
 import {
+  Chat,
   ChatResponse,
   Message,
   MessagesResponse,
@@ -36,7 +43,7 @@ class SocketService {
 
   private onlineUsers = new Set<string>();
 
-  private constructor() { }
+  private constructor() {}
 
   public static getInstance(): SocketService {
     if (!SocketService.instance) {
@@ -72,7 +79,6 @@ class SocketService {
     });
 
     // this.setupListeners();
-
 
     // Emit user online status when connecting
     this.socket.on('connect', () => {
@@ -131,17 +137,6 @@ class SocketService {
     }
   }
 
-  public async chatsRetrieved(user_id: string) {
-    // Chat-specific listeners
-    this.socket?.on(`chatsRetrieved:${user_id}`, (response: ChatResponse) => {
-      if (response.status === 'success') {
-        // console.log(response.data);
-
-        store.dispatch(chatsRetrieved(response.data.result));
-      }
-    });
-  }
-
   public async retrieveChats(payload: RetrieveChatsProps) {
     const { error } = retrieveChatsSchema.validate(payload);
     if (error) throw new Error(error.message);
@@ -184,6 +179,83 @@ class SocketService {
             : reject(response.message);
         }
       );
+    });
+  }
+
+  public async createGroupChat(payload: {
+    token: string;
+    name: string;
+    description?: string;
+    multimedia_id: string;
+    members: { member_id: string }[];
+  }): Promise<any> {
+    const { error } = createGroupChatSchema.validate(payload);
+    if (error) throw new Error(error.message);
+
+    return new Promise((resolve, reject) => {
+      this.socket?.emit('createGroupChat', payload, (response: any) => {
+        response.status === 'success'
+          ? resolve(response)
+          : reject(response.message);
+      });
+    });
+  }
+
+  public async leaveGroupChat(payload: { token: string }): Promise<any> {
+    const { error } = leaveGroupChatSchema.validate(payload);
+    if (error) throw new Error(error.message);
+
+    return new Promise((resolve, reject) => {
+      this.socket?.emit('leaveGroupChat', payload, (response: any) => {
+        response.status === 'success'
+          ? resolve(response)
+          : reject(response.message);
+      });
+    });
+  }
+
+  public async retrieveGroupChats(
+    payload: RetrieveGroupChatsProps
+  ): Promise<MessagesResponse> {
+    const { error } = retrieveChatGroupsSchema.validate(payload);
+    if (error) throw new Error(error.message);
+
+    return new Promise((resolve, reject) => {
+      this.socket?.emit(
+        'retrieveGroupChats',
+        payload,
+        (response: MessagesResponse) => {
+          response.status === 'success'
+            ? resolve(response)
+            : reject(response.message);
+        }
+      );
+    });
+  }
+
+  public async updateGroupChat(payload: {
+    group_id: string;
+    token: string;
+    name?: string;
+    description?: string;
+    multimedia_id?: string;
+    members?: { member_id: string }[];
+  }): Promise<any> {
+    const { error } = updateGroupChatSchema.validate(payload);
+    if (error) throw new Error(error.message);
+
+    return new Promise((resolve, reject) => {
+      this.socket?.emit('updateGroupChat', payload, (response: any) => {
+        response.status === 'success'
+          ? resolve(response)
+          : reject(response.message);
+      });
+    });
+  }
+
+  public listenGroupChatCreated(userId: string) {
+    this.socket?.on(`groupChatCreated:${userId}`, (chat: Chat) => {
+      store.dispatch(recentChatRetrieved(chat));
     });
   }
 

@@ -5,8 +5,15 @@ import { twMerge } from 'tailwind-merge';
 import moment from 'moment-timezone';
 import { capitalize } from 'lodash';
 import crypto from 'crypto';
-import { TicketTier } from '@/types/product';
+import { ProductDetails, TicketTier } from '@/types/product';
 import Joi from 'joi';
+import slugify from 'slugify';
+import {
+  BusinessProfileFull,
+  Product,
+  SubscriptionPlanPrice,
+} from '@/types/org';
+import { Cart } from '@/types/cart';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -58,6 +65,7 @@ export enum PaymentStatus {
   SUCCESS = 'SUCCESS',
   PENDING = 'PENDING',
   FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
 }
 
 export enum PaymentMethod {
@@ -68,12 +76,14 @@ export enum PurchaseItemType {
   COURSE = 'COURSE',
   TICKET = 'TICKET',
   SUBSCRIPTION = 'SUBSCRIPTION',
+  DIGITAL_PRODUCT = 'DIGITAL_PRODUCT',
 }
 
 export enum ProductType {
   COURSE = 'COURSE',
   TICKET = 'TICKET',
   SUBSCRIPTION = 'SUBSCRIPTION',
+  DIGITAL_PRODUCT = 'DIGITAL_PRODUCT',
 }
 
 export enum CouponType {
@@ -101,6 +111,14 @@ export enum MultimediaProvider {
 export enum Gender {
   MALE = 'male',
   FEMALE = 'female',
+}
+
+export enum IdType {
+  INTERNATIONAL_PASSPORT = 'international-passport',
+  NATIONAL_IDENTITY_CARD_NIN_SLIP = 'national-identity-card-nin-slip',
+  DRIVERS_LICENSE = 'drivers-license',
+  VOTERS_CARD = 'voters-card',
+  RESIDENCE_PERMIT = 'residence-permit',
 }
 
 export enum SubscriptionPeriod {
@@ -281,8 +299,8 @@ export const oneMonthAgo = () => {
 };
 export const now = new Date();
 
-export const shortenId = (id: string) => {
-  return id.split('-')[0];
+export const shortenId = (id?: string) => {
+  return id?.split('-')[0];
 };
 
 export enum ActionKind {
@@ -414,4 +432,163 @@ export const safeRouterPush = (router: any, url: string) => {
   if (isBrowser && router) {
     router.push(url);
   }
+};
+
+export const getProductPath = (type: ProductType) => {
+  let path = '';
+  switch (type) {
+    case ProductType.COURSE:
+      path = 'courses';
+      break;
+    case ProductType.DIGITAL_PRODUCT:
+      path = 'digital-products';
+      break;
+    case ProductType.SUBSCRIPTION:
+      path = 'subscriptions';
+      break;
+    case ProductType.TICKET:
+      path = 'tickets';
+      break;
+    default:
+      break;
+  }
+
+  return path;
+};
+
+export const PAGINATION_LIMIT = 20;
+
+export const reformatUnderscoreText = (text: string) => {
+  return text.split('_').join(' ');
+};
+// Convert product type to ProductType enum
+export const getProductType = (type: ProductType): ProductType => {
+  if (type === ProductType.COURSE) return ProductType.COURSE;
+  if (type === ProductType.TICKET) return ProductType.TICKET;
+  if (type === ProductType.SUBSCRIPTION) return ProductType.SUBSCRIPTION;
+  if (type === ProductType.DIGITAL_PRODUCT) return ProductType.DIGITAL_PRODUCT;
+  return ProductType.COURSE; // Default fallback
+};
+
+export const hyphenate = (word: string) => {
+  let slug = slugify(word, { lower: true, strict: true });
+
+  return slug;
+};
+
+export const sortTiersByPrice = (tiers: TicketTier[]): TicketTier[] =>
+  [...tiers].sort((a, b) => +a.amount - +b.amount);
+
+export const getFirstAvailableTier = (product: Product): TicketTier | null => {
+  if (
+    product?.type === ProductType.TICKET &&
+    product?.ticket?.ticket_tiers?.length
+  ) {
+    return sortTiersByPrice(product.ticket.ticket_tiers)[0];
+  }
+  return null;
+};
+
+export const sortSubPlansByPrice = (
+  plan_prices: SubscriptionPlanPrice[]
+): SubscriptionPlanPrice[] =>
+  [...plan_prices].sort((a, b) => +a.price - +b.price);
+
+export const getFirstAvailablePlan = (
+  product: Product
+): SubscriptionPlanPrice | null => {
+  if (
+    product?.type === ProductType.SUBSCRIPTION &&
+    product?.subscription_plan?.subscription_plan_prices?.length
+  ) {
+    return sortSubPlansByPrice(
+      product.subscription_plan.subscription_plan_prices
+    )[0];
+  }
+  return null;
+};
+
+export const productItemInCart = (
+  cart_items: Cart['items'],
+  product_id: string
+) => {
+  const anyProductInCart = cart_items?.some(
+    (item) => item.product_id === product_id
+  );
+
+  // Is this specific product in the cart?
+  const productInCart = cart_items?.some(
+    (item) => item.product_id === product_id
+  );
+
+  return {
+    anyProductInCart,
+    productInCart,
+  };
+};
+
+export const lowestTicketTier = (ticket_tiers: TicketTier[]) => {
+  const lowestTier = ticket_tiers.reduce((lowest: any, tier: any) =>
+    Number(tier.amount) < Number(lowest.amount) ? tier : lowest
+  );
+  return `${formatMoney(Number(lowestTier.amount), lowestTier.currency)}+`;
+};
+
+export const baseUrl = process.env.NEXT_PUBLIC_WEBSITE_URL; // change to your actual base URL
+
+export enum ChatTab {
+  ALL = 'all',
+  UNREAD = 'unread',
+  CONTACTS = 'contacts',
+  GROUPS = 'groups',
+}
+
+export const pluralizeText = (word: string, count: number) => {
+  const pluralChar = count > 1 ? 's' : '';
+  return `${word}${pluralChar}`;
+};
+
+export enum OnboardingProcess {
+  BUSINESS_DETAILS = 'BUSINESS_DETAILS',
+  KYC = 'KYC',
+  WITHDRAWAL_ACCOUNT = 'WITHDRAWAL_ACCOUNT',
+  TEAM_MEMBERS_INVITATION = 'TEAM_MEMBERS_INVITATION',
+  PRODUCT_CREATION = 'PRODUCT_CREATION',
+}
+
+export interface OnboardingStep {
+  id: number;
+  process: OnboardingProcess;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  action: string;
+  path?: string;
+}
+
+export const onboardingProcesses = (org: BusinessProfileFull) => {
+  return (org?.onboarding_status?.onboard_processes as string[]) ?? [];
+};
+
+// helper to format nicely
+export const formatLabel = (val: string) =>
+  val
+    .split('-')
+    .map((word) =>
+      word.toUpperCase() === 'NIN'
+        ? 'NIN'
+        : word.charAt(0).toUpperCase() + word.slice(1)
+    )
+    .join(' ');
+
+export const areAllOnboardingStepsPresent = (
+  steps: OnboardingStep[],
+  onboard_processes: BusinessProfileFull['onboarding_status']['onboard_processes']
+): boolean => {
+  for (let i = 0; i < steps.length; i++) {
+    if (!onboard_processes?.includes(steps[i].process)) {
+      return false; // break immediately if not found
+    }
+  }
+  return true; // all items are present
 };

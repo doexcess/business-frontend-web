@@ -28,6 +28,9 @@ const PaystackButton = dynamic(
 );
 import Pagination from '@/components/Pagination';
 import NotFound from '@/components/ui/NotFound';
+import useProducts from '@/hooks/page/useProducts';
+import ProductFilters from '@/components/dashboard/product/course/ProductFilters';
+import PublicProductGridItem from '@/components/dashboard/product/course/PublicCourseGridItem';
 
 const SubscriptionPlans = () => {
   const router = useRouter();
@@ -50,39 +53,38 @@ const SubscriptionPlans = () => {
   const [paystackRef, setPaystackRef] = useState<string | null>(null);
   const searchParams = useSearchParams();
 
+  const [search, setSearch] = useState('');
+  const [priceRange, setPriceRange] = useState('All Prices');
   const {
-    subscription_plans,
+    products = [],
+    count = 0,
     loading,
     error,
-    handleRefresh,
-    handleSearch,
-    count,
-    currentPage,
     onClickNext,
     onClickPrev,
-  } = useSubscriptionPlansPublic({
-    business_id: org?.id || '',
-    useViewEndpoint: true,
-    limit: 12,
-  });
+    handleSearchSubmit,
+    handleRefresh,
+    limit = 10,
+    currentPage,
+  } = useProducts(ProductType.SUBSCRIPTION, search, priceRange);
 
-  const handleRefreshWithClear = () => {
-    // Clear the search query by calling handleSearch with empty string
-    handleSearch('');
+  // const handleRefreshWithClear = () => {
+  //   // Clear the search query by calling handleSearch with empty string
+  //   handleSearch('');
 
-    // Remove the q parameter from the URL
-    const params = new URLSearchParams(searchParams);
-    params.delete('q');
+  //   // Remove the q parameter from the URL
+  //   const params = new URLSearchParams(searchParams);
+  //   params.delete('q');
 
-    // Update the URL without the q parameter
-    const newUrl = params.toString()
-      ? `?${params.toString()}`
-      : '/dashboard/products/subscription-plans';
-    router.replace(newUrl);
+  //   // Update the URL without the q parameter
+  //   const newUrl = params.toString()
+  //     ? `?${params.toString()}`
+  //     : '/dashboard/products/subscription-plans';
+  //   router.replace(newUrl);
 
-    // Then refresh the data
-    handleRefresh();
-  };
+  //   // Then refresh the data
+  //   handleRefresh();
+  // };
 
   const handlePreview = (plan: SubscriptionPlan) => {
     setSelectedPlan(plan);
@@ -239,15 +241,11 @@ const SubscriptionPlans = () => {
             </div>
           )}
 
-          <Filter
-            pageTitle='Featured plans'
-            searchPlaceholder='Search subscription plans...'
-            showPeriod={false}
-            enableRightSearchBar={true}
-            showFullSearchWidth={true}
-            showFilterByDate={false}
-            handleSearchSubmit={handleSearch}
-            handleRefresh={handleRefreshWithClear}
+          <ProductFilters
+            search={search}
+            priceRange={priceRange}
+            onSearch={setSearch}
+            onPriceRangeChange={setPriceRange}
           />
 
           {loading ? (
@@ -265,29 +263,44 @@ const SubscriptionPlans = () => {
                 </div>
               ))}
             </div>
-          ) : subscription_plans.length === 0 ? (
+          ) : products.length === 0 ? (
             <NotFound
               title='No Subscription Plans Found'
               description='No subscription plans are currently available. Check back later or try searching for different plans.'
               searchPlaceholder='Search for subscription plans...'
-              onSearch={handleSearch}
+              onSearch={handleSearchSubmit}
             />
           ) : (
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-2'>
-              {subscription_plans.map((plan) => {
-                const lowestPrice = getLowestPrice(plan);
+            <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
+              {products.map((product) => (
+                <PublicProductGridItem
+                  key={product.id}
+                  id={product.id}
+                  details={product}
+                  type={product.type}
+                  title={product.title}
+                  imageSrc={product.multimedia?.url}
+                  price={product.price!}
+                  onView={() => {}}
+                  onBuy={() => {}}
+                />
+              ))}
+              {/* {subscription_plans.map((plan) => { */}
+              {/* const lowestPrice = getLowestPrice(plan); */}
 
-                return (
-                  <div
+              {/* return ( */}
+              {/* <div
                     key={plan.id}
                     className={`bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 transition-shadow duration-200 ${
-                      hasActiveSubscription
-                        ? 'opacity-60 cursor-not-allowed'
-                        : 'hover:shadow-lg'
-                    }`}
-                  >
-                    {/* Cover Image */}
-                    {plan.cover_image && (
+                      ''
+                      // hasActiveSubscription
+                      // ? 'opacity-60 cursor-not-allowed'
+                      // : 'hover:shadow-lg'
+                    }
+                    `}
+                  > */}
+              {/* Cover Image */}
+              {/* {plan.cover_image && (
                       <div className='h-48 overflow-hidden'>
                         <img
                           src={plan.cover_image}
@@ -295,21 +308,21 @@ const SubscriptionPlans = () => {
                           className='w-full h-full object-cover'
                         />
                       </div>
-                    )}
+                    )} */}
 
-                    <div className='p-6'>
-                      {/* Plan Name */}
-                      <h3 className='text-xl font-bold mb-2 text-gray-900 dark:text-white'>
+              {/* <div className='p-6'> */}
+              {/* Plan Name */}
+              {/* <h3 className='text-xl font-bold mb-2 text-gray-900 dark:text-white'>
                         {plan.name}
-                      </h3>
+                      </h3> */}
 
-                      {/* Description */}
-                      <p className='text-gray-700 dark:text-gray-200 mb-4 line-clamp-3'>
+              {/* Description */}
+              {/* <p className='text-gray-700 dark:text-gray-200 mb-4 line-clamp-3'>
                         {plan.description || 'No description available'}
-                      </p>
+                      </p> */}
 
-                      {/* Pricing */}
-                      <div className='mb-4'>
+              {/* Pricing */}
+              {/* <div className='mb-4'>
                         {lowestPrice ? (
                           <div className='flex items-baseline gap-2'>
                             <span className='text-xl font-bold text-primary-main'>
@@ -327,44 +340,48 @@ const SubscriptionPlans = () => {
                             Pricing not available
                           </span>
                         )}
-                      </div>
+                      </div> */}
 
-                      {/* Action Buttons */}
-                      <div className='flex flex-row md:flex-col xl:flex-row gap-2'>
+              {/* Action Buttons */}
+              {/* <div className='flex flex-row md:flex-col xl:flex-row gap-2'>
                         <Button
                           variant='outline'
                           className='flex-1'
                           onClick={() => handlePreview(plan)}
-                          disabled={hasActiveSubscription}
+                          // disabled={hasActiveSubscription}
                         >
                           Preview
-                        </Button>
-                        <Button
+                        </Button> */}
+              {/* <Button
                           variant='primary'
                           className='flex-1'
                           onClick={() => handleCheckout(plan, lowestPrice)}
                           disabled={
-                            !lowestPrice || isPaying || hasActiveSubscription
+                            !lowestPrice ||
+                            isPaying ||
+                            Boolean(plan.subscriptions.length)
                           }
                         >
-                          {hasActiveSubscription
+                          {Boolean(plan.subscriptions.length)
                             ? 'Already Subscribed'
                             : isPaying
                             ? 'Processing...'
-                            : 'Subscribe Now'}
-                        </Button>
-                      </div>
+                            : 'Subscribe Now'} */}
+              {/* {plan.subscriptions.find(subscription => subscription.id === plan.) */}
+              {/* //  } */}
+              {/* </Button>
+                      </div> */}
 
-                      {/* Disabled notice */}
-                      {hasActiveSubscription && (
+              {/* Disabled notice */}
+              {/* {Boolean(plan.subscriptions.length) && (
                         <p className='text-xs text-gray-500 dark:text-gray-400 text-center mt-2'>
                           You already have an active subscription
                         </p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+                      )} */}
+              {/* </div>
+                  </div> */}
+              {/* );
+              })} */}
             </div>
           )}
 
@@ -381,7 +398,7 @@ const SubscriptionPlans = () => {
               currentPage={currentPage}
               onClickNext={onClickNext}
               onClickPrev={onClickPrev}
-              noMoreNextPage={subscription_plans.length === 0}
+              noMoreNextPage={products.length === 0}
               paddingRequired={false}
             />
           )}

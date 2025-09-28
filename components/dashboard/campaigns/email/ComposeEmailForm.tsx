@@ -27,6 +27,7 @@ import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
 import useCustomers from '@/hooks/page/useCustomers';
 import { capitalize } from 'lodash';
+import TinyMceEditor from '@/components/editor/TinyMceEditor';
 
 // Dynamically load the CKEditor component
 const CkEditor = dynamic(() => import('@/components/CkEditor'), { ssr: false });
@@ -174,9 +175,9 @@ const ComposeEmailFormContent = ({
 
   return (
     <>
-      <div className='flex flex-col lg:flex-row gap-2 lg:items-stretch lg:max-h-screen'>
-        <form className='flex-1' onSubmit={handleSubmit}>
-          <div className='space-y-6 p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700'>
+      <div className='flex flex-col lg:flex-row gap-2 lg:items-stretch lg:min-h-screen'>
+        <form className='flex-[2] min-w-0' onSubmit={handleSubmit}>
+          <div className='h-full space-y-6 p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700'>
             <h1 className='text-xl font-bold text-gray-900 dark:text-white'>
               Compose email
             </h1>
@@ -197,15 +198,6 @@ const ComposeEmailFormContent = ({
                 value={body.title}
               />
             </div>
-            {/* <div>
-              <label
-                htmlFor='preheader'
-                className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
-              >
-                Preheader
-              </label>
-              <Input type='text' name='preheader' />
-            </div> */}
 
             <div>
               <label
@@ -280,11 +272,11 @@ const ComposeEmailFormContent = ({
                   Body
                 </label>
 
-                {/* Suspense with fallback for CKEditor */}
                 <Suspense fallback={<div>Loading editor...</div>}>
-                  <CkEditor
-                    editorData={editorData}
-                    setEditorData={setEditorData}
+                  <TinyMceEditor
+                    value={editorData}
+                    onChange={setEditorData}
+                    isEmailTemplate={true}
                   />
                 </Suspense>
               </div>
@@ -312,37 +304,7 @@ const ComposeEmailFormContent = ({
             />
           </div>
         </form>
-        <div className='flex-1 border border-dashed rounded-lg overflow-y-auto'>
-          <div className='space-y-6 p-4 sm:p-6 md:p-8 w-full'>
-            <div className='flex flex-col items-center justify-center pt-8 mx-auto pt:mt-0 '>
-              <a
-                href='#'
-                className='flex items-center justify-center mb-8 text-2xl font-semibold lg:mb-10 dark:text-white'
-              >
-                <Image
-                  src={'/logo.png'}
-                  width={150}
-                  height={150}
-                  alt='Logo'
-                  className='m-auto block dark:hidden'
-                  priority
-                />
-                <Image
-                  src={'/logo-white.png'}
-                  width={150}
-                  height={150}
-                  alt='Logo'
-                  className='m-auto hidden dark:block'
-                  priority
-                />
-              </a>
-
-              <div className='mt-3 overflow-hidden dark:text-white text-gray-600 max-h-screen lg:h-[68vh] overflow-y-auto'>
-                <div dangerouslySetInnerHTML={{ __html: editorData }} />
-              </div>
-            </div>
-          </div>
-        </div>
+        <div className='flex-1'></div>
       </div>
     </>
   );

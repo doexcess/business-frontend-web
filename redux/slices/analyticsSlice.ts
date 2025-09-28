@@ -6,6 +6,7 @@ import {
   MonthlyRevenueData,
 } from '@/types/analytics';
 import api from '@/lib/api';
+import { ErrorResponse } from '@/types';
 
 interface AnalyticsState {
   stats: AnalyticsStats | null;
@@ -13,7 +14,7 @@ interface AnalyticsState {
   error: string | null;
   monthlyRevenue: MonthlyRevenueData | null;
   monthlyRevenueLoading: boolean;
-  monthlyRevenueError: string | null;
+  monthlyRevenueError: ErrorResponse | null;
 }
 
 const initialState: AnalyticsState = {
@@ -105,7 +106,7 @@ const analyticsSlice = createSlice({
       })
       .addCase(getMonthlyProductRevenue.rejected, (state, action) => {
         state.monthlyRevenueLoading = false;
-        state.monthlyRevenueError = action.payload as string;
+        state.monthlyRevenueError = action.payload as ErrorResponse;
       });
   },
 });

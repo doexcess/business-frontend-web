@@ -8,12 +8,18 @@ import Link from 'next/link';
 import React from 'react';
 import useTickets from '@/hooks/page/useTickets'; // assuming path is correct
 import ProductGridItemSkeleton from '@/components/dashboard/product/ProductGridItemSkeleton';
+import { PAGINATION_LIMIT, ProductType } from '@/lib/utils';
+import Pagination from '@/components/Pagination';
 
 const Tickets = () => {
   const {
     tickets,
     loading,
     error,
+    count,
+    currentPage,
+    onClickNext,
+    onClickPrev,
     handleSearchSubmit,
     handleRefresh,
     handleFilterByDateSubmit,
@@ -89,11 +95,22 @@ const Tickets = () => {
                 id={ticket.id}
                 imageSrc={ticket.multimedia.url || '/images/course/course2.png'} // fallback image
                 title={ticket.title}
-                type='ticket'
+                type={ProductType.TICKET}
                 data={ticket}
               />
             ))}
           </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && count > PAGINATION_LIMIT && (
+          <Pagination
+            total={count}
+            currentPage={currentPage}
+            onClickNext={onClickNext}
+            onClickPrev={onClickPrev}
+            noMoreNextPage={tickets.length === 0}
+          />
         )}
       </div>
     </main>

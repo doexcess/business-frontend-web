@@ -6,12 +6,17 @@ import CourseCard from './CourseCard';
 import ProductGridItem from '../ProductGridItem';
 import Filter from '@/components/Filter';
 import useCourses from '@/hooks/page/useCourses';
-import { ProductStatus } from '@/lib/utils';
+import { PAGINATION_LIMIT, ProductStatus, ProductType } from '@/lib/utils';
 import ProductGridItemSkeleton from '../ProductGridItemSkeleton';
+import Pagination from '@/components/Pagination';
 
 const CoursesComp = () => {
   const {
     courses,
+    currentPage,
+    perPage,
+    onClickNext,
+    onClickPrev,
     count,
     loading,
     handleSearchSubmit,
@@ -90,12 +95,23 @@ const CoursesComp = () => {
                 id={item.id}
                 imageSrc={item.multimedia.url}
                 title={item.title}
-                type='course'
+                type={ProductType.COURSE}
                 data={item}
               />
             ))
           )}
         </div>
+
+        {/* Pagination */}
+        {!loading && count > PAGINATION_LIMIT && (
+          <Pagination
+            total={count}
+            currentPage={currentPage}
+            onClickNext={onClickNext}
+            onClickPrev={onClickPrev}
+            noMoreNextPage={courses.length === 0}
+          />
+        )}
       </div>
     </ThemeDiv>
   );

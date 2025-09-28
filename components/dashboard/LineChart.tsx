@@ -44,6 +44,7 @@ export function LineChart({ data }: LineChartProps) {
     courses: theme === 'dark' ? '#22d3ee' : '#0ea5e9', // cyan-400 / sky-500
     tickets: theme === 'dark' ? '#f472b6' : '#db2777', // pink-400 / fuchsia-600
     subscriptions: theme === 'dark' ? '#a3e635' : '#65a30d', // lime-400 / lime-700
+    digital: theme === 'dark' ? '#facc15' : '#d97706', // yellow-400 / amber-600
   };
 
   // Assign colors to datasets by label
@@ -54,6 +55,8 @@ export function LineChart({ data }: LineChartProps) {
       if (dataset.label.toLowerCase().includes('ticket'))
         color = colorPalette.tickets;
       if (dataset.label.toLowerCase().includes('subscription'))
+        color = colorPalette.subscriptions;
+      if (dataset.label.toLowerCase().includes('digital'))
         color = colorPalette.subscriptions;
       return {
         ...dataset,
@@ -93,6 +96,8 @@ export function LineChart({ data }: LineChartProps) {
                 color = colorPalette.tickets;
               if (label.toLowerCase().includes('subscription'))
                 color = colorPalette.subscriptions;
+              if (label.toLowerCase().includes('digital'))
+                color = colorPalette.digital;
               return {
                 text: label,
                 fillStyle: color,
