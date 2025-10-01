@@ -14,10 +14,17 @@ import useProfile from '@/hooks/page/useProfile';
 import { saveProfile } from '@/redux/slices/authSlice';
 import toast from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
-import Select from '../Select';
 import { Gender } from '@/lib/utils';
 import { Textarea } from '../ui/textarea';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
+import { capitalize } from 'lodash';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
 
 const GeneralSettings = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -211,15 +218,26 @@ const GeneralSettings = () => {
               <Label htmlFor='gender'>Select gender</Label>
               <Select
                 name='gender'
-                data={Object.values(Gender)}
                 value={formData.gender || ''}
-                onChange={(e: any) =>
+                onValueChange={(value: any) =>
                   setFormData((prev) => ({
                     ...prev,
-                    gender: e.target.value as Gender,
+                    gender: value as Gender,
                   }))
                 }
-              />
+                required
+              >
+                <SelectTrigger className='w-full'>
+                  <SelectValue placeholder='Select gender' />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(Gender).map((g, index) => (
+                    <SelectItem key={index} value={g}>
+                      {capitalize(g)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor='address'>Address</Label>

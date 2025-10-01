@@ -5,13 +5,13 @@ import Input from '@/components/ui/Input';
 import { AppDispatch, RootState } from '@/redux/store';
 import { useRouter } from 'next/navigation';
 import React, { Suspense, useEffect, useState } from 'react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
 import { useDispatch, useSelector } from 'react-redux';
 import useProductCategory from '@/hooks/page/useProductCategory';
 import {
   CreateTicketProps,
   createTicketSchema,
+  OtherCurrencyFormFieldProps,
+  OtherCurrencyProps,
   TicketTierProps,
 } from '@/lib/schema/product.schema';
 import { toast } from 'react-hot-toast';
@@ -34,15 +34,12 @@ import {
 } from '@/components/ui/select';
 import moment from 'moment-timezone';
 import { Textarea } from '@/components/ui/textarea';
-import dynamic from 'next/dynamic';
-import {
-  setOnboardingStep,
-  updateOnboardingProcess,
-} from '@/redux/slices/orgSlice';
+import { updateOnboardingProcess } from '@/redux/slices/orgSlice';
 import { capitalize } from 'lodash';
 import { Globe } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import TinyMceEditor from '@/components/editor/TinyMceEditor';
+import useCurrencies from '@/hooks/page/useCurrencies';
 
 const DEFAULT_FORM_VALUES: CreateTicketProps = {
   title: '',
@@ -65,6 +62,7 @@ const DEFAULT_FORM_VALUES: CreateTicketProps = {
       amount: null,
       original_amount: null,
       quantity: 1,
+      other_currencies: [],
     },
   ],
 };
@@ -122,7 +120,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 interface TicketTierComponentProps {
   tier: TicketTierProps;
   index: number;
-  onTierChange: (index: number, field: string, value: string) => void;
+  onTierChange: (
+    index: number,
+    field: string,
+    value: string | OtherCurrencyFormFieldProps
+  ) => void;
   onRemoveTier: (index: number) => void;
 }
 
@@ -131,54 +133,191 @@ const TicketTier: React.FC<TicketTierComponentProps> = ({
   index,
   onTierChange,
   onRemoveTier,
-}) => (
-  <div className='grid md:grid-cols-4 gap-4 items-center'>
-    <Input
-      type='text'
-      placeholder='Tier Name (e.g. VIP)'
-      value={tier.name}
-      onChange={(e) => onTierChange(index, 'name', e.target.value)}
-    />
-    <Input
-      type='number'
-      placeholder='Original Price'
-      value={tier.original_amount!}
-      onChange={(e) => onTierChange(index, 'original_amount', e.target.value)}
-    />
-    <Input
-      type='number'
-      placeholder='Discounted Price'
-      value={tier.amount!}
-      onChange={(e) => onTierChange(index, 'amount', e.target.value)}
-    />
-    <div className='flex gap-2'>
-      <Input
-        type='number'
-        placeholder='Quantity'
-        value={tier.quantity!}
-        onChange={(e) => onTierChange(index, 'quantity', e.target.value)}
-      />
-      <button
-        type='button'
-        onClick={() => onRemoveTier(index)}
-        className={cn(
-          'text-red-600 hover:text-red-700 font-bold px-2 rounded',
-          tier.purchased_tickets!?.length > 0 &&
-            'dark:text-red-900 dak:hover:text-red-900 text-red-200 hover:text-red-200'
-        )}
-        aria-label={`Remove tier ${tier.name || index + 1}`}
-        disabled={tier.purchased_tickets!?.length > 0}
-        title={
-          tier.purchased_tickets!?.length > 0
-            ? 'This ticket tier has once been purchased'
-            : ''
-        }
-      >
-        <XIcon />
-      </button>
-    </div>
-  </div>
-);
+}) => {
+  const { foreignCurrencies } = useCurrencies();
+  const [showCrossedOutPrice, setShowCrossedOutPrice] = useState(false);
+
+  // Handles both flat fields and nested other_currencies
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+
+    if (name.startsWith('other_currencies')) {
+      const match = name.match(/other_currencies\[(\d+)\]\.(\w+)/);
+      if (match) {
+        const currencyIndex = parseInt(match[1], 10);
+        const field = match[2];
+
+        onTierChange(index, 'other_currencies', {
+          currencyIndex,
+          field,
+          value,
+          defaultCurrency: foreignCurrencies()?.[currencyIndex]?.currency || '',
+        });
+        return;
+      }
+    }
+
+    // Normal tier fields
+    onTierChange(index, name, value);
+  };
+
+  // ✅ Toggle crossed-out prices and clear values when hidden
+  const handleToggleCrossedOutPrice = () => {
+    setShowCrossedOutPrice((prev) => {
+      const newValue = !prev;
+
+      if (!newValue) {
+        // Clear NGN crossed-out price
+        onTierChange(index, 'original_amount', '');
+
+        // Clear foreign crossed-out prices
+        foreignCurrencies()?.forEach((c, i) => {
+          onTierChange(index, 'other_currencies', {
+            currencyIndex: i,
+            field: 'original_price',
+            value: '',
+            defaultCurrency: c.currency,
+          });
+        });
+      }
+
+      return newValue;
+    });
+  };
+
+  return (
+    <>
+      {/* Tier basic info */}
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+        <div>
+          <label className='dark:text-white font-medium mb-1 block'>
+            Tier Name <span className='text-red-500'>*</span>
+          </label>
+          <Input
+            type='text'
+            placeholder='Tier Name (e.g. VIP)'
+            value={tier.name}
+            onChange={(e) => onTierChange(index, 'name', e.target.value)}
+          />
+        </div>
+        <div>
+          <label className='dark:text-white font-medium mb-1 block'>
+            Quantity <span className='text-red-500'>*</span>
+          </label>
+          <Input
+            type='number'
+            placeholder='Quantity'
+            value={tier.quantity ?? ''}
+            onChange={(e) => onTierChange(index, 'quantity', e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Sale prices */}
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4'>
+        <div>
+          <label className='dark:text-white font-medium mb-1 block'>
+            Price (NGN) <span className='text-red-500'>*</span>
+          </label>
+          <Input
+            type='text'
+            placeholder='Sale Price'
+            value={tier.amount ?? ''}
+            onChange={(e) => onTierChange(index, 'amount', e.target.value)}
+            required
+          />
+        </div>
+        {foreignCurrencies()?.map((product_currency, i) => (
+          <div key={i} className='flex-1'>
+            <label className='dark:text-white font-medium mb-1 block'>
+              Price ({product_currency.currency}){' '}
+              <span className='text-red-500'>*</span>
+            </label>
+            <Input
+              type='text'
+              name={`other_currencies[${i}].price`}
+              className='w-full rounded-md'
+              value={tier.other_currencies?.[i]?.price ?? ''}
+              onChange={handleChange}
+              required
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Checkbox toggle */}
+      <div className='mt-3'>
+        <label className='flex items-center gap-2 cursor-pointer'>
+          <input
+            type='checkbox'
+            name='show_crossed_out_prices'
+            checked={showCrossedOutPrice}
+            onChange={handleToggleCrossedOutPrice}
+          />
+          <span className='text-sm font-medium'>Show crossed-out prices</span>
+        </label>
+      </div>
+
+      {/* Crossed-out prices (only if toggled ON) */}
+      {showCrossedOutPrice && (
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3'>
+          <div>
+            <label className='dark:text-white font-medium mb-1 block'>
+              Crossed-out Price (NGN) (Optional)
+            </label>
+            <Input
+              type='text'
+              placeholder='Original Price'
+              value={tier.original_amount ?? ''}
+              onChange={(e) =>
+                onTierChange(index, 'original_amount', e.target.value)
+              }
+            />
+          </div>
+
+          {foreignCurrencies()?.map((product_currency, i) => (
+            <div key={i} className='flex-1'>
+              <label className='dark:text-white font-medium mb-1 block'>
+                Crossed-out Price ({product_currency.currency}) (Optional)
+              </label>
+              <Input
+                type='text'
+                name={`other_currencies[${i}].original_price`}
+                className='w-full rounded-md'
+                value={tier.other_currencies?.[i]?.original_price ?? ''}
+                onChange={handleChange}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Remove button */}
+      <div className='flex justify-end mt-3'>
+        <button
+          type='button'
+          onClick={() => onRemoveTier(index)}
+          className={cn(
+            'text-red-600 hover:text-red-700 font-bold px-2 rounded',
+            tier.purchased_tickets!?.length > 0 &&
+              'dark:text-red-900 dak:hover:text-red-900 text-red-200 hover:text-red-200'
+          )}
+          aria-label={`Remove tier ${tier.name || index + 1}`}
+          disabled={tier.purchased_tickets!?.length > 0}
+          title={
+            tier.purchased_tickets!?.length > 0
+              ? 'This ticket tier has once been purchased'
+              : ''
+          }
+        >
+          <XIcon />
+        </button>
+      </div>
+    </>
+  );
+};
 
 const AddTicketForm = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -267,25 +406,70 @@ const AddTicketForm = () => {
     setImagePreview(null);
   };
 
-  const handleTierChange = (index: number, field: string, value: string) => {
-    const updatedTiers = [...formData.ticket_tiers];
-    const tier = updatedTiers[index] as TicketTierProps;
-    const numericFields = [
-      'amount',
-      'original_amount',
-      'quantity',
-      'remaining_quantity',
-      'max_per_purchase',
-    ];
-    if (numericFields.includes(field)) {
-      (tier as any)[field] = +value;
-    } else {
-      (tier as any)[field] = value;
-    }
-    setFormData((prev) => ({
-      ...prev,
-      ticket_tiers: updatedTiers,
-    }));
+  const handleTierChange = (
+    tierIndex: number,
+    field: string,
+    value: string | OtherCurrencyFormFieldProps
+  ) => {
+    setFormData((prev) => {
+      const updatedTiers = [...prev.ticket_tiers];
+      const tier = { ...updatedTiers[tierIndex] } as TicketTierProps;
+
+      if (field === 'other_currencies' && typeof value === 'object') {
+        const {
+          currencyIndex,
+          field: subField,
+          value: val,
+          defaultCurrency,
+        } = value;
+
+        // Ensure other_currencies is always an array
+        const updatedCurrencies: OtherCurrencyProps[] = Array.isArray(
+          tier.other_currencies
+        )
+          ? [...tier.other_currencies]
+          : [];
+
+        // Ensure slot exists
+        if (!updatedCurrencies[currencyIndex]) {
+          updatedCurrencies[currencyIndex] = {
+            currency: defaultCurrency,
+            price: 0,
+            original_price: undefined,
+          };
+        }
+
+        updatedCurrencies[currencyIndex] = {
+          ...updatedCurrencies[currencyIndex],
+          [subField]:
+            subField === 'original_price'
+              ? val
+                ? +val
+                : undefined
+              : val
+              ? +val
+              : 0,
+        };
+
+        tier.other_currencies = updatedCurrencies;
+      } else {
+        const numericFields = [
+          'amount',
+          'original_amount',
+          'quantity',
+          'remaining_quantity',
+          'max_per_purchase',
+        ];
+        (tier as any)[field] = numericFields.includes(field) ? +value : value;
+      }
+
+      updatedTiers[tierIndex] = tier;
+
+      return {
+        ...prev,
+        ticket_tiers: updatedTiers,
+      };
+    });
   };
 
   const addTier = () => {

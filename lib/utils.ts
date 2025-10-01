@@ -592,3 +592,5 @@ export const areAllOnboardingStepsPresent = (
   }
   return true; // all items are present
 };
+
+export const DEFAULT_CURRENCY = 'NGN';

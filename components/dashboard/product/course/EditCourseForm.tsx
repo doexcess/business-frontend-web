@@ -26,6 +26,7 @@ import { uploadImage } from '@/redux/slices/multimediaSlice';
 import { updateCourse } from '@/redux/slices/courseSlice';
 import { Globe } from 'lucide-react';
 import { updateOnboardingProcess } from '@/redux/slices/orgSlice';
+import useCurrencies from '@/hooks/page/useCurrencies';
 
 const defaultValue = {
   title: '',
@@ -35,6 +36,7 @@ const defaultValue = {
   price: 0,
   original_price: 0,
   category_id: '',
+  other_currencies: [],
 };
 
 const baseUrl = process.env.NEXT_PUBLIC_WEBSITE_URL; // change to your actual base URL
@@ -44,21 +46,64 @@ const EditCourseForm = () => {
   const router = useRouter();
 
   const { categories } = useProductCategory();
+  const { foreignCurrencies } = useCurrencies();
   const { org } = useSelector((state: RootState) => state.org);
   const { course } = useSelector((state: RootState) => state.course);
 
   const [body, setBody] = useState<UpdateCourseProps>({ ...defaultValue });
+  const [showCrossedOutPrice, setShowCrossedOutPrice] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Handle input changes (supports nested other_currencies)
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setBody((prev) => ({
+
+    if (name.startsWith('other_currencies')) {
+      const match = name.match(/other_currencies\[(\d+)\]\.(\w+)/);
+      if (match) {
+        const index = parseInt(match[1], 10);
+        const field = match[2];
+
+        setBody((prev: any) => {
+          // Ensure it's always an array
+          const updated = Array.isArray(prev.other_currencies)
+            ? [...prev.other_currencies]
+            : [];
+
+          // Ensure slot exists
+          if (!updated[index]) {
+            updated[index] = {
+              currency: foreignCurrencies()?.[index]?.currency || '',
+              price: 0,
+              original_price: undefined,
+            };
+          }
+
+          updated[index] = {
+            ...updated[index],
+            [field]:
+              field === 'original_price'
+                ? value
+                  ? +value
+                  : undefined
+                : value
+                ? +value
+                : 0,
+          };
+
+          return { ...prev, other_currencies: updated };
+        });
+        return;
+      }
+    }
+
+    setBody((prev: any) => ({
       ...prev,
       [name]: value,
     }));
@@ -167,6 +212,29 @@ const EditCourseForm = () => {
     }
   };
 
+  // inside your component
+  const handleToggleCrossedOutPrice = () => {
+    setShowCrossedOutPrice((prev) => {
+      const newValue = !prev;
+
+      if (!newValue) {
+        // ✅ Clear crossed-out prices if toggled OFF
+        setBody((prevBody) => ({
+          ...prevBody,
+          original_price: null, // use null instead of undefined ✅
+          other_currencies: Array.isArray(prevBody.other_currencies)
+            ? prevBody.other_currencies.map((c: any) => ({
+                ...c,
+                original_price: null, // match type number | null
+              }))
+            : [],
+        }));
+      }
+
+      return newValue;
+    });
+  };
+
   const isFormValid =
     body.title &&
     body.slug &&
@@ -186,8 +254,10 @@ const EditCourseForm = () => {
         original_price: +course.original_price,
         multimedia_id: course.multimedia?.id,
         category_id: course.category.id,
+        other_currencies: course.other_currencies,
       });
-      setImagePreview(course.multimedia.url);
+      setShowCrossedOutPrice(Boolean(+course.original_price));
+      setImagePreview(course?.multimedia.url!);
     }
   }, [course]);
 
@@ -241,8 +311,8 @@ const EditCourseForm = () => {
           />
         </div>
 
-        {/* Category and Price Fields */}
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+        {/* Category and Short link Fields */}
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div>
             <label className='text-sm font-medium mb-1 block'>
               Category <span className='text-red-500'>*</span>
@@ -268,32 +338,7 @@ const EditCourseForm = () => {
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <label className='text-sm font-medium mb-1 block'>
-              Price <span className='text-red-500'>*</span>
-            </label>
-            <Input
-              type='text'
-              name='price'
-              className='w-full rounded-md py-3'
-              value={body.price!}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label className='text-sm font-medium mb-1 block'>
-              Crossed-out Price (Optional)
-            </label>
-            <Input
-              type='text'
-              name='original_price'
-              className='w-full rounded-md py-3'
-              value={body.original_price!}
-              onChange={handleChange}
-              required
-            />
-          </div>
+
           <div>
             <label className='text-sm font-medium mb-1 block'>
               Shortlink <span className='text-red-500'>*</span>
@@ -303,7 +348,7 @@ const EditCourseForm = () => {
               <Input
                 type='text'
                 name='slug'
-                className='w-full rounded-md py-3 pl-9'
+                className='w-full rounded-md pl-9'
                 value={body.slug!}
                 onChange={handleChange}
                 required
@@ -321,6 +366,87 @@ const EditCourseForm = () => {
             )}
           </div>
         </div>
+
+        <div className='flex gap-3 w-full'>
+          <div className='flex-1'>
+            <label className='text-sm font-medium mb-1 block'>
+              Price (NGN)<span className='text-red-500'>*</span>
+            </label>
+            <Input
+              type='text'
+              name='price'
+              className='w-full rounded-md py-3'
+              value={body.price!}
+              onChange={handleChange}
+              required
+            />
+            <p className='mt-2 text-xs'>Zero (0) represents a free product</p>
+          </div>
+          {foreignCurrencies()?.map((product_currency, index) => (
+            <div key={index} className='flex-1'>
+              <label className='text-sm font-medium mb-1 block'>
+                Price ({product_currency.currency}) *
+              </label>
+              <Input
+                type='text'
+                name={`other_currencies[${index}].price`}
+                className='w-full rounded-md py-3'
+                value={body.other_currencies?.[index]?.price}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Checkbox toggle */}
+        <div>
+          <label className='flex items-center gap-2 cursor-pointer'>
+            <input
+              type='checkbox'
+              name='show_crossed_out_prices'
+              checked={showCrossedOutPrice}
+              onChange={handleToggleCrossedOutPrice} // ✅ clean function
+            />
+            <span className='text-sm font-medium'>Show crossed-out prices</span>
+          </label>
+        </div>
+
+        {/* Crossed-out price inputs */}
+        {showCrossedOutPrice && (
+          <div className='flex gap-3 w-full mt-3'>
+            {/* NGN input */}
+            <div className='flex-1'>
+              <label className='text-sm font-medium mb-1 block'>
+                Crossed-out Price (NGN) (Optional)
+              </label>
+              <Input
+                type='text'
+                name='original_price'
+                className='w-full rounded-md py-3'
+                value={body.original_price!}
+                onChange={handleChange}
+              />
+            </div>
+
+            {/* Foreign currencies */}
+            {foreignCurrencies()?.map((c, i) => (
+              <div key={i} className='flex-1'>
+                <label className='text-sm font-medium mb-1 block'>
+                  Crossed-out Price ({c.currency}) (Optional)
+                </label>
+
+                <Input
+                  type='text'
+                  name={`other_currencies[${i}].original_price`}
+                  className='w-full rounded-md py-3'
+                  value={body.other_currencies?.[i]?.original_price}
+                  onChange={handleChange}
+                />
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Description */}
         <div>

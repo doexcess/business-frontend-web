@@ -4,6 +4,8 @@ import {
   UpdateTicketProps,
   updateTicketSchema,
   TicketTierProps,
+  OtherCurrencyFormFieldProps,
+  OtherCurrencyProps,
 } from '@/lib/schema/product.schema';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
 import { deleteTicketTier, updateTicket } from '@/redux/slices/ticketSlice';
@@ -20,9 +22,6 @@ import { useRouter } from 'next/navigation';
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-
 import {
   Select,
   SelectContent,
@@ -37,10 +36,10 @@ import ActionConfirmationModal from '@/components/ActionConfirmationModal';
 import moment from 'moment-timezone';
 import XIcon from '@/components/ui/icons/XIcon';
 import ThemeDiv from '@/components/ui/ThemeDiv';
-import CkEditor from '@/components/CkEditor';
 import TinyMceEditor from '@/components/editor/TinyMceEditor';
 import { Globe } from 'lucide-react';
 import { updateOnboardingProcess } from '@/redux/slices/orgSlice';
+import useCurrencies from '@/hooks/page/useCurrencies';
 
 const defaultValue: UpdateTicketProps = {
   title: '',
@@ -58,6 +57,216 @@ const defaultValue: UpdateTicketProps = {
   event_type: null,
   auth_details: '',
   ticket_tiers: [],
+};
+
+interface TicketTierComponentProps {
+  tier: TicketTierProps;
+  index: number;
+  onTierChange: (
+    index: number,
+    field: string,
+    value: string | OtherCurrencyFormFieldProps
+  ) => void;
+  onRemoveTier: (index: number) => void;
+}
+const TicketTier: React.FC<TicketTierComponentProps> = ({
+  tier,
+  index,
+  onTierChange,
+  onRemoveTier,
+}) => {
+  const { foreignCurrencies } = useCurrencies();
+  const [showCrossedOutPrice, setShowCrossedOutPrice] = useState(false);
+
+  // Handles both flat fields and nested other_currencies
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+
+    if (name.startsWith('other_currencies')) {
+      const match = name.match(/other_currencies\[(\d+)\]\.(\w+)/);
+      if (match) {
+        const currencyIndex = parseInt(match[1], 10);
+        const field = match[2];
+
+        onTierChange(index, 'other_currencies', {
+          currencyIndex,
+          field,
+          value,
+          defaultCurrency: foreignCurrencies()?.[currencyIndex]?.currency || '',
+        });
+        return;
+      }
+    }
+
+    onTierChange(index, name, value);
+  };
+
+  // ✅ Toggle crossed-out prices and clear values when hidden
+  const handleToggleCrossedOutPrice = () => {
+    setShowCrossedOutPrice((prev) => {
+      const newValue = !prev;
+
+      if (!newValue) {
+        // Clear NGN crossed-out price
+        onTierChange(index, 'original_amount', '');
+
+        // Clear foreign crossed-out prices
+        foreignCurrencies()?.forEach((c, i) => {
+          onTierChange(index, 'other_currencies', {
+            currencyIndex: i,
+            field: 'original_price',
+            value: '',
+            defaultCurrency: c.currency,
+          });
+        });
+      }
+
+      return newValue;
+    });
+  };
+
+  useEffect(() => {
+    if (tier.original_amount) {
+      setShowCrossedOutPrice(true);
+    }
+  }, [tier]);
+
+  return (
+    <>
+      {/* Tier basic info */}
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+        <div>
+          <label className='dark:text-white font-medium mb-1 block'>
+            Tier Name <span className='text-red-500'>*</span>
+          </label>
+          <Input
+            type='text'
+            placeholder='Tier Name (e.g. VIP)'
+            value={tier.name}
+            onChange={(e) => onTierChange(index, 'name', e.target.value)}
+            className='w-full'
+          />
+        </div>
+        <div>
+          <label className='dark:text-white font-medium mb-1 block'>
+            Quantity <span className='text-red-500'>*</span>
+          </label>
+          <Input
+            type='number'
+            placeholder='Quantity'
+            value={tier.quantity ?? ''}
+            onChange={(e) => onTierChange(index, 'quantity', e.target.value)}
+            className='w-full'
+          />
+        </div>
+      </div>
+
+      {/* Sale prices */}
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4'>
+        <div>
+          <label className='dark:text-white font-medium mb-1 block'>
+            Price (NGN) <span className='text-red-500'>*</span>
+          </label>
+          <Input
+            type='text'
+            placeholder='Sale Price'
+            value={tier.amount ?? ''}
+            onChange={(e) => onTierChange(index, 'amount', e.target.value)}
+            required
+            className='w-full'
+          />
+        </div>
+        {foreignCurrencies()?.map((product_currency, i) => (
+          <div key={i}>
+            <label className='dark:text-white font-medium mb-1 block'>
+              Price ({product_currency.currency}){' '}
+              <span className='text-red-500'>*</span>
+            </label>
+            <Input
+              type='text'
+              name={`other_currencies[${i}].price`}
+              className='w-full rounded-md'
+              value={tier.other_currencies?.[i]?.price ?? ''}
+              onChange={handleChange}
+              required
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Checkbox toggle */}
+      <div className='mt-3'>
+        <label className='flex items-center gap-2 cursor-pointer'>
+          <input
+            type='checkbox'
+            name='show_crossed_out_prices'
+            checked={showCrossedOutPrice}
+            onChange={handleToggleCrossedOutPrice}
+          />
+          <span className='text-sm font-medium'>Show crossed-out prices</span>
+        </label>
+      </div>
+
+      {/* Crossed-out prices (only if toggled ON) */}
+      {showCrossedOutPrice && (
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3'>
+          <div>
+            <label className='dark:text-white font-medium mb-1 block'>
+              Crossed-out Price (NGN) (Optional)
+            </label>
+            <Input
+              type='text'
+              placeholder='Original Price'
+              value={tier.original_amount ?? ''}
+              onChange={(e) =>
+                onTierChange(index, 'original_amount', e.target.value)
+              }
+              className='w-full'
+            />
+          </div>
+
+          {foreignCurrencies()?.map((product_currency, i) => (
+            <div key={i}>
+              <label className='dark:text-white font-medium mb-1 block'>
+                Crossed-out Price ({product_currency.currency}) (Optional)
+              </label>
+              <Input
+                type='text'
+                name={`other_currencies[${i}].original_price`}
+                className='w-full rounded-md'
+                value={tier.other_currencies?.[i]?.original_price ?? ''}
+                onChange={handleChange}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Remove button */}
+      <div className='flex justify-end mt-3'>
+        <button
+          type='button'
+          onClick={() => onRemoveTier(index)}
+          className={cn(
+            'text-red-600 hover:text-red-700 font-bold px-2 rounded',
+            tier.purchased_tickets!?.length > 0 &&
+              'dark:text-red-900 dak:hover:text-red-900 text-red-200 hover:text-red-200'
+          )}
+          aria-label={`Remove tier ${tier.name || index + 1}`}
+          disabled={tier.purchased_tickets!?.length > 0}
+          title={
+            tier.purchased_tickets!?.length > 0
+              ? 'This ticket tier has once been purchased'
+              : ''
+          }
+        >
+          <XIcon />
+        </button>
+      </div>
+    </>
+  );
 };
 
 const EditTicketForm = () => {
@@ -153,25 +362,70 @@ const EditTicketForm = () => {
   };
 
   // Handle tier change
-  const handleTierChange = (index: number, field: string, value: string) => {
-    const updatedTiers = [...body?.ticket_tiers!];
-    const tier = updatedTiers[index] as TicketTierProps;
-    const numericFields = [
-      'amount',
-      'original_amount',
-      'quantity',
-      'remaining_quantity',
-      'max_per_purchase',
-    ];
-    if (numericFields.includes(field)) {
-      (tier as any)[field] = +value;
-    } else {
-      (tier as any)[field] = value;
-    }
-    setBody((prev) => ({
-      ...prev,
-      ticket_tiers: updatedTiers,
-    }));
+  const handleTierChange = (
+    tierIndex: number,
+    field: string,
+    value: string | OtherCurrencyFormFieldProps
+  ) => {
+    setBody((prev) => {
+      const updatedTiers = [...prev.ticket_tiers!];
+      const tier = { ...updatedTiers[tierIndex] } as TicketTierProps;
+
+      if (field === 'other_currencies' && typeof value === 'object') {
+        const {
+          currencyIndex,
+          field: subField,
+          value: val,
+          defaultCurrency,
+        } = value;
+
+        // Ensure other_currencies is always an array
+        const updatedCurrencies: OtherCurrencyProps[] = Array.isArray(
+          tier.other_currencies
+        )
+          ? [...tier.other_currencies]
+          : [];
+
+        // Ensure slot exists
+        if (!updatedCurrencies[currencyIndex]) {
+          updatedCurrencies[currencyIndex] = {
+            currency: defaultCurrency,
+            price: 0,
+            original_price: undefined,
+          };
+        }
+
+        updatedCurrencies[currencyIndex] = {
+          ...updatedCurrencies[currencyIndex],
+          [subField]:
+            subField === 'original_price'
+              ? val
+                ? +val
+                : undefined
+              : val
+              ? +val
+              : 0,
+        };
+
+        tier.other_currencies = updatedCurrencies;
+      } else {
+        const numericFields = [
+          'amount',
+          'original_amount',
+          'quantity',
+          'remaining_quantity',
+          'max_per_purchase',
+        ];
+        (tier as any)[field] = numericFields.includes(field) ? +value : value;
+      }
+
+      updatedTiers[tierIndex] = tier;
+
+      return {
+        ...prev,
+        ticket_tiers: updatedTiers,
+      };
+    });
   };
 
   const addTier = () => {
@@ -292,7 +546,7 @@ const EditTicketForm = () => {
       }
 
       toast.success('Ticket updated successfully!');
-      router.push(`/products/tickets/${ticket?.id}/edit`);
+      router.push(`/products/tickets`);
     } catch (error: any) {
       console.error('Submission failed:', error);
       toast.error(error.message);
@@ -343,6 +597,7 @@ const EditTicketForm = () => {
           default_view: tier.default_view,
           status: tier.status as TicketTierStatus,
           purchased_tickets: tier.purchased_tickets,
+          other_currencies: tier.other_currencies,
         })),
       });
       setImagePreview(ticket.multimedia.url);
@@ -634,7 +889,6 @@ const EditTicketForm = () => {
               value={body.keywords}
               onChange={handleChange}
               placeholder='e.g: Information Technology, Real Estate etc.'
-              required
             />
           </div>
 
@@ -685,62 +939,69 @@ const EditTicketForm = () => {
           </h3>
 
           {body?.ticket_tiers?.map((tier, index) => (
-            <div key={index} className='grid md:grid-cols-4 gap-4 items-center'>
-              <Input
-                type='text'
-                placeholder='Tier Name (e.g. VIP)'
-                value={tier.name}
-                onChange={(e) =>
-                  handleTierChange(index, 'name', e.target.value)
-                }
-              />
-              <Input
-                type='number'
-                placeholder='Original Price'
-                value={tier.original_amount!}
-                onChange={(e) =>
-                  handleTierChange(index, 'original_amount', e.target.value)
-                }
-              />
-              <Input
-                type='number'
-                placeholder='Discounted Price'
-                value={tier.amount!}
-                onChange={(e) =>
-                  handleTierChange(index, 'amount', e.target.value)
-                }
-              />
-              <div className='flex gap-2'>
-                <Input
-                  type='number'
-                  placeholder='Quantity'
-                  value={tier.quantity!}
-                  onChange={(e) =>
-                    handleTierChange(index, 'quantity', e.target.value)
-                  }
-                />
-                {/* {tier.purchased_tickets?.length === 0 && ( */}
-                <button
-                  type='button'
-                  onClick={() => removeTier(index)}
-                  className={cn(
-                    'text-red-600 hover:text-red-700 font-bold px-2 rounded',
-                    tier.purchased_tickets!?.length > 0 &&
-                      'dark:text-red-900 dak:hover:text-red-900 text-red-200 hover:text-red-200'
-                  )}
-                  aria-label={`Remove tier ${tier.name || index + 1}`}
-                  disabled={tier.purchased_tickets!?.length > 0}
-                  title={
-                    tier.purchased_tickets!?.length > 0
-                      ? 'This ticket tier has once been purchased'
-                      : ''
-                  }
-                >
-                  <XIcon />
-                </button>
-                {/* )} */}
-              </div>
-            </div>
+            // <div key={index} className='grid md:grid-cols-4 gap-4 items-center'>
+            //   <Input
+            //     type='text'
+            //     placeholder='Tier Name (e.g. VIP)'
+            //     value={tier.name}
+            //     onChange={(e) =>
+            //       handleTierChange(index, 'name', e.target.value)
+            //     }
+            //   />
+            //   <Input
+            //     type='number'
+            //     placeholder='Original Price'
+            //     value={tier.original_amount!}
+            //     onChange={(e) =>
+            //       handleTierChange(index, 'original_amount', e.target.value)
+            //     }
+            //   />
+            //   <Input
+            //     type='number'
+            //     placeholder='Discounted Price'
+            //     value={tier.amount!}
+            //     onChange={(e) =>
+            //       handleTierChange(index, 'amount', e.target.value)
+            //     }
+            //   />
+            //   <div className='flex gap-2'>
+            //     <Input
+            //       type='number'
+            //       placeholder='Quantity'
+            //       value={tier.quantity!}
+            //       onChange={(e) =>
+            //         handleTierChange(index, 'quantity', e.target.value)
+            //       }
+            //     />
+            //     {/* {tier.purchased_tickets?.length === 0 && ( */}
+            //     <button
+            //       type='button'
+            //       onClick={() => removeTier(index)}
+            //       className={cn(
+            //         'text-red-600 hover:text-red-700 font-bold px-2 rounded',
+            //         tier.purchased_tickets!?.length > 0 &&
+            //           'dark:text-red-900 dak:hover:text-red-900 text-red-200 hover:text-red-200'
+            //       )}
+            //       aria-label={`Remove tier ${tier.name || index + 1}`}
+            //       disabled={tier.purchased_tickets!?.length > 0}
+            //       title={
+            //         tier.purchased_tickets!?.length > 0
+            //           ? 'This ticket tier has once been purchased'
+            //           : ''
+            //       }
+            //     >
+            //       <XIcon />
+            //     </button>
+            //     {/* )} */}
+            //   </div>
+            // </div>
+            <TicketTier
+              key={index}
+              tier={tier}
+              index={index}
+              onTierChange={handleTierChange}
+              onRemoveTier={removeTier}
+            />
           ))}
 
           <div className='flex justify-end'>

@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/Button';
 import {
   createSubscriptionPlanSchema,
   CreateSubscriptionPlanProps,
+  SubscriptionPlanPriceProps,
+  PlanPrice,
 } from '@/lib/schema/subscription.schema';
 import {
   baseUrl,
@@ -39,6 +41,12 @@ import {
   updateOnboardingProcess,
 } from '@/redux/slices/orgSlice';
 import useProductCategory from '@/hooks/page/useProductCategory';
+import useCurrencies from '@/hooks/page/useCurrencies';
+import {
+  OtherCurrencyFormFieldProps,
+  OtherCurrencyProps,
+} from '@/lib/schema/product.schema';
+import { SubscriptionPlanPriceFields } from './SubscriptionPlanPriceFields';
 
 const defaultValue: CreateSubscriptionPlanProps = {
   name: '',
@@ -54,6 +62,7 @@ const defaultValue: CreateSubscriptionPlanProps = {
       price: 0,
       currency: 'NGN',
       period: SubscriptionPeriod.MONTHLY,
+      other_currencies: [],
     },
   ],
   subscription_plan_roles: [
@@ -93,22 +102,68 @@ const CreateSubscriptionPlanForm = ({
   // Pricing handlers
   const handlePriceChange = (
     index: number,
-    key: 'price' | 'period',
-    value: any
+    field: string | keyof PlanPrice,
+    value: string | OtherCurrencyFormFieldProps
   ) => {
-    const updated = [...body.subscription_plan_prices];
-    const price = updated[index] as any;
-    const numericFields = ['price', 'period'];
-    if (numericFields.includes(key)) {
-      (price as any)[key] = value;
-    } else {
-      (price as any)[key] = value;
-    }
+    setBody((prev) => {
+      const updated = [...body.subscription_plan_prices];
+      const plan_price_options = {
+        ...updated[index],
+      } as SubscriptionPlanPriceProps;
 
-    setBody((prev) => ({
-      ...prev,
-      subscription_plan_prices: updated,
-    }));
+      if (field === 'other_currencies' && typeof value === 'object') {
+        const {
+          currencyIndex,
+          field: subField,
+          value: val,
+          defaultCurrency,
+        } = value;
+
+        // Ensure other_currencies is always an array
+        const updatedCurrencies: OtherCurrencyProps[] = Array.isArray(
+          plan_price_options.other_currencies
+        )
+          ? [...plan_price_options.other_currencies]
+          : [];
+
+        // Ensure slot exists
+        if (!updatedCurrencies[currencyIndex]) {
+          updatedCurrencies[currencyIndex] = {
+            currency: defaultCurrency,
+            price: 0,
+          };
+        }
+
+        updatedCurrencies[currencyIndex] = {
+          ...updatedCurrencies[currencyIndex],
+          [subField]:
+            subField === 'original_price'
+              ? val
+                ? +val
+                : undefined
+              : val
+              ? +val
+              : 0,
+        };
+
+        plan_price_options.other_currencies = updatedCurrencies;
+      } else {
+        const numericFields = ['price', 'period'];
+
+        (plan_price_options as any)[field] = numericFields.includes(field)
+          ? field === 'price'
+            ? value
+            : value
+          : value;
+      }
+
+      updated[index] = plan_price_options;
+
+      return {
+        ...prev,
+        subscription_plan_prices: updated,
+      };
+    });
   };
 
   const addPriceField = () => {
@@ -235,7 +290,7 @@ const CreateSubscriptionPlanForm = ({
 
       toast.success(response.message);
       setIsPlanModalOpen(false);
-      // dispatch(fetchSubscriptionPlans({ business_id: org?.id! }));
+      dispatch(fetchSubscriptionPlans({ business_id: org?.id! }));
     } catch (error: any) {
       console.error('Submission failed:', error);
       toast.error(error.message);
@@ -416,49 +471,14 @@ const CreateSubscriptionPlanForm = ({
         )}
 
         {body.subscription_plan_prices.map((price, index) => (
-          <div
+          <SubscriptionPlanPriceFields
             key={index}
-            className='flex flex-col sm:flex-row gap-2 items-center'
-          >
-            <Input
-              type='number'
-              placeholder='Amount (₦)'
-              value={price.price}
-              onChange={(e) =>
-                handlePriceChange(index, 'price', e.target.value)
-              }
-            />
-
-            <Select
-              value={price.period}
-              onValueChange={(value) => {
-                const updated = [...body.subscription_plan_prices];
-                updated[index].period = value as SubscriptionPeriod;
-                setBody((prev) => ({
-                  ...prev,
-                  subscription_plan_prices: updated,
-                }));
-              }}
-            >
-              <SelectTrigger className='w-full'>
-                <SelectValue placeholder='Select a period' />
-              </SelectTrigger>
-              <SelectContent>
-                {periods.map((period) => (
-                  <SelectItem key={period} value={period}>
-                    {period.replace(/_/g, ' ').toUpperCase()}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <button
-              type='button'
-              onClick={() => removePriceField(index)}
-              className='text-red-500 hover:underline'
-            >
-              <XIcon className='w-4 h-4' />
-            </button>
-          </div>
+            plan_price_tier={price}
+            periods={periods}
+            index={index}
+            onPlanPriceTierChange={handlePriceChange}
+            onRemovePlanPriceTier={removePriceField}
+          />
         ))}
       </section>
 
