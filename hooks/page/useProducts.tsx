@@ -30,6 +30,8 @@ const useProducts = (
   const searchQuery = useSearchParams();
 
   const { org } = useSelector((state: RootState) => state.org);
+  const { currency } = useSelector((state: RootState) => state.currency);
+
   const {
     products,
     count,
@@ -39,7 +41,7 @@ const useProducts = (
 
   const {
     currentPage,
-    perPage = 10,
+    perPage = 12,
     q,
     onClickNext,
     onClickPrev,
@@ -59,9 +61,10 @@ const useProducts = (
         ...(org?.id && { business_id: org?.id }),
         ...(minPrice && { min_price: minPrice }),
         ...(maxPrice && { max_price: maxPrice }),
+        ...(currency && { currency }),
       })
     ).unwrap();
-  }, [dispatch, currentPage, perPage, search, priceRange, org, type]);
+  }, [dispatch, currentPage, perPage, search, priceRange, org, type, currency]);
 
   return {
     products,

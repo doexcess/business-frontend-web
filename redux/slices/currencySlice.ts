@@ -1,58 +1,25 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import api from '@/lib/api';
 import {
-  BusinessProfile,
-  BusinessProfileFull,
-  BusinessProfileFullReponse,
-  BusinessProfileResponse,
-  ContactInvite,
-  ContactInviteDetailsResponse,
-  ContactInviteResponse,
-  ExportUserResponse,
-  KYC,
-  UpdateOnboardingProcessResponse,
-} from '@/types/org';
-import {
-  AcceptInviteProps,
-  CreateBusinessProfileProps,
-  DocFormat,
-  ImportUsersProps,
-  InviteContactProps,
-  ResolveAccountProps,
-  SaveBankAccountProps,
-  UpdateOnboardingProcessProps,
-} from '@/lib/schema/org.schema';
-import {
-  BusinessOwnerOrgRole,
-  ContactInviteStatus,
-  onboardingProcesses,
-  SystemRole,
-} from '@/lib/utils';
-import {
-  BanksResponse,
-  KYCResponse,
-  PaystackBank,
-  ResolveAccountResponse,
-  TransferRecipientData,
-} from '@/types/account';
-import {
-  CustomerDetailsResponse,
-  CustomersResponse,
-} from '@/types/notification';
-import {
   BusinessCurrencies,
   BusinessCurrenciesResponse,
+  BusinessCurrencyData,
+  BusinessCurrencyResponse,
   CurrencyActionResponse,
 } from '@/types/currency';
 
 interface CurrencyState {
   currencies: BusinessCurrencies | null;
+  store_currencies: BusinessCurrencyData | null;
+  currency: string;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: CurrencyState = {
   currencies: null,
+  store_currencies: null,
+  currency: '',
   loading: true,
   error: null,
 };
@@ -128,10 +95,30 @@ export const toggleProductCurrency = createAsyncThunk(
   }
 );
 
+// Async thunk to fetch store currencies
+export const fetchStoreCurrencies = createAsyncThunk(
+  'currency/fetch-business-currencies/:business_id',
+  async ({ business_id }: { business_id: string }) => {
+    const params: Record<string, any> = {};
+
+    if (business_id !== undefined) params['business_id'] = business_id;
+
+    const { data } = await api.get<BusinessCurrencyResponse>(
+      `/currency/fetch-business-currencies/${business_id}`
+    );
+
+    return data;
+  }
+);
+
 const currencySlice = createSlice({
   name: 'currency',
   initialState,
-  reducers: {},
+  reducers: {
+    switchCurrency: (state, action: PayloadAction<string>) => {
+      state.currency = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchBusinessCurrencies.pending, (state) => {
@@ -218,10 +205,23 @@ const currencySlice = createSlice({
         state.loading = false;
         state.error =
           action.error.message || 'Failed to toggle product currency';
+      })
+      .addCase(fetchStoreCurrencies.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchStoreCurrencies.fulfilled, (state, action) => {
+        state.loading = false;
+        state.store_currencies = action.payload.data;
+      })
+      .addCase(fetchStoreCurrencies.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.error.message || 'Failed to fetch store currencies';
       });
   },
 });
 
-export const {} = currencySlice.actions;
+export const { switchCurrency } = currencySlice.actions;
 
 export default currencySlice.reducer;

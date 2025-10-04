@@ -594,3 +594,9 @@ export const areAllOnboardingStepsPresent = (
 };
 
 export const DEFAULT_CURRENCY = 'NGN';
+
+export const isBusiness = (role: SystemRole) => {
+  return [SystemRole.BUSINESS_SUPER_ADMIN, SystemRole.BUSINESS_ADMIN].includes(
+    role
+  );
+};

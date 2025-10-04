@@ -5,50 +5,24 @@ import PageHeading from '@/components/PageHeading';
 import useProducts from '@/hooks/page/useProducts';
 import Filter from '@/components/Filter';
 import ProductGridItemSkeleton from '@/components/dashboard/product/ProductGridItemSkeleton';
-import { Button } from '@/components/ui/Button';
-import { EyeIcon } from 'lucide-react';
-import { formatMoney } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
-import useProductById from '@/hooks/page/useProductById';
-import { Modal } from '@/components/ui/Modal';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@/redux/store';
-import { addToCart, fetchCart } from '@/redux/slices/cartSlice';
-import { ProductType } from '@/lib/utils';
-import toast from 'react-hot-toast';
-import Icon from '@/components/ui/Icon';
-import { ProductDetails } from '@/types/product';
-import NotFound from '@/components/ui/NotFound';
+import { isBusiness, SystemRole } from '@/lib/utils';
 import PublicProductGridItem from '@/components/dashboard/product/course/PublicCourseGridItem';
+import Pagination from '@/components/Pagination';
 
 const Products = () => {
   const [search, setSearch] = useState('');
   const [priceRange, setPriceRange] = useState('All Prices');
-  const [modalOpenId, setModalOpenId] = useState<string | null>(null);
-  const [modalType, setModalType] = useState<ProductType | null>(null);
   const {
     products = [],
     count = 0,
     loading,
     error,
     handleRefresh,
+    limit,
+    currentPage,
+    onClickNext,
+    onClickPrev,
   } = useProducts(undefined, search, priceRange);
-  const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>();
-  const { cart, loading: cartLoading } = useSelector(
-    (state: RootState) => state.cart
-  );
-
-  // Fetch product details for the open modal
-  const { product, loading: productLoading } = useProductById(
-    modalOpenId || undefined
-  );
-
-  // Helper: open modal with type
-  const handleOpenModal = (id: string, type: ProductType) => {
-    setModalOpenId(id);
-    setModalType(type);
-  };
 
   return (
     <main className='min-h-screen  text-gray-900 dark:text-white'>
@@ -58,7 +32,9 @@ const Products = () => {
           brief='Browse all available products and tickets.'
           enableBreadCrumb={true}
           layer2='Products'
-          layer2Link='/products'
+          layer2Link={
+            isBusiness(SystemRole.USER) ? '/products' : '/dashboard/products'
+          }
         />
         <div className='flex flex-col gap-4 mt-2'>
           <Filter
@@ -102,6 +78,15 @@ const Products = () => {
             <div className='text-gray-500 text-center py-8'>
               No products found.
             </div>
+          )}
+
+          {!loading && count > limit && (
+            <Pagination
+              currentPage={currentPage}
+              total={count}
+              onClickNext={onClickNext}
+              onClickPrev={onClickPrev}
+            />
           )}
         </div>
       </div>

@@ -21,11 +21,6 @@ const Topbar = () => {
   const { org } = useSelector((state: RootState) => state.org);
   const [currency, setCurrency] = useState('NGN');
 
-  const [isOpen, setIsOpen] = useState({
-    profileDialog: false,
-    appsDialog: false,
-  });
-
   const handleVisitStore = () => {
     if (org?.business_slug) {
       window.open(
@@ -42,7 +37,7 @@ const Topbar = () => {
       <div className='flex flex-wrap justify-between items-center gap-2'>
         <div className='flex justify-start items-center min-w-0 flex-1'>
           <Link
-            href=''
+            href='/'
             className='flex items-center justify-between mr-2 sm:mr-4 md:hidden flex-shrink-0'
           >
             <Icon
@@ -66,24 +61,13 @@ const Topbar = () => {
             <StoreLink slug={org?.business_slug!} />
           </div>
         </div>
-        <div className='flex items-center lg:order-2 gap-1 sm:gap-2 flex-shrink-0'>
-          {/* Currency Switcher - Responsive */}
+        <div className='flex items-center lg:order-2 gap-2 sm:gap-2 flex-shrink-0'>
+          {/* Currency Switcher - Show when org is selected */}
           {org && (
             <>
               {/* Mobile - Compact inline */}
               <div className='sm:hidden'>
-                <select
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                  className='text-xs px-2 py-1 border rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:ring-1 focus:ring-blue-500 focus:border-blue-500'
-                  title='Currency'
-                >
-                  {['NGN', 'USD', 'GBP'].map((cur) => (
-                    <option key={cur} value={cur}>
-                      {cur}
-                    </option>
-                  ))}
-                </select>
+                <CurrencySwitcher />
               </div>
 
               {/* Desktop - Full component */}
@@ -128,7 +112,7 @@ const Topbar = () => {
           {/* <Apps isOpen={isOpen} setIsOpen={setIsOpen} /> */}
 
           {/* Profile */}
-          <Profile isOpen={isOpen} setIsOpen={setIsOpen} />
+          <Profile />
         </div>
       </div>
       {/* Drawer for mobile view */}

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { HiLogout } from 'react-icons/hi';
-import { Store, Globe } from 'lucide-react';
+import { Store } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import ActionConfirmationModal from '@/components/ActionConfirmationModal';
 import { useSelector } from 'react-redux';
@@ -17,7 +17,6 @@ const BottomMenu = ({ handleClose }: { handleClose?: () => void }) => {
   const [logoutOpenModal, setLogoutOpenModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [allowAction, setAllowAction] = useState(false);
-  const [currency, setCurrency] = useState('NGN');
 
   const handleLogoutNavigation = () => {
     router.push('/logout');

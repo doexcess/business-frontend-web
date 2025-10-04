@@ -142,6 +142,7 @@ const ProductMeta = ({
     count,
     loading: cartLoading,
   } = useSelector((state: RootState) => state.cart);
+  const { currency } = useSelector((state: RootState) => state.currency);
 
   const { anyProductInCart, productInCart } = productItemInCart(
     cart?.items!,
@@ -355,7 +356,7 @@ const ProductMeta = ({
               {sortTiersByPrice(product.ticket?.ticket_tiers || []).map(
                 (tier) => (
                   <SelectItem key={tier.id} value={tier.id}>
-                    {tier.name} ({formatMoney(+tier.amount)})
+                    {tier.name} ({formatMoney(+tier.amount, currency)})
                   </SelectItem>
                 )
               )}
@@ -379,7 +380,7 @@ const ProductMeta = ({
             ).map((planPrice) => (
               <SelectItem key={planPrice.id} value={planPrice.id}>
                 {capitalize(reformatUnderscoreText(planPrice.period))} (
-                {formatMoney(+planPrice.price)})
+                {formatMoney(+planPrice.price, currency)})
               </SelectItem>
             ))}
           </SelectContent>
@@ -390,11 +391,11 @@ const ProductMeta = ({
       <div className='flex items-baseline gap-2'>
         {displayOriginalPrice && (
           <span className='line-through text-sm text-muted-foreground'>
-            {formatMoney(+displayOriginalPrice)}
+            {formatMoney(+displayOriginalPrice, currency)}
           </span>
         )}
         <span className='text-lg font-semibold'>
-          {formatMoney(+displayPrice!)}
+          {formatMoney(+displayPrice!, currency)}
         </span>
       </div>
 
@@ -428,7 +429,6 @@ const ProductMeta = ({
 //
 // --- Main Component ---
 const BusinessProductView = () => {
-  const dispatch = useDispatch();
   const params = useParams();
 
   const { product, loading, error } = useProductById(params?.id! as string);
@@ -448,9 +448,9 @@ const BusinessProductView = () => {
           brief='View more about your product'
           enableBreadCrumb={true}
           layer2='Products'
-          layer2Link='/products'
+          layer2Link='/dashboard/products'
           layer3='Product Details'
-          layer3Link={`/products/${product.id}`}
+          layer3Link={`/dashboard/products/${product.id}`}
           enableBackButton={true}
         />
 

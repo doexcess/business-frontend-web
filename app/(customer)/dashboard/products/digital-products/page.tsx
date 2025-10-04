@@ -33,9 +33,9 @@ const DigitalProducts = () => {
           brief='Buy your digital products with ease'
           enableBreadCrumb={true}
           layer2='Products'
-          layer2Link='/products'
+          layer2Link='/dashboard/products'
           layer3='Digital Products'
-          layer3Link='/products/digtatal-products'
+          layer3Link='/dashboard/products/digtatal-products'
         />
         <div className='flex flex-col gap-4 mt-2'>
           <ProductFilters

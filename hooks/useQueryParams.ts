@@ -7,7 +7,7 @@ const useQueryParams = <T>(items: T[], limit?: number) => {
   const queryParams = new URLSearchParams(searchParams.toString());
 
   const currentPage = Number(searchParams.get('page')) || 1;
-  const perPage = Number(searchParams.get('limit')) || limit || 10;
+  const perPage = Number(searchParams.get('limit')) || limit || 12;
   const [q, setQ] = useState(searchParams.get('q') || '');
   const [startDate, setStartDate] = useState(
     searchParams.get('startDate') || ''

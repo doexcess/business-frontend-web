@@ -8,7 +8,7 @@ import Filter from '@/components/Filter';
 import ProductGridItemSkeleton from '@/components/dashboard/product/ProductGridItemSkeleton';
 import { Button } from '@/components/ui/Button';
 import Icon from '@/components/ui/Icon';
-import { formatMoney, OK } from '@/lib/utils';
+import { formatMoney, OK, isBusiness, SystemRole } from '@/lib/utils';
 import { Modal } from '@/components/ui/Modal';
 import useProductById from '@/hooks/page/useProductById';
 import { useDispatch, useSelector } from 'react-redux';
@@ -58,9 +58,9 @@ const Tickets = () => {
           brief='Buy your event tickets with ease'
           enableBreadCrumb={true}
           layer2='Products'
-          layer2Link='/products'
+          layer2Link={'/dashboard/products'}
           layer3='Tickets'
-          layer3Link='/products/tickets'
+          layer3Link={'/dashboard/products/tickets'}
         />
         <div className='flex flex-col gap-4 mt-2'>
           <Filter

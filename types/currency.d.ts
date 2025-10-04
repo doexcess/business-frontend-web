@@ -83,3 +83,22 @@ export interface BusinessCurrencyDetail {
   created_at: string; // ISO timestamp
   updated_at: string; // ISO timestamp
 }
+
+// 5. /fetch-business-currencies/:business_id
+export interface BusinessCurrency {
+  id: string;
+  currency: string;
+  created_at: string; // ISO datetime string
+  updated_at: string; // ISO datetime string
+}
+
+export interface BusinessCurrencyData {
+  details: BusinessCurrency[];
+  currencies: string[];
+}
+
+export interface BusinessCurrencyResponse {
+  statusCode: number;
+  message: string;
+  data: BusinessCurrencyData;
+}
