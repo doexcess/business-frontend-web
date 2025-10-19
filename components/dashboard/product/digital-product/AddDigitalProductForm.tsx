@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, Suspense } from 'react';
+import React, { useState, useRef, Suspense, useEffect } from 'react';
 import Input from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import {
@@ -23,16 +23,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import 'react-quill/dist/quill.snow.css';
-import dynamic from 'next/dynamic';
 import { createDigitalProduct } from '@/redux/slices/digitalProductSlice';
-import {
-  setOnboardingStep,
-  updateOnboardingProcess,
-} from '@/redux/slices/orgSlice';
+import { updateOnboardingProcess } from '@/redux/slices/orgSlice';
 import { Badge } from '@/components/ui/badge';
 import TinyMceEditor from '@/components/editor/TinyMceEditor';
 import { Globe } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+import useCurrencies from '@/hooks/page/useCurrencies';
 
 const defaultValue: CreateDigitalProductProps = {
   title: '',
@@ -45,18 +42,20 @@ const defaultValue: CreateDigitalProductProps = {
   price: 0,
   original_price: 0,
   keywords: '',
+  other_currencies: [],
 };
 
 const AddDigitalProductForm = () => {
   const [formData, setFormData] =
     useState<CreateDigitalProductProps>(defaultValue);
+  const [showCrossedOutPrice, setShowCrossedOutPrice] = useState(false);
+
   const [errors, setErrors] = useState<Partial<CreateDigitalProductProps>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [zipFilePreview, setZipFilePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingZipFile, setUploadingZipFile] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const zipFileInputRef = useRef<HTMLInputElement>(null);
   const [zipFileName, setZipFileName] = useState('');
@@ -64,12 +63,53 @@ const AddDigitalProductForm = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const { categories } = useProductCategory();
+  const { foreignCurrencies } = useCurrencies();
   const { org } = useSelector((state: RootState) => state.org);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+
+    if (name.startsWith('other_currencies')) {
+      const match = name.match(/other_currencies\[(\d+)\]\.(\w+)/);
+      if (match) {
+        const index = parseInt(match[1], 10);
+        const field = match[2];
+
+        setFormData((prev: any) => {
+          // Ensure it's always an array
+          const updated = Array.isArray(prev.other_currencies)
+            ? [...prev.other_currencies]
+            : [];
+
+          // Ensure slot exists
+          if (!updated[index]) {
+            updated[index] = {
+              currency: foreignCurrencies()?.[index]?.currency || '',
+              price: 0,
+              original_price: undefined,
+            };
+          }
+
+          updated[index] = {
+            ...updated[index],
+            [field]:
+              field === 'original_price'
+                ? value
+                  ? +value
+                  : undefined
+                : value
+                ? +value
+                : 0,
+          };
+
+          return { ...prev, other_currencies: updated };
+        });
+        return;
+      }
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]:
@@ -85,6 +125,29 @@ const AddDigitalProductForm = () => {
         [name]: undefined,
       }));
     }
+  };
+
+  // inside your component
+  const handleToggleCrossedOutPrice = () => {
+    setShowCrossedOutPrice((prev) => {
+      const newValue = !prev;
+
+      if (!newValue) {
+        // ✅ Clear crossed-out prices if toggled OFF
+        setFormData((prevBody) => ({
+          ...prevBody,
+          original_price: null, // use null instead of undefined ✅
+          other_currencies: Array.isArray(prevBody.other_currencies)
+            ? prevBody.other_currencies.map((c: any) => ({
+                ...c,
+                original_price: null, // match type number | null
+              }))
+            : [],
+        }));
+      }
+
+      return newValue;
+    });
   };
 
   const handleSelectChange = (name: string, value: string) => {
@@ -256,6 +319,8 @@ const AddDigitalProductForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.log(formData);
+
     if (!validateForm()) {
       toast.error('Please fix the errors in the form');
       return;
@@ -304,6 +369,18 @@ const AddDigitalProductForm = () => {
       setIsSubmitting(false);
     }
   };
+
+  // Auto-seed other_currencies so inputs always exist
+  useEffect(() => {
+    setFormData((prev: any) => ({
+      ...prev,
+      other_currencies: foreignCurrencies()?.map((c: any, i: number) => ({
+        currency: c.currency,
+        price: prev.other_currencies?.[i]?.price ?? 0,
+        original_price: prev.other_currencies?.[i]?.original_price ?? 0,
+      })),
+    }));
+  }, []);
 
   const isFormValid =
     formData.title &&
@@ -419,48 +496,97 @@ const AddDigitalProductForm = () => {
         </div>
       </div>
 
-      <div className='grid grid-cols-2 gap-2'>
+      <div className='flex gap-3 w-full'>
         {/* Price */}
-        <div>
+        <div className='flex-1'>
           <label className='block text-sm font-medium mb-1'>
             Price (NGN) <span className='text-red-500'>*</span>
           </label>
           <Input
-            type='number'
+            type='text'
             name='price'
             placeholder='Enter price'
-            value={formData.price || ''}
+            value={formData.price}
             onChange={handleInputChange}
-            min='0'
-            step='0.01'
-            className={cn(errors.price && 'border-red-500')}
+            className={cn('py-3', errors.price && 'border-red-500')}
             required
           />
+          <p className='mt-2 text-xs'>Zero (0) represents a free product</p>
           {errors.price && (
             <p className='text-red-500 text-xs mt-1'>{errors.price}</p>
           )}
         </div>
 
-        {/* Crossed-out price */}
-        <div>
-          <label className='block text-sm font-medium mb-1'>
-            Crossed-out price (NGN) (Optional)
-          </label>
-          <Input
-            type='number'
-            name='original_price'
-            placeholder='Enter striked-out price'
-            value={formData.original_price || ''}
-            onChange={handleInputChange}
-            min='0'
-            step='0.01'
-            className={cn(errors.original_price && 'border-red-500')}
-          />
-          {errors.original_price && (
-            <p className='text-red-500 text-xs mt-1'>{errors.original_price}</p>
-          )}
-        </div>
+        {foreignCurrencies()?.map((product_currency, index) => (
+          <div key={index} className='flex-1'>
+            <label className='text-sm font-medium mb-1 block'>
+              Price ({product_currency.currency}) *
+            </label>
+            <Input
+              type='text'
+              name={`other_currencies[${index}].price`}
+              className='w-full rounded-md py-3'
+              value={formData.other_currencies?.[index]?.price}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+        ))}
       </div>
+
+      {/* Checkbox toggle */}
+      <div>
+        <label className='flex items-center gap-2 cursor-pointer'>
+          <input
+            type='checkbox'
+            name='show_crossed_out_prices'
+            checked={showCrossedOutPrice}
+            onChange={handleToggleCrossedOutPrice} // ✅ clean function
+          />
+          <span className='text-sm font-medium'>Show crossed-out prices</span>
+        </label>
+      </div>
+
+      {/* Crossed-out price inputs */}
+      {showCrossedOutPrice && (
+        <div className='flex gap-3 w-full mt-3'>
+          {/* NGN input */}
+          <div className='flex-1'>
+            <label className='text-sm font-medium mb-1 block'>
+              Crossed-out Price (NGN) (Optional)
+            </label>
+            <Input
+              type='text'
+              name='original_price'
+              value={formData.original_price!}
+              onChange={handleInputChange}
+              className={cn('py-3', errors.original_price && 'border-red-500')}
+            />
+            {errors.original_price && (
+              <p className='text-red-500 text-xs mt-1'>
+                {errors.original_price}
+              </p>
+            )}
+          </div>
+
+          {/* Foreign currencies */}
+          {foreignCurrencies()?.map((c, i) => (
+            <div key={i} className='flex-1'>
+              <label className='text-sm font-medium mb-1 block'>
+                Crossed-out Price ({c.currency}) (Optional)
+              </label>
+
+              <Input
+                type='text'
+                name={`other_currencies[${i}].original_price`}
+                className='w-full rounded-md py-3'
+                value={formData.other_currencies?.[i]?.original_price}
+                onChange={handleInputChange}
+              />
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className='grid grid-cols-2 gap-2'>
         {/* Keywords */}

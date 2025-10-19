@@ -85,6 +85,7 @@ const PublicProductGridItem: React.FC<PublicProductGridItemProps> = ({
   const [modalOpen, setModalOpen] = useState(false);
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const { currency } = useSelector((state: RootState) => state.currency);
 
   const [selectedTier, setSelectedTier] = useState<TicketTier | null>(
     // @ts-ignore
@@ -113,27 +114,6 @@ const PublicProductGridItem: React.FC<PublicProductGridItemProps> = ({
       if (tier) setSelectedPlanPrice(tier);
     }
   };
-
-  // Calculate dynamic prices based on quantity
-  // const displayPrice = useMemo(() => {
-  //   const basePrice =
-  //     details.type === ProductType.TICKET && selectedTier
-  //       ? +selectedTier.amount
-  //       : +details.price;
-  //   return (basePrice * qty).toFixed(2);
-  // }, [details, selectedTier, qty]);
-
-  // const displayOriginalPrice = useMemo(() => {
-  //   const basePrice =
-  //     details.type === ProductType.TICKET && selectedTier
-  //       ? selectedTier.original_amount
-  //         ? +selectedTier.original_amount
-  //         : null
-  //       : details.original_price
-  //       ? +details.original_price
-  //       : null;
-  //   return basePrice ? (basePrice * qty).toFixed(2) : null;
-  // }, [details, selectedTier, qty]);
 
   const displayPrice = useMemo(() => {
     const basePrice =
@@ -166,6 +146,7 @@ const PublicProductGridItem: React.FC<PublicProductGridItemProps> = ({
       const minAmount = Math.min(
         ...tiers.map((t) => parseFloat(t.amount ?? '0') || 0)
       );
+
       const currency = tiers[0]?.currency ?? details.currency;
       return `${formatMoney(minAmount, currency)}+`;
     } else if (
@@ -185,8 +166,8 @@ const PublicProductGridItem: React.FC<PublicProductGridItemProps> = ({
       )}`;
     }
 
-    const original_price = details.original_price
-      ? `${formatMoney(+details?.price!, details?.currency)} `
+    const original_price = Boolean(+details.original_price)
+      ? `<s>${formatMoney(+details?.original_price!, details?.currency)}</s> `
       : '';
     return `${original_price}${formatMoney(
       +details?.price!,
@@ -224,6 +205,7 @@ const PublicProductGridItem: React.FC<PublicProductGridItemProps> = ({
           product_id: product_id!,
           quantity: 1,
           product_type: type,
+          currency,
         })
       ).unwrap();
 
@@ -231,7 +213,7 @@ const PublicProductGridItem: React.FC<PublicProductGridItemProps> = ({
         throw new Error(response.message);
       }
 
-      await dispatch(fetchCart());
+      await dispatch(fetchCart({ currency }));
       toast.success(response.message);
     } catch (error: any) {
       toast.error(error.message);
@@ -273,19 +255,12 @@ const PublicProductGridItem: React.FC<PublicProductGridItemProps> = ({
             <h3 className='text-base font-bold truncate text-gray-800 dark:text-gray-200'>
               <Link href={`/dashboard/products/${details.id}`}>{title}</Link>
             </h3>
-            <p className='text-sm min-h-[20px] text-gray-800 dark:text-gray-200'>
-              {getPrice()}
-            </p>
+            <p
+              className='text-sm min-h-[20px] text-gray-800 dark:text-gray-200'
+              dangerouslySetInnerHTML={{ __html: getPrice() }}
+            />
           </div>
           <div className='flex flex-row gap-2 w-full'>
-            {/* <Button
-              onClick={handleView}
-              variant='outline'
-              className='flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold border border-primary-main rounded-md hover:bg-primary-main hover:text-white transition'
-            >
-              <EyeIcon size={18} /> Open
-            </Button> */}
-
             {productInCart ? (
               <Button
                 variant='outline'
@@ -393,7 +368,8 @@ const PublicProductGridItem: React.FC<PublicProductGridItemProps> = ({
                           product.ticket?.ticket_tiers || []
                         ).map((tier) => (
                           <SelectItem key={tier.id} value={tier.id}>
-                            {tier.name} ({formatMoney(+tier.amount)})
+                            {tier.name} (
+                            {formatMoney(+tier.amount, tier.currency)})
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -417,7 +393,7 @@ const PublicProductGridItem: React.FC<PublicProductGridItemProps> = ({
                       ).map((planPrice) => (
                         <SelectItem key={planPrice.id} value={planPrice.id}>
                           {capitalize(reformatUnderscoreText(planPrice.period))}{' '}
-                          ({formatMoney(+planPrice.price)})
+                          ({formatMoney(+planPrice.price, planPrice.currency)})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -433,11 +409,11 @@ const PublicProductGridItem: React.FC<PublicProductGridItemProps> = ({
                 <div className='flex items-center gap-2'>
                   {displayOriginalPrice && (
                     <span className='text-sm font-semibold line-through'>
-                      <s>{formatMoney(+displayOriginalPrice)}</s>
+                      <s>{formatMoney(+displayOriginalPrice, currency)}</s>
                     </span>
                   )}
                   <span className='text-lg font-semibold'>
-                    {formatMoney(+displayPrice)}
+                    {formatMoney(+displayPrice, currency)}
                   </span>
                 </div>
 

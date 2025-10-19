@@ -1,6 +1,7 @@
 import { ProductStatus, ProductType, TicketTierStatus } from '@/lib/utils';
 import { Media } from './multimedia';
 import { Product } from './org';
+import { OtherCurrencyProps } from '@/lib/schema/product.schema';
 
 export interface BusinessInfo {
   id: string;
@@ -77,6 +78,7 @@ export interface TicketTier {
   updated_at: string;
   deleted_at: string | null;
   purchased_tickets: TicketPurchase[]; // At most one fetch
+  other_currencies: OtherCurrencyProps[];
 }
 
 export interface Ticket {
@@ -176,6 +178,7 @@ export interface Course {
   creator: CreatorBasic;
   multimedia: Multimedia;
   category: Category;
+  other_currencies: OtherCurrencyProps[];
 }
 
 export interface CourseResponse {
@@ -203,6 +206,7 @@ export interface CourseDetails {
   creator: Creator;
   multimedia: Multimedia;
   category: Category;
+  other_currencies: OtherCurrencyProps[];
 }
 
 export interface CourseDetailsResponse {
@@ -530,6 +534,7 @@ export interface DigitalProduct {
   zip_file: Media;
   category: Category;
   business_info: BusinessInfo;
+  other_currencies: OtherCurrencyProps[];
 }
 
 export interface PurchasedDigitalProduct {

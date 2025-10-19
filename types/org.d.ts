@@ -7,6 +7,7 @@ import {
 } from '@/lib/utils';
 import { SubscriptionPlan } from './subscription-plan';
 import { Ticket } from './product';
+import { OtherCurrencyProps } from '@/lib/schema/product.schema';
 
 export interface BusinessProfile {
   id: string;
@@ -184,6 +185,7 @@ export interface SubscriptionPlanPrice {
   updated_at: string; // ISO 8601 date string
   deleted_at: string | null; // ISO 8601 date string
   subscription_plan: SubscriptionPlan;
+  other_currencies: OtherCurrencyProps[];
 }
 
 export interface Product {

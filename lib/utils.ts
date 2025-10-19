@@ -225,17 +225,23 @@ export const replaceAsterisk = (network: string) => {
   return network === '*' ? 'All' : capitalize(network);
 };
 
-export const formatMoney = (amount: number, currency = 'NGN'): string => {
-  return new Intl.NumberFormat('en-NG', {
+export const formatMoney = (
+  amount: number,
+  currency: string = 'NGN'
+): string => {
+  console.log(currency);
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: currency,
+    currency,
     minimumFractionDigits: 2,
   }).format(amount);
 };
 
 export const formatCurrency = (amount: string, currency = 'NGN'): string => {
+  console.log(currency);
+
   const numericAmount = parseFloat(amount);
-  return new Intl.NumberFormat('en-NG', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: currency,
     minimumFractionDigits: 2,
@@ -396,7 +402,7 @@ export const BUSINESS_INDUSTRIES = [
 export type BusinessIndustry = (typeof BUSINESS_INDUSTRIES)[number];
 
 export const reformatText = (text: string, separator: string) => {
-  return text.split(separator).join(' ');
+  return text?.split(separator).join(' ');
 };
 
 export const OK = 200;
@@ -591,4 +597,12 @@ export const areAllOnboardingStepsPresent = (
     }
   }
   return true; // all items are present
+};
+
+export const DEFAULT_CURRENCY = 'NGN';
+
+export const isBusiness = (role: SystemRole) => {
+  return [SystemRole.BUSINESS_SUPER_ADMIN, SystemRole.BUSINESS_ADMIN].includes(
+    role
+  );
 };

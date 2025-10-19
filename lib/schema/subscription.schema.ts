@@ -4,6 +4,10 @@ import { ProductStatus, SubscriptionPeriod } from '../utils';
 import { SubscriptionPlanBasic } from '@/types/subscription-plan';
 import { Product } from '@/types/org';
 import { ProductDetails } from '@/types/product';
+import {
+  OtherCurrencyFormFieldProps,
+  OtherCurrencyProps,
+} from './product.schema';
 
 // Price schema
 export const subscriptionPlanPriceSchema = Joi.object({
@@ -13,6 +17,15 @@ export const subscriptionPlanPriceSchema = Joi.object({
   period: Joi.string()
     .valid(...Object.values(SubscriptionPeriod))
     .required(),
+  other_currencies: Joi.array()
+    .items(
+      Joi.object({
+        currency: Joi.string().trim().required(),
+        price: Joi.number().min(0).required(),
+        original_price: Joi.number().min(0).allow(null).optional(), // ✅ allow null
+      })
+    )
+    .optional(),
 });
 
 // Role schema
@@ -73,6 +86,7 @@ export interface SubscriptionPlanPriceProps {
   subscription_plan?: {
     subscriptions: SubscriptionPlanBasic[];
   };
+  other_currencies?: OtherCurrencyProps[];
 }
 
 export interface SubscriptionPlanRoleProps {
@@ -107,4 +121,23 @@ export interface UpdateSubscriptionPlanProps {
   subscription_plan_prices?: SubscriptionPlanPriceProps[];
   subscription_plan_roles?: SubscriptionPlanRoleProps[];
   product?: ProductDetails;
+}
+
+export interface PlanPrice {
+  id?: string;
+  price: number | string;
+  period: SubscriptionPeriod;
+  other_currencies: OtherCurrencyProps[];
+}
+
+export interface PlanPriceProps {
+  plan_price_tier: SubscriptionPlanPriceProps;
+  periods: SubscriptionPeriod[];
+  index: number;
+  onPlanPriceTierChange: (
+    index: number,
+    field: string | keyof PlanPrice,
+    value: string | OtherCurrencyFormFieldProps
+  ) => void;
+  onRemovePlanPriceTier: (index: number) => void;
 }

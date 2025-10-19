@@ -35,9 +35,9 @@ const Courses = () => {
           brief='Buy your courses with ease'
           enableBreadCrumb={true}
           layer2='Products'
-          layer2Link='/products'
+          layer2Link='/dashboard/products'
           layer3='Courses'
-          layer3Link='/products/courses'
+          layer3Link='/dashboard/products/courses'
         />
         <div className='flex flex-col gap-4 mt-2'>
           <ProductFilters

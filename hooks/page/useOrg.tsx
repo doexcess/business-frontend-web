@@ -10,7 +10,7 @@ const useOrg = (id: string) => {
 
   useEffect(() => {
     dispatch(fetchOrg(id)).unwrap();
-  }, [dispatch]);
+  }, [dispatch, org?.id]);
 
   return {
     org,

@@ -2,9 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import api from '@/lib/api';
 import {
   DigitalProduct,
-  DigitalProductDetailsResponse,
   DigitalProductResponse,
-  ProductDetails,
   ProductsResponse,
 } from '@/types/product';
 import { Product } from '@/types/org';
@@ -40,12 +38,13 @@ export const fetchProductsByOrganization = createAsyncThunk<
     type?: string;
     min_price?: number;
     max_price?: number;
+    currency?: string;
   },
   { rejectValue: string }
 >(
   'product/fetchProductsByOrganization',
   async (
-    { page, limit, q, business_id, type, min_price, max_price },
+    { page, limit, q, business_id, type, min_price, max_price, currency },
     { rejectWithValue }
   ) => {
     const params: Record<string, any> = {};
@@ -56,6 +55,7 @@ export const fetchProductsByOrganization = createAsyncThunk<
     if (type) params.type = type;
     if (min_price) params.min_price = min_price;
     if (max_price) params.max_price = max_price;
+    if (currency) params.currency = currency;
 
     try {
       const { data } = await api.get<ProductsResponse>(
@@ -76,21 +76,33 @@ export const fetchProductsByOrganization = createAsyncThunk<
  */
 export const fetchPublicProduct = createAsyncThunk<
   { statusCode: number; data: Product },
-  string,
+  { product_id: string; currency?: string },
   { rejectValue: string }
->('product/fetchPublicProduct', async (product_id, { rejectWithValue }) => {
-  try {
-    const { data } = await api.get<{
-      statusCode: number;
-      data: Product;
-    }>(`/product-general/public/${product_id}`);
-    return data;
-  } catch (error: any) {
-    return rejectWithValue(
-      error.response?.data?.message || 'Failed to fetch product'
-    );
+>(
+  'product/fetchPublicProduct',
+  async (
+    { product_id, currency }: { product_id: string; currency?: string },
+    { rejectWithValue }
+  ) => {
+    const params: Record<string, any> = {};
+
+    if (currency) params.currency = currency;
+
+    try {
+      const { data } = await api.get<{
+        statusCode: number;
+        data: Product;
+      }>(`/product-general/public/${product_id}`, {
+        params,
+      });
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch product'
+      );
+    }
   }
-});
+);
 
 /**
  * Fetch paginated digital products

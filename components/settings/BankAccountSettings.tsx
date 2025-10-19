@@ -142,7 +142,7 @@ const BankAccountSettings = () => {
         org.withdrawal_account?.account_number
       );
     }
-  }, [org, banks]);
+  }, [org?.id, banks]);
 
   return (
     <div className='text-black-1 dark:text-white'>

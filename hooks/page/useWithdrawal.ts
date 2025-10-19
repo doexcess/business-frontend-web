@@ -5,24 +5,24 @@ import { fetchWithdrawal } from '@/redux/slices/withdrawalSlice';
 import { useParams } from 'next/navigation';
 
 const useWithdrawal = () => {
-    const dispatch = useDispatch<AppDispatch>();
-    const params = useParams();
+  const dispatch = useDispatch<AppDispatch>();
+  const params = useParams();
 
-    const { withdrawal, loading } = useSelector(
-        (state: RootState) => state.withdrawal
-    );
-    const { org } = useSelector((state: RootState) => state.org);
+  const { withdrawal, loading } = useSelector(
+    (state: RootState) => state.withdrawal
+  );
+  const { org } = useSelector((state: RootState) => state.org);
 
-    useEffect(() => {
-        if (params?.id) {
-            dispatch(fetchWithdrawal(params.id as string)).unwrap();
-        }
-    }, [dispatch, params?.id, org]);
+  useEffect(() => {
+    if (params?.id) {
+      dispatch(fetchWithdrawal(params.id as string)).unwrap();
+    }
+  }, [dispatch, params?.id, org?.id]);
 
-    return {
-        withdrawal,
-        loading,
-    };
+  return {
+    withdrawal,
+    loading,
+  };
 };
 
 export default useWithdrawal;
