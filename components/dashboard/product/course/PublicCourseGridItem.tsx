@@ -205,6 +205,7 @@ const PublicProductGridItem: React.FC<PublicProductGridItemProps> = ({
           product_id: product_id!,
           quantity: 1,
           product_type: type,
+          currency,
         })
       ).unwrap();
 
@@ -212,7 +213,7 @@ const PublicProductGridItem: React.FC<PublicProductGridItemProps> = ({
         throw new Error(response.message);
       }
 
-      await dispatch(fetchCart());
+      await dispatch(fetchCart({ currency }));
       toast.success(response.message);
     } catch (error: any) {
       toast.error(error.message);

@@ -19,7 +19,7 @@ interface CurrencyState {
 const initialState: CurrencyState = {
   currencies: null,
   store_currencies: null,
-  currency: '',
+  currency: 'NGN',
   loading: true,
   error: null,
 };

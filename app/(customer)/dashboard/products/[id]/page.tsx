@@ -116,14 +116,7 @@ const ProductImages = ({
 
 const ProductMeta = ({
   product,
-}: // selectedTier,
-// setSelectedTier,
-// selectedPlanPrice,
-// setSelectedPlanPrice,
-// handleTierChange,
-// displayPrice,
-// displayOriginalPrice,
-{
+}: {
   product: Product;
   selectedTier?: TicketTier | null;
   setSelectedTier?: (tier: TicketTier) => void;
@@ -168,13 +161,14 @@ const ProductMeta = ({
           product_id: item_id!,
           quantity: 1,
           product_type: product.type,
+          currency,
         })
       ).unwrap();
       if (response.statusCode !== OK) {
         throw new Error(response.message);
       }
 
-      await dispatch(fetchCart());
+      await dispatch(fetchCart({ currency }));
       toast.success(response.message);
     } catch (error: any) {
       toast.error(error.message);

@@ -10,7 +10,7 @@ import useCart from '@/hooks/page/useCart';
 import { ShoppingCart, Store, Globe } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-import { SystemRole, baseUrl } from '@/lib/utils';
+import { SystemRole, baseUrl, isBusiness } from '@/lib/utils';
 import { StoreLink } from '@/components/StoreLink';
 import CurrencySwitcher from '@/components/dashboard/CurrencySwitcher';
 import toast from 'react-hot-toast';
@@ -63,7 +63,7 @@ const Topbar = () => {
         </div>
         <div className='flex items-center lg:order-2 gap-2 sm:gap-2 flex-shrink-0'>
           {/* Currency Switcher - Show when org is selected */}
-          {org && (
+          {org && !isBusiness(profile?.role?.role_id as SystemRole) && (
             <>
               {/* Mobile - Compact inline */}
               <div className='sm:hidden'>

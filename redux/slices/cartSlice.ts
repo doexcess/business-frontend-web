@@ -27,11 +27,13 @@ export const addToCart = createAsyncThunk(
       quantity,
       product_type,
       ticket_tier_id,
+      currency,
     }: {
       product_id: string;
       quantity: number;
       product_type: ProductType;
       ticket_tier_id?: string;
+      currency?: string;
     },
     { rejectWithValue }
   ) => {
@@ -41,6 +43,7 @@ export const addToCart = createAsyncThunk(
         quantity,
         product_type,
         ticket_tier_id,
+        currency,
       });
       return response.data;
     } catch (error: any) {
@@ -54,9 +57,15 @@ export const addToCart = createAsyncThunk(
 // Fetch cart items
 export const fetchCart = createAsyncThunk(
   'cart/fetchCart',
-  async (_, { rejectWithValue }) => {
+  async ({ currency }: { currency: string }, { rejectWithValue }) => {
+    const params: Record<string, any> = {};
+
+    if (currency) params['currency'] = currency;
+
     try {
-      const response = await api.get<CartResponse>('/cart');
+      const response = await api.get<CartResponse>('/cart', {
+        params,
+      });
       return response.data;
     } catch (error: any) {
       return rejectWithValue(

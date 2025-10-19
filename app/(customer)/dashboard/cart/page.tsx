@@ -43,6 +43,7 @@ function DashboardCart() {
   const dispatch = useDispatch<AppDispatch>();
   const { coupon_info } = useSelector((state: RootState) => state.coupon);
   const { cart, loading, error, totals } = useCart();
+  const { currency } = useSelector((state: RootState) => state.currency);
 
   const items = cart?.items || [];
   // Helper to get the actual price for a cart item
@@ -96,13 +97,6 @@ function DashboardCart() {
       }));
       // Assume all items have the same currency and business_id
       const firstItem = items[0];
-
-      const currency =
-        firstItem.product_type === ProductType.TICKET
-          ? firstItem.ticket_tier?.currency || 'NGN'
-          : firstItem.product_type === ProductType.SUBSCRIPTION
-          ? firstItem.subscription_plan_price?.currency
-          : firstItem.course?.currency || 'NGN';
 
       const business_id = org?.id;
 
@@ -173,7 +167,7 @@ function DashboardCart() {
           }
         },
         onClose: async () => {
-          await dispatch(cancelPayment({ payment_id: reference }));
+          // await dispatch(cancelPayment({ payment_id: reference }));
           // handle when modal is closed
           setIsPaying(false);
           toast('Payment window closed');
@@ -317,7 +311,7 @@ function DashboardCart() {
                             }
                           : item.product_type === ProductType.DIGITAL_PRODUCT
                           ? {
-                              image: item.digital_product?.multimedia.url,
+                              image: item.digital_product?.multimedia?.url,
                               name: item.digital_product?.title,
                             }
                           : {
@@ -346,11 +340,14 @@ function DashboardCart() {
                             </Link>
                           </td>
                           <td className='px-4 py-3'>
-                            {formatMoney(getItemPrice(item))}
+                            {formatMoney(getItemPrice(item), currency)}
                           </td>
                           <td className='px-4 py-3'>{item.quantity}</td>
                           <td className='px-4 py-3 font-semibold'>
-                            {formatMoney(getItemPrice(item) * item.quantity)}
+                            {formatMoney(
+                              getItemPrice(item) * item.quantity,
+                              currency
+                            )}
                           </td>
                           <td className='px-4 py-3'>
                             <button
@@ -399,9 +396,10 @@ function DashboardCart() {
                         {/* {formatMoney(totalSum)} */}
                         {coupon_info.discount
                           ? `${formatMoney(totals.subtotal)} → ${formatMoney(
-                              coupon_info?.discountedAmount
+                              coupon_info?.discountedAmount,
+                              currency
                             )}`
-                          : formatMoney(totals.subtotal)}
+                          : formatMoney(totals.subtotal, currency)}
                       </span>
                     </div>
 
@@ -416,8 +414,8 @@ function DashboardCart() {
                       <span>Total</span>
                       <span>
                         {coupon_info.discount
-                          ? formatMoney(coupon_info?.discountedAmount)
-                          : formatMoney(totals.subtotal)}
+                          ? formatMoney(coupon_info?.discountedAmount, currency)
+                          : formatMoney(totals.subtotal, currency)}
                       </span>
                     </div>
                   </div>
@@ -464,7 +462,7 @@ function DashboardCart() {
               onClick={async () => {
                 if (confirmRemoveId) {
                   await dispatch(removeCartItem(confirmRemoveId));
-                  await dispatch(fetchCart());
+                  await dispatch(fetchCart({ currency }));
                   toast.success('Item removed from cart');
                   setConfirmRemoveId(null);
                 }

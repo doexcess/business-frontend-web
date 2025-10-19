@@ -43,6 +43,7 @@ const Tickets = () => {
     count: cartCount,
     loading: cartLoading,
   } = useSelector((state: RootState) => state.cart);
+  const { currency } = useSelector((state: RootState) => state.currency);
   const router = useRouter();
 
   // Only fetch product details for the currently open modal
@@ -200,13 +201,16 @@ const Tickets = () => {
                                               product_id: tier.id,
                                               quantity: 1,
                                               product_type: ProductType.TICKET,
+                                              currency,
                                             })
                                           ).unwrap();
 
                                           if (response.statusCode !== OK) {
                                             throw new Error(response.message);
                                           }
-                                          await dispatch(fetchCart());
+                                          await dispatch(
+                                            fetchCart({ currency })
+                                          );
                                           toast.success(response.message);
                                         } catch (error: any) {
                                           toast.error(error.message);
