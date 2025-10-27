@@ -10,6 +10,7 @@ import Joi from 'joi';
 import slugify from 'slugify';
 import {
   BusinessProfileFull,
+  BusinessWallet,
   Product,
   SubscriptionPlanPrice,
 } from '@/types/org';
@@ -229,7 +230,6 @@ export const formatMoney = (
   amount: number,
   currency: string = 'NGN'
 ): string => {
-  console.log(currency);
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
@@ -238,8 +238,6 @@ export const formatMoney = (
 };
 
 export const formatCurrency = (amount: string, currency = 'NGN'): string => {
-  console.log(currency);
-
   const numericAmount = parseFloat(amount);
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -333,7 +331,7 @@ export const truncate = (text: string, maxLength: number) => {
   return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
 };
 
-export const getAvatar = (picture: string | null, name: string) => {
+export const getAvatar = (picture: string, name: string) => {
   return picture
     ? picture
     : `https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -342,6 +340,7 @@ export const getAvatar = (picture: string | null, name: string) => {
 };
 
 export enum TransactionType {
+  CREDIT = 'CREDIT',
   WITHDRAWAL = 'WITHDRAWAL',
 }
 
@@ -605,4 +604,15 @@ export const isBusiness = (role: SystemRole) => {
   return [SystemRole.BUSINESS_SUPER_ADMIN, SystemRole.BUSINESS_ADMIN].includes(
     role
   );
+};
+
+export const reorderWallets = (wallets: BusinessWallet[]) => {
+  if (!Array.isArray(wallets)) return [];
+
+  // Make a copy before sorting (to avoid mutating frozen Redux/React Query state)
+  return [...wallets].sort((a, b) => {
+    if (a.currency === 'NGN') return -1;
+    if (b.currency === 'NGN') return 1;
+    return 0;
+  });
 };

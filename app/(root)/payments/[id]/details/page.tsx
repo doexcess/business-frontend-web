@@ -90,12 +90,16 @@ const ViewPayment = () => {
                 <strong>Method:</strong> {payment?.payment_method}
               </div>
               <div>
-                <strong>Amount:</strong>{' '}
+                <strong>Auto Renew:</strong>{' '}
+                {payment?.auto_renew ? 'Yes' : 'No'}
+              </div>
+              <div>
+                <strong>Amount Paid:</strong>{' '}
                 {formatMoney(+payment?.amount!, payment?.currency)}
               </div>
               <div>
-                <strong>Auto Renew:</strong>{' '}
-                {payment?.auto_renew ? 'Yes' : 'No'}
+                <strong>Amount Earned:</strong>{' '}
+                {formatMoney(+payment?.final_amount!, payment?.currency)}
               </div>
             </div>
 
@@ -109,7 +113,7 @@ const ViewPayment = () => {
                   <img
                     src={getAvatar(
                       payment.user?.profile?.profile_picture!,
-                      payment.user.name
+                      payment.user?.name!
                     )}
                     alt={payment.user.name}
                     className='w-20 h-20 rounded-full object-cover'

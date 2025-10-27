@@ -15,6 +15,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'doexcess-file-bucket.s3.us-east-1.amazonaws.com',
+      },
     ],
   },
   /* config options here */

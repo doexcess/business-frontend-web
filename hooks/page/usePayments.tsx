@@ -4,9 +4,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import useQueryParams from '../useQueryParams';
 import { fetchPayments } from '@/redux/slices/paymentSlice';
 
-const usePayments = () => {
-  
+interface UsePaymentsProps {
+  limit?: number;
+}
+const usePayments = ({ limit }: UsePaymentsProps = {}) => {
   const dispatch = useDispatch<AppDispatch>();
+
+  console.log(limit);
 
   const {
     payments,
@@ -36,14 +40,14 @@ const usePayments = () => {
     dispatch(
       fetchPayments({
         page: currentPage,
-        limit: perPage,
+        limit: limit ?? perPage,
         ...(q && { q }),
         ...(startDate && { startDate }),
         ...(endDate && { endDate }),
         ...(org?.id && { business_id: org.id }),
       })
     ).unwrap();
-  }, [dispatch, currentPage, perPage, q, startDate, endDate, org]);
+  }, [dispatch, currentPage, perPage, q, startDate, endDate, org, limit]);
 
   return {
     payments,

@@ -12,19 +12,9 @@ const Customers = () => {
           brief='Monitor your business growth and engagement trends overtime'
           enableBreadCrumb={true}
           layer2='Client Management'
-          // ctaButtons={
-          //   <div className='flex-shrink-0 self-start'>
-          //     <Button className='text-md bg-primary text-md flex p-2 px-4 gap-2'>
-          //       <Icon url='/icons/clients/download-all.svg' />
-          //       Download All
-          //     </Button>
-          //   </div>
-          // }
         />
 
         <CustomersList />
-
-        {/* <ClientMgtTable /> */}
       </div>
     </main>
   );

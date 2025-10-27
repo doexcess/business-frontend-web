@@ -6,7 +6,7 @@ import { fetchOrg, fetchOrgs } from '@/redux/slices/orgSlice';
 const useOrg = (id: string) => {
   const dispatch = useDispatch<AppDispatch>();
 
-  const { org } = useSelector((state: RootState) => state.org);
+  const { org, loading } = useSelector((state: RootState) => state.org);
 
   useEffect(() => {
     dispatch(fetchOrg(id)).unwrap();
@@ -14,6 +14,7 @@ const useOrg = (id: string) => {
 
   return {
     org,
+    loading,
   };
 };
 

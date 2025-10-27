@@ -17,6 +17,7 @@ import {
   AlertCircle,
   Copy,
   Link,
+  Import,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -324,7 +325,8 @@ const CustomersList = () => {
         // Validate required fields
         if (!rowData.name || !rowData.email) {
           throw new Error(
-            `Row ${i + 1
+            `Row ${
+              i + 1
             }: Missing required fields (name and email are required)`
           );
         }
@@ -476,7 +478,6 @@ const CustomersList = () => {
 
   return (
     <>
-
       <section>
         <Filter
           searchPlaceholder='Search customers'
@@ -495,7 +496,7 @@ const CustomersList = () => {
                   title='Export Customers'
                   onClick={() => setShowExportModal(true)}
                 >
-                  <Download size={18} />
+                  <Upload size={18} />
                 </Button>
                 <Button
                   size='icon'
@@ -504,7 +505,7 @@ const CustomersList = () => {
                   title='Import Customers'
                   onClick={() => setShowImportModal(true)}
                 >
-                  <Upload size={18} />
+                  <Download size={18} />
                 </Button>
                 <Button
                   size='icon'
@@ -541,11 +542,8 @@ const CustomersList = () => {
             </thead>
 
             {loading ? (
-
               <LoadingSkeleton length={12} columns={7} />
-
             ) : (
-
               <tbody className='text-sm'>
                 {customers.map((customer: Customer) => (
                   <CustomerItem key={customer.id} customer={customer} />
@@ -556,7 +554,6 @@ const CustomersList = () => {
                 )}
               </tbody>
             )}
-
           </table>
         </div>
 
@@ -570,7 +567,6 @@ const CustomersList = () => {
             noMoreNextPage={customers.length === 0}
           />
         )}
-
       </section>
 
       {/* Export Modal */}
@@ -596,10 +592,11 @@ const CustomersList = () => {
                 <button
                   key={format}
                   onClick={() => setSelectedFormat(format)}
-                  className={`p-4 border-2 rounded-xl text-center transition-all duration-200 hover:scale-105 ${selectedFormat === format
-                    ? 'border-primary-main bg-primary-main/10 text-primary-main shadow-lg'
-                    : 'border-gray-200 dark:border-gray-600 hover:border-primary-main/50 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
+                  className={`p-4 border-2 rounded-xl text-center transition-all duration-200 hover:scale-105 ${
+                    selectedFormat === format
+                      ? 'border-primary-main bg-primary-main/10 text-primary-main shadow-lg'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-primary-main/50 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
                 >
                   <IoIosDocument className='text-3xl mx-auto mb-2' />
                   <span className='text-sm font-semibold uppercase tracking-wide'>
@@ -741,7 +738,7 @@ const CustomersList = () => {
             <div className='flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700'>
               <div className='flex items-center gap-3'>
                 <div className='p-2 bg-primary-main/10 rounded-lg'>
-                  <Upload className='text-primary-main' size={24} />
+                  <Download className='text-primary-main' size={24} />
                 </div>
                 <div>
                   <h3 className='text-xl font-bold text-gray-900 dark:text-white'>

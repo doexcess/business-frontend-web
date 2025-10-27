@@ -35,6 +35,7 @@ const GeneralSettings = () => {
 
   const [formData, setFormData] = useState<UserProfileProps>({
     name: '',
+    phone: '',
     profile_picture: '',
     address: '',
     bio: '',
@@ -46,6 +47,7 @@ const GeneralSettings = () => {
     if (profile) {
       setFormData({
         name: profile.name || '',
+        phone: profile.phone || '',
         profile_picture: profile.profile?.profile_picture || '',
         address: profile.profile?.address || '',
         bio: profile.profile?.bio || '',
@@ -179,7 +181,7 @@ const GeneralSettings = () => {
                 </label>
               </div>
             </div>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
               <div>
                 <Label htmlFor='name'>Full Name</Label>
                 <Input
@@ -200,6 +202,17 @@ const GeneralSettings = () => {
                   placeholder='your@email.com'
                   readOnly
                   value={profile?.email || ''}
+                />
+              </div>
+              <div>
+                <Label htmlFor='phone'>Phone</Label>
+                <Input
+                  id='phone'
+                  type='phone'
+                  name='phone'
+                  placeholder='+2349094993341'
+                  value={formData.phone}
+                  onChange={handleChange}
                 />
               </div>
             </div>

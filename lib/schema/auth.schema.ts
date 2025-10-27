@@ -84,6 +84,7 @@ export const UserProfileSchema = Joi.object({
 });
 export interface UserProfileProps {
   name?: string;
+  phone?: string;
   profile_picture?: string;
   address?: string;
   bio?: string;

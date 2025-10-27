@@ -2,7 +2,7 @@
 
 import { ClientRequestsTable } from '@/components/dashboard/ClientRequestsTable';
 import { LineChart } from '@/components/dashboard/LineChart';
-import { RecentActivity } from '@/components/dashboard/RecentActivity';
+import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { Button } from '@/components/ui/Button';
 import Icon from '@/components/ui/Icon';
 import {
@@ -24,6 +24,9 @@ import {
 import { AppDispatch } from '@/redux/store';
 import { ErrorResponse } from '@/types';
 import { OnboardingSteps } from '@/components/OnboardingSteps';
+import StatsGrid from '@/components/dashboard/StatsGrid';
+import { MonthlyRevenueData, MonthlyRevenueResponse } from '@/types/analytics';
+import usePayments from '@/hooks/page/usePayments';
 
 const Home = () => {
   const router = useRouter();
@@ -33,6 +36,12 @@ const Home = () => {
   const analytics = useSelector((state: RootState) => state.analytics);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showOrgModal, setShowOrgModal] = useState(false);
+  const [selectedCurrency, setSelectedCurrency] = useState('NGN');
+  const { payments, loading } = usePayments({ limit: 4 });
+
+  const handleCurrencyChange = (currency: string) => {
+    setSelectedCurrency(currency);
+  };
 
   const navigateToBusinessPage = () => {
     router.push('/settings?tab=business-account');
@@ -92,7 +101,6 @@ const Home = () => {
     );
   }
 
-  // Prepare chart data from monthlyRevenue
   type ChartDataType = {
     labels: string[];
     datasets: {
@@ -102,74 +110,62 @@ const Home = () => {
       backgroundColor: string;
     }[];
   };
-  let chartData: ChartDataType = { labels: [], datasets: [] };
-  if (analytics?.monthlyRevenue) {
-    chartData.labels = analytics.monthlyRevenue.months.map((m) => m.month);
-    chartData.datasets = [
-      {
-        label: 'Courses',
-        data: analytics.monthlyRevenue.months.map((m) =>
-          Number(m.course.amount)
-        ),
-        borderColor: '#10b981',
-        backgroundColor: '#10b981',
-      },
-      {
-        label: 'Tickets',
-        data: analytics.monthlyRevenue.months.map((m) =>
-          Number(m.ticket.amount)
-        ),
-        borderColor: '#6366f1',
-        backgroundColor: '#6366f1',
-      },
-      {
-        label: 'Subscriptions',
-        data: analytics.monthlyRevenue.months.map((m) =>
-          Number(m.subscription.amount)
-        ),
-        borderColor: '#4f46e5',
-        backgroundColor: '#4f46e5',
-      },
-      {
-        label: 'Digital Products',
-        data: analytics.monthlyRevenue.months.map((m) =>
-          Number(m.digital.amount)
-        ),
-        borderColor: '#06b6d4',
-        backgroundColor: '#06b6d4',
-      },
-    ];
-  } else {
-    chartData = {
-      labels: ['Jan', 'Feb', 'Mar', 'Apr'],
-      datasets: [
-        {
-          label: 'Courses',
-          data: [0, 0, 0, 0],
-          borderColor: '#10b981',
-          backgroundColor: '#10b981',
-        },
-        {
-          label: 'Tickets',
-          data: [0, 0, 0, 0],
-          borderColor: '#6366f1',
-          backgroundColor: '#6366f1',
-        },
-        {
-          label: 'Subscriptions',
-          data: [0, 0, 0, 0],
-          borderColor: '#4f46e5',
-          backgroundColor: '#4f46e5',
-        },
-        {
-          label: 'Digital Products',
-          data: [0, 0, 0, 0],
-          borderColor: '#06b6d4',
-          backgroundColor: '#06b6d4',
-        },
-      ],
+
+  const generateChartData = (
+    analytics?: MonthlyRevenueData,
+    selectedCurrency?: string
+  ): ChartDataType => {
+    // define consistent color palette
+    const colorMap = {
+      course: '#22d3ee',
+      ticket: '#f472b6',
+      subscription: '#65a30d',
+      digital: '#d97706',
     };
-  }
+
+    // find the matching currency block or use the first available one
+    const currencyData =
+      analytics?.currencies.find((c) => c.currency === selectedCurrency) ||
+      analytics?.currencies?.[0];
+
+    // if there's no data at all, use defaults
+    if (!currencyData) {
+      const fallbackLabels = ['Jan', 'Feb', 'Mar', 'Apr'];
+      const fallbackData = [0, 0, 0, 0];
+
+      return {
+        labels: fallbackLabels,
+        datasets: Object.entries(colorMap).map(([key, color]) => ({
+          label: key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' '), // e.g. 'Course', 'Ticket'
+          data: fallbackData,
+          borderColor: color,
+          backgroundColor: color,
+        })),
+      };
+    }
+
+    // construct dynamic chart data
+    const labels = currencyData.months.map((m) => m.month);
+
+    const datasets = (Object.keys(colorMap) as (keyof typeof colorMap)[]).map(
+      (key) => ({
+        label: key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' '), // e.g. "Digital"
+        data: currencyData.months.map((m) =>
+          Number((m[key] as any)?.amount || 0)
+        ),
+        borderColor: colorMap[key],
+        backgroundColor: colorMap[key],
+      })
+    );
+
+    return { labels, datasets };
+  };
+
+  // ✅ usage
+  const chartData = generateChartData(
+    analytics?.monthlyRevenue!,
+    selectedCurrency
+  );
 
   const recentActivities = [
     {
@@ -313,7 +309,7 @@ const Home = () => {
           </header>
 
           {/* Stats */}
-          <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6'>
+          {/* <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6'>
             {analytics?.loading
               ? Array.from({ length: 4 }).map((_, index) => (
                   <div
@@ -326,6 +322,7 @@ const Home = () => {
                   {
                     label: 'Total Revenue',
                     value: analytics.stats.total_revenue.total,
+                    abbr: 'total-revenue',
                     change: '',
                     icon: <Icon url='/icons/landing/download.svg' />,
                   },
@@ -333,12 +330,14 @@ const Home = () => {
                     label: 'Active Subscriptions',
                     value:
                       analytics.stats.active_subscriptions.statistics.active,
+                    abbr: 'active-subscriptions',
                     change: '',
                     icon: <Icon url='/icons/landing/terminal.svg' />,
                   },
                   {
                     label: 'All Clients',
                     value: analytics.stats.all_clients.statistics.total,
+                    abbr: 'all-clients',
                     change: '',
                     icon: <Icon url='/icons/landing/users.svg' />,
                   },
@@ -347,6 +346,7 @@ const Home = () => {
                     value:
                       analytics.stats.course_completions.overall_statistics
                         .total_completions,
+                    abbr: 'course-completions',
                     change: '',
                     icon: <Icon url='/icons/landing/book-open.svg' />,
                   },
@@ -382,17 +382,48 @@ const Home = () => {
                   : 'Failed to load analytics.'}
               </div>
             )}
-          </div>
+          </div> */}
+          <StatsGrid />
 
           <div className='py-6 space-y-6'>
             <div className='grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6'>
               <div className='col-span-1 xl:col-span-2 bg-white border border-gray-200 dark:bg-gray-800 dark:border-0 p-4 rounded-md'>
-                <h3 className='font-semibold'>Performance</h3>
+                <div className='flex justify-between items-center'>
+                  <h3 className='font-semibold'>Performance</h3>
+                  <div className='flex items-center'>
+                    <select
+                      id='currency-select'
+                      value={selectedCurrency}
+                      onChange={(e) => handleCurrencyChange(e.target.value)}
+                      className='appearance-none text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md px-3 py-1.5 pr-6 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 transition'
+                      style={{
+                        backgroundImage:
+                          "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='gray'%3E%3Cpath strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")",
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPosition: 'right 0.5rem center',
+                        backgroundSize: '1rem',
+                      }}
+                    >
+                      {analytics.monthlyRevenue?.currencies.map((item) => (
+                        <option
+                          key={item.currency}
+                          value={item.currency}
+                          className='text-gray-700 dark:text-gray-200'
+                        >
+                          {item.currency}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
                 {performanceHtml}
               </div>
               <div className='bg-white dark:bg-gray-800 p-4 rounded-md border border-gray-200 dark:border-0'>
-                <h3 className='font-semibold mb-4'>Recent Activity</h3>
-                <RecentActivity activities={recentActivities} />
+                <div className='flex justify-between items-center mb-4'>
+                  <h3 className='font-semibold '>Recent Transactions</h3>
+                  <Link href={'/payments'}>View all</Link>
+                </div>
+                <RecentTransactions payments={payments} />
               </div>
             </div>
 

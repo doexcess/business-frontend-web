@@ -59,12 +59,15 @@ export interface BusinessProfileFull {
     current_step: number;
     is_completed: boolean;
   };
-  business_wallet: {
-    balance: string;
-    previous_balance: string;
-    currency: string;
-  };
+  business_wallet: BusinessWallet[];
   withdrawal_account: WithdrawalAccount;
+}
+
+export interface BusinessWallet {
+  balance: string;
+  previous_balance: string;
+  currency_url: string;
+  currency: string;
 }
 
 export interface KYC {

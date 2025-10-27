@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '@/lib/api';
 import {
   CancelPaymentResponse,
+  EarningsDetails,
   Payment,
   PaymentDetailsResponse,
   PaymentInitResponse,
@@ -19,6 +20,7 @@ interface PaymentState {
   total_credit: number;
   total_debit: number;
   total_trx: number;
+  details: EarningsDetails | null;
   count: number;
   loading: boolean;
   error: string | null;
@@ -33,6 +35,7 @@ const initialState: PaymentState = {
   total_credit: 0,
   total_debit: 0,
   total_trx: 0,
+  details: null,
   count: 0,
   loading: false,
   error: null,
@@ -81,6 +84,7 @@ export const fetchPayments = createAsyncThunk(
       total_credit: data.total_credit,
       total_debit: data.total_debit,
       total_trx: data.total_trx,
+      details: data.details,
     };
   }
 );
@@ -215,6 +219,7 @@ const paymentSlice = createSlice({
         state.total_credit = action.payload.total_credit;
         state.total_debit = action.payload.total_debit;
         state.total_trx = action.payload.total_trx;
+        state.details = action.payload.details;
       })
       .addCase(fetchPayments.rejected, (state, action) => {
         state.error = action.error.message || 'Failed to fetch payments';
