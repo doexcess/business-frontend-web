@@ -14,7 +14,7 @@ import useProfile from '@/hooks/page/useProfile';
 import { saveProfile } from '@/redux/slices/authSlice';
 import toast from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
-import { Gender } from '@/lib/utils';
+import { countries, Gender } from '@/lib/utils';
 import { Textarea } from '../ui/textarea';
 import { uploadImage } from '@/redux/slices/multimediaSlice';
 import { capitalize } from 'lodash';
@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
+import PhoneInput from '../ui/PhoneInput';
 
 const GeneralSettings = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -36,6 +37,7 @@ const GeneralSettings = () => {
   const [formData, setFormData] = useState<UserProfileProps>({
     name: '',
     phone: '',
+    country: '',
     profile_picture: '',
     address: '',
     bio: '',
@@ -181,7 +183,7 @@ const GeneralSettings = () => {
                 </label>
               </div>
             </div>
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
               <div>
                 <Label htmlFor='name'>Full Name</Label>
                 <Input
@@ -204,17 +206,42 @@ const GeneralSettings = () => {
                   value={profile?.email || ''}
                 />
               </div>
-              <div>
-                <Label htmlFor='phone'>Phone</Label>
-                <Input
-                  id='phone'
-                  type='phone'
-                  name='phone'
-                  placeholder='+2349094993341'
-                  value={formData.phone}
-                  onChange={handleChange}
-                />
-              </div>
+              {/* <div className='space-y-2'> */}
+              {/* <Label
+                  htmlFor='phone'
+                  className='block text-sm font-medium text-gray-700 dark:text-white'
+                >
+                  Phone
+                </Label> */}
+              {/* <div className='flex'>
+              
+                  <select
+                    id='country'
+                    name='country'
+                    value={formData.country || 'NG'}
+                    onChange={handleChange}
+                    className='rounded-l-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 px-2 py-2 text-sm focus:border-blue-500 focus:ring-blue-500 w-16'
+                  >
+                    {countries.map((country) => (
+                      <option key={country.code} value={country.dialCode}>
+                        {country.flag} {country.dialCode}
+                      </option>
+                    ))}
+                  </select>
+
+                
+                  <Input
+                    id='phone'
+                    name='phone'
+                    type='tel'
+                    placeholder='9094993341'
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className='rounded-l-none flex-1'
+                  />
+                </div> */}
+              <PhoneInput formData={formData} setFormData={setFormData} />
+              {/* </div> */}
             </div>
             <div>
               <Label htmlFor='bio'>Bio</Label>

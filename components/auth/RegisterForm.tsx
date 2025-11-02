@@ -15,13 +15,24 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/redux/store';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { register } from '@/redux/slices/authSlice';
-import { actualRole, encryptInput, SignupRole, SystemRole } from '@/lib/utils';
+import {
+  actualRole,
+  countries,
+  DEFAULT_COUNTRY,
+  encryptInput,
+  SignupRole,
+  SystemRole,
+} from '@/lib/utils';
 import toast from 'react-hot-toast';
 import LoadingIcon from '../ui/icons/LoadingIcon';
+import PhoneInput from '../ui/PhoneInput';
 
 const defaultValue = {
   name: '',
   email: '',
+  phone: '',
+  country: 'NGN',
+  country_dial_code: '+234',
   password: '',
   role: '',
   allowOtp: true,
@@ -39,9 +50,10 @@ interface RegisterFormCompProps {
   role: SignupRole | string;
 }
 const RegisterForm = ({ role }: RegisterFormCompProps) => {
-  
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+
+  console.log(defaultValue);
 
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [body, setBody] = useState<RegisterFormProps>({
@@ -83,6 +95,9 @@ const RegisterForm = ({ role }: RegisterFormCompProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    console.log(body);
+
     if (!isFormValid) return;
 
     try {
@@ -176,6 +191,14 @@ const RegisterForm = ({ role }: RegisterFormCompProps) => {
               required
               onChange={handleChange}
               enableDarkMode={false}
+            />
+          </div>
+
+          <div>
+            <PhoneInput
+              formData={body}
+              setFormData={setBody}
+              allowDarkMode={false}
             />
           </div>
 
