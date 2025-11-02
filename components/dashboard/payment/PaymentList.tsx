@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import React from 'react';
 import PaymentItem from './PaymentItem';
+import { Payment } from '@/types/payment';
 
 export enum RetrievalType {
   RECENT = 'recent',
@@ -17,20 +18,31 @@ export enum RetrievalType {
 }
 interface PaymentListProps {
   retrieve?: RetrievalType;
+  payments: Payment[];
+  loading: Boolean;
+  onClickNext: () => void;
+  onClickPrev: () => void;
+  handleSearchSubmit: (input: string) => void;
+  handleFilterByDateSubmit: (
+    startDate: string,
+    endDate: string,
+    setOpenModal: (value: React.SetStateAction<boolean>) => void
+  ) => void;
+  handleRefresh: () => void;
+  count: number;
 }
-const PaymentList = ({ retrieve = RetrievalType.RECENT }: PaymentListProps) => {
+const PaymentList = ({
+  retrieve = RetrievalType.RECENT,
+  payments,
+  loading,
+  onClickNext,
+  onClickPrev,
+  handleSearchSubmit,
+  handleFilterByDateSubmit,
+  handleRefresh,
+  count,
+}: PaymentListProps) => {
   const searchParams = useSearchParams();
-  
-  const {
-    payments,
-    loading,
-    onClickNext,
-    onClickPrev,
-    handleSearchSubmit,
-    handleFilterByDateSubmit,
-    handleRefresh,
-    count,
-  } = usePayments();
 
   const noFoundText =
     !searchParams.has('page') || searchParams.has('q')
@@ -44,7 +56,7 @@ const PaymentList = ({ retrieve = RetrievalType.RECENT }: PaymentListProps) => {
         className={cn(
           '',
           retrieve === RetrievalType.RECENT &&
-          'rounded-lg border bg-white dark:bg-gray-800 dark:border-gray-700 p-6 shadow-sm'
+            'rounded-lg border bg-white dark:bg-gray-800 dark:border-gray-700 p-6 shadow-sm'
         )}
       >
         {retrieve === RetrievalType.RECENT && (
@@ -78,7 +90,8 @@ const PaymentList = ({ retrieve = RetrievalType.RECENT }: PaymentListProps) => {
                   'Transaction ID',
                   'Type',
                   'User',
-                  'Amount',
+                  'Amount Paid',
+                  'Amount Earned',
                   'Status',
                 ].map((heading) => (
                   <th key={heading} className='px-6 py-3 whitespace-nowrap'>
@@ -89,11 +102,8 @@ const PaymentList = ({ retrieve = RetrievalType.RECENT }: PaymentListProps) => {
             </thead>
 
             {loading ? (
-
               <LoadingSkeleton length={12} columns={6} />
-
             ) : (
-
               <tbody className='text-sm'>
                 {payments.map((txn, idx) => (
                   <PaymentItem key={idx} txn={txn} idx={idx} />
@@ -102,9 +112,7 @@ const PaymentList = ({ retrieve = RetrievalType.RECENT }: PaymentListProps) => {
                   <TableEndRecord colspan={10} text={noFoundText} />
                 )}
               </tbody>
-
             )}
-
           </table>
         </div>
 
@@ -116,8 +124,6 @@ const PaymentList = ({ retrieve = RetrievalType.RECENT }: PaymentListProps) => {
             onClickPrev={onClickPrev}
           />
         )}
-
-
       </section>
     </>
   );

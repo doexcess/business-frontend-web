@@ -86,7 +86,7 @@ const MessageListContent = ({
       return chat?.chat_group?.multimedia.url;
     } else if (chat.chat_buddy) {
       return getAvatar(
-        chat.chat_buddy?.profile?.profile_picture,
+        chat.chat_buddy?.profile?.profile_picture!,
         chat.chat_buddy?.name
       );
     }

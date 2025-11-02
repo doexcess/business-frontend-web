@@ -53,6 +53,10 @@ export interface Payment {
   purchase_type: string;
   purchase_id: string | null;
   amount: string;
+  final_amount: string;
+  gross_amount: string;
+  fee_amount: string;
+  fee_percent: string;
   discount_applied: string;
   payment_status: PaymentStatus;
   transaction_id: string;
@@ -85,12 +89,23 @@ export interface Payment {
   };
 }
 
+export interface PaymentBusinessDetails {
+  user: {
+    id: true;
+    name: true;
+    profile: {
+      profile_picture: true;
+    };
+  };
+}
+
 interface BusinessInfo {
   id: string;
   business_slug: string;
   business_name: string;
   business_description: string;
   business_size: string;
+  user?: PaymentBusinessDetails['user'];
 }
 
 interface FullPurchaseDetails {
@@ -187,6 +202,7 @@ export interface PaymentsResponse {
   total_credit: number;
   total_debit: number;
   total_trx: number;
+  details: EarningsDetails;
 }
 
 export interface PaymentDetailsResponse {
@@ -222,4 +238,34 @@ export interface CancelPaymentResponse {
 export interface CancelPaymentPayload {
   payment_id: string;
   status: PaymentStatus;
+}
+
+export interface CurrencyEarnings {
+  currency: string;
+  currency_sign: string;
+  total_payments: number;
+  gross_amount: number;
+  total_discount: number;
+  net_earnings: number;
+  performance: EarningsPerformance;
+}
+
+export interface OverallEarnings {
+  total_payments: number;
+  gross_amount: number;
+  total_discount: number;
+  net_earnings: number;
+  performance: EarningsPerformance;
+}
+
+export interface EarningsPerformance {
+  gross_change: number;
+  net_change: number;
+  payments_change: number;
+}
+
+export interface EarningsDetails {
+  date: string; // ISO date string (e.g., "2025-10-23")
+  by_currency: CurrencyEarnings[];
+  overall: OverallEarnings;
 }

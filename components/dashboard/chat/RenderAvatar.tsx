@@ -14,7 +14,7 @@ export const renderAvatar = (chat: Chat) => {
     return (
       <img
         src={getAvatar(
-          chat.chat_buddy.profile?.profile_picture,
+          chat.chat_buddy.profile?.profile_picture!,
           chat.chat_buddy.name
         )}
         alt={chat.chat_buddy.name}

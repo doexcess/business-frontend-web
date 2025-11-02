@@ -13,6 +13,7 @@ export interface AnalyticsStats {
       products: string;
       tickets: string;
     };
+    details: BusinessEarningsAnalytics;
   };
   active_subscriptions: {
     active_subscriptions: any[];
@@ -116,6 +117,12 @@ export interface MonthlyRevenueResponse {
 
 export interface MonthlyRevenueData {
   year: number;
+  currencies: CurrencyRevenueDataByMonth[];
+}
+
+export interface CurrencyRevenueDataByMonth {
+  currency: string;
+  currency_sign: string;
   months: MonthlyRevenueMonth[];
 }
 
@@ -130,4 +137,33 @@ export interface MonthlyRevenueMonth {
 export interface RevenueItem {
   amount: number | string;
   formatted: string;
+}
+
+export interface BusinessEarningsAnalytics {
+  business_id: string;
+  by_currency: CurrencyEarning[];
+  overall: OverallEarnings;
+}
+
+export interface CurrencyEarning {
+  currency: string;
+  currency_sign: string;
+  total_payments: number;
+  gross_amount: string;
+  total_discount: string;
+  net_earnings: string;
+  raw: RawEarningValues;
+}
+
+export interface RawEarningValues {
+  gross_amount: number;
+  total_discount: number;
+  net_earnings: number;
+}
+
+export interface OverallEarnings {
+  total_payments: number;
+  gross_amount: string;
+  total_discount: string;
+  net_earnings: string;
 }

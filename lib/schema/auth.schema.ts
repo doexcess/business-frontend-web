@@ -7,6 +7,9 @@ type InferType<T> = T extends Joi.ObjectSchema ? Joi.Schema<T> : never;
 export const RegisterFormSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().required(),
+  phone: Joi.string().required(),
+  country: Joi.string().required(),
+  country_dial_code: Joi.string().required(),
   password: Joi.string().min(8).required(),
   role: Joi.string()
     .valid(...Object.values(SystemRole))
@@ -16,6 +19,9 @@ export const RegisterFormSchema = Joi.object({
 export interface RegisterFormProps {
   name: string;
   email: string;
+  phone: string;
+  country: string;
+  country_dial_code: string;
   password: string;
   role: SystemRole | string;
   allowOtp: boolean;
@@ -84,6 +90,8 @@ export const UserProfileSchema = Joi.object({
 });
 export interface UserProfileProps {
   name?: string;
+  phone?: string;
+  country?: string;
   profile_picture?: string;
   address?: string;
   bio?: string;

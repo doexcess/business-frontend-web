@@ -1098,6 +1098,9 @@ const BusinessAccountSettings = () => {
         // For new business, select the first org
         const orgs = await dispatch(fetchOrgs({})).unwrap();
 
+        // Automatically select the newly added business
+        dispatch(switchToOrg({business_id: orgs.organizations[0].id, process: OnboardingProcess.BUSINESS_DETAILS}))
+
         // Update onboarding process for new business
 
         if (

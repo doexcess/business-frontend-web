@@ -184,9 +184,7 @@ const Orders = () => {
           title='My Orders'
           brief='View and track your order history'
           enableBreadCrumb={true}
-          layer2='Dashboard'
-          layer2Link='/dashboard'
-          layer3='Orders'
+          layer2='Orders'
         />
 
         <div className='flex flex-col gap-4 mt-2'>
