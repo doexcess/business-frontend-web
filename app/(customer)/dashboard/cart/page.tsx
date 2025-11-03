@@ -39,7 +39,7 @@ import { capitalize } from 'lodash';
 import { applyCoupon, clearCouponData } from '@/redux/slices/couponSlice';
 
 // import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
-import { usePaystackPayment } from 'react-paystack';
+// Defer importing react-paystack at runtime to avoid SSR window access during static export
 import { PaystackPaymentResponse } from '@/types/payment';
 
 function DashboardCart() {
@@ -87,109 +87,110 @@ function DashboardCart() {
     }
 
     setIsPaying(true);
-    // try {
-    //   // Build purchases array
-    //   const purchases: PaymentPurchase[] = items.map((item) => ({
-    //     purchase_id:
-    //       item.product_type === ProductType.TICKET
-    //         ? item.ticket_tier_id!
-    //         : item.product_type === ProductType.SUBSCRIPTION
-    //         ? item.subscription_plan_price_id!
-    //         : item.product_id,
-    //     quantity: item.quantity,
-    //     purchase_type: item.product_type as ProductType,
-    //   }));
-    //   // Assume all items have the same currency and business_id
-    //   const firstItem = items[0];
+    try {
+      // Build purchases array
+      const purchases: PaymentPurchase[] = items.map((item) => ({
+        purchase_id:
+          item.product_type === ProductType.TICKET
+            ? item.ticket_tier_id!
+            : item.product_type === ProductType.SUBSCRIPTION
+            ? item.subscription_plan_price_id!
+            : item.product_id,
+        quantity: item.quantity,
+        purchase_type: item.product_type as ProductType,
+      }));
+      // Assume all items have the same currency and business_id
+      const firstItem = items[0];
 
-    //   const business_id = org?.id;
+      const business_id = org?.id;
 
-    //   if (!business_id) {
-    //     throw new Error('Business ID is required for payment.');
-    //   }
+      if (!business_id) {
+        throw new Error('Business ID is required for payment.');
+      }
 
-    //   const amountToPay = coupon_info?.discountedAmount
-    //     ? coupon_info?.discountedAmount
-    //     : totals.subtotal;
+      const amountToPay = coupon_info?.discountedAmount
+        ? coupon_info?.discountedAmount
+        : totals.subtotal;
 
-    //   const payload: CreatePaymentPayload = {
-    //     email: userEmail,
-    //     purchases,
-    //     amount: amountToPay,
-    //     currency,
-    //     business_id,
-    //     ...(coupon && { coupon_code: coupon }),
-    //     payment_method: PaymentMethod.PAYSTACK,
-    //   };
+      const payload: CreatePaymentPayload = {
+        email: userEmail,
+        purchases,
+        amount: amountToPay,
+        currency,
+        business_id,
+        ...(coupon && { coupon_code: coupon }),
+        payment_method: PaymentMethod.PAYSTACK,
+      };
 
-    //   // 1. Create payment
-    //   const createRes = await dispatch(createPayment(payload)).unwrap();
+      // 1. Create payment
+      const createRes = await dispatch(createPayment(payload)).unwrap();
 
-    //   if (!createRes || !createRes.data || !createRes.data.payment_id) {
-    //     throw new Error('Payment creation failed.');
-    //   }
+      if (!createRes || !createRes.data || !createRes.data.payment_id) {
+        throw new Error('Payment creation failed.');
+      }
 
-    //   const reference = createRes.data.payment_id;
+      const reference = createRes.data.payment_id;
 
-    //   console.log(amountToPay);
-    //   console.log(currency);
+      console.log(amountToPay);
+      console.log(currency);
 
-    //   const config = {
-    //     reference: reference,
-    //     email: userEmail,
-    //     amount: amountToPay * 100, //Amount is in the country's lowest currency. E.g Kobo, so 20000 kobo = N200
-    //     currency: currency,
-    //     publicKey: process.env.NEXT_PUBLIC_PAYSTACK_KEY || '',
-    //     // metadata: {
-    //     //   email: userEmail,
-    //     //   amount: amountToPay,
-    //     //   currency: currency,
-    //     //   reference: reference,
-    //     // },
-    //   };
+      const config = {
+        reference: reference,
+        email: userEmail,
+        amount: amountToPay * 100, //Amount is in the country's lowest currency. E.g Kobo, so 20000 kobo = N200
+        currency: currency,
+        publicKey: process.env.NEXT_PUBLIC_PAYSTACK_KEY || '',
+        // metadata: {
+        //   email: userEmail,
+        //   amount: amountToPay,
+        //   currency: currency,
+        //   reference: reference,
+        // },
+      };
 
-    //   const initializePayment = usePaystackPayment(config);
+      const { usePaystackPayment } = await import('react-paystack');
+      const initializePayment = usePaystackPayment(config);
 
-    //   // you can call this function anything
-    //   const onSuccess = async (response: PaystackPaymentResponse) => {
-    //     // Implementation for whatever you want to do with reference and after success call.
-    //     console.log(reference);
-    //     try {
-    //       // Verify payment using Redux
-    //       await dispatch(verifyPayment(response.reference)).unwrap();
+      // you can call this function anything
+      const onSuccess = async (response: PaystackPaymentResponse) => {
+        // Implementation for whatever you want to do with reference and after success call.
+        console.log(reference);
+        try {
+          // Verify payment using Redux
+          await dispatch(verifyPayment(response.reference)).unwrap();
 
-    //       // Empty cart after successful payment
-    //       dispatch(emptyCart());
+          // Empty cart after successful payment
+          dispatch(emptyCart());
 
-    //       // Clear coupon data
-    //       dispatch(clearCouponData());
+          // Clear coupon data
+          dispatch(clearCouponData());
 
-    //       // closePaymentModal(); // this will close the modal programmatically
+          // closePaymentModal(); // this will close the modal programmatically
 
-    //       // Show success message
-    //       toast.success('Payment successful! Your order has been placed.');
+          // Show success message
+          toast.success('Payment successful! Your order has been placed.');
 
-    //       // Redirect to orders page
-    //       safeRouterPush(router, '/dashboard/orders');
-    //     } catch (error: any) {
-    //       toast.error(error.message || 'Payment verification failed');
-    //     } finally {
-    //       setIsPaying(false);
-    //     }
-    //   };
+          // Redirect to orders page
+          safeRouterPush(router, '/dashboard/orders');
+        } catch (error: any) {
+          toast.error(error.message || 'Payment verification failed');
+        } finally {
+          setIsPaying(false);
+        }
+      };
 
-    //   // you can call this function anything
-    //   const onClose = () => {
-    //     // implementation for  whatever you want to do when the Paystack dialog closed.
-    //     toast('Payment window closed');
-    //     console.log('closed');
-    //     setIsPaying(false);
-    //   };
-    //   initializePayment({ onSuccess, onClose: onClose()! as any });
-    // } catch (error: any) {
-    //   toast.error(error.message || 'Payment failed.');
-    //   setIsPaying(false);
-    // }
+      // you can call this function anything
+      const onClose = () => {
+        // implementation for  whatever you want to do when the Paystack dialog closed.
+        toast('Payment window closed');
+        console.log('closed');
+        setIsPaying(false);
+      };
+      initializePayment({ onSuccess, onClose: onClose()! as any });
+    } catch (error: any) {
+      toast.error(error.message || 'Payment failed.');
+      setIsPaying(false);
+    }
   };
 
   const handleApplyCoupon = async () => {
