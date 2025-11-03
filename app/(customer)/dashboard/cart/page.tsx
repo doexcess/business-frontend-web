@@ -176,8 +176,6 @@ function DashboardCart() {
           // Clear coupon data
           dispatch(clearCouponData());
 
-          // closePaymentModal(); // this will close the modal programmatically
-
           // Show success message
           toast.success('Payment successful! Your order has been placed.');
 
