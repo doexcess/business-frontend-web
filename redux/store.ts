@@ -18,13 +18,32 @@ import cartReducer from './slices/cartSlice';
 import orderReducer from './slices/orderSlice';
 import firebaseReducer from './slices/firebaseSlice';
 import currencyReducer from './slices/currencySlice';
-import storage from 'redux-persist/lib/storage'; // Uses localStorage
 import { persistReducer } from 'redux-persist';
+// Use a safe storage that doesn't touch window during SSR/static export
+const createNoopStorage = () => {
+  return {
+    getItem(_key: string) {
+      return Promise.resolve(null as any);
+    },
+    setItem(_key: string, value: any) {
+      return Promise.resolve(value);
+    },
+    removeItem(_key: string) {
+      return Promise.resolve();
+    },
+  };
+};
+
+// Dynamically resolve storage backend based on environment
+const persistStorage =
+  typeof window !== 'undefined'
+    ? require('redux-persist/lib/storage').default
+    : createNoopStorage();
 
 // Persist configuration for auth slice only
 const persistConfig = {
   key: 'auth',
-  storage,
+  storage: persistStorage,
   whitelist: ['auth', 'org', 'cart'], // Only persist the auth slice
 };
 
