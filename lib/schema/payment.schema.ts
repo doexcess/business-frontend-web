@@ -1,6 +1,6 @@
 // Payment schema for creating a payment
 
-import { ProductType } from '../utils';
+import { PaymentMethod, ProductType } from '../utils';
 
 export interface PaymentPurchase {
   purchase_id: string;
@@ -14,6 +14,7 @@ export interface CreatePaymentPayload {
   amount: number;
   currency: string;
   business_id: string;
+  payment_method?: PaymentMethod;
 }
 
 export interface CancelPaymentPayload {

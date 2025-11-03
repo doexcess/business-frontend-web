@@ -269,3 +269,13 @@ export interface EarningsDetails {
   by_currency: CurrencyEarnings[];
   overall: OverallEarnings;
 }
+
+export interface PaystackPaymentResponse {
+  message: string;
+  redirecturl: number;
+  reference: string;
+  status: string;
+  trans: string;
+  transaction: string;
+  trxref: string;
+}
