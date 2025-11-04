@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import '@/app/globals.css';
+import React, { useEffect, useState } from 'react';
 import useCart from '@/hooks/page/useCart';
 import {
   formatMoney,
@@ -8,6 +9,7 @@ import {
   isBrowser,
   safeRouterPush,
   reformatText,
+  PaymentMethod,
 } from '@/lib/utils';
 import PageHeading from '@/components/PageHeading';
 import toast from 'react-hot-toast';
@@ -36,7 +38,9 @@ import Link from 'next/link';
 import { capitalize } from 'lodash';
 import { applyCoupon, clearCouponData } from '@/redux/slices/couponSlice';
 
-import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
+// import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
+// Defer importing react-paystack at runtime to avoid SSR window access during static export
+import { PaystackPaymentResponse } from '@/types/payment';
 
 function DashboardCart() {
   const router = useRouter();
@@ -115,6 +119,7 @@ function DashboardCart() {
         currency,
         business_id,
         ...(coupon && { coupon_code: coupon }),
+        payment_method: PaymentMethod.PAYSTACK,
       };
 
       // 1. Create payment
@@ -126,53 +131,62 @@ function DashboardCart() {
 
       const reference = createRes.data.payment_id;
 
+      console.log(amountToPay);
+      console.log(currency);
+
       const config = {
-        public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY!,
-        tx_ref: reference,
-        amount: amountToPay,
-        currency,
-        customer: {
-          email: userEmail,
-          phone_number: profile?.phone,
-          name: profile?.name!,
-        },
+        reference: reference,
+        email: userEmail,
+        amount: amountToPay * 100, //Amount is in the country's lowest currency. E.g Kobo, so 20000 kobo = N200
+        currency: currency,
+        publicKey: process.env.NEXT_PUBLIC_PAYSTACK_KEY || '',
+        // metadata: {
+        //   email: userEmail,
+        //   amount: amountToPay,
+        //   currency: currency,
+        //   reference: reference,
+        // },
       };
 
-      // @ts-ignore
-      const handleFlutterwavePayment = useFlutterwave(config);
+      const { usePaystackPayment } = await import('react-paystack');
+      const initializePayment = usePaystackPayment(config);
 
-      handleFlutterwavePayment({
-        callback: async (response) => {
-          try {
-            // Verify payment using Redux
-            await dispatch(verifyPayment(response.transaction_id)).unwrap();
+      // you can call this function anything
+      const onSuccess = async (response: PaystackPaymentResponse) => {
+        // Implementation for whatever you want to do with reference and after success call.
+        console.log(reference);
+        try {
+          // Verify payment using Redux
+          await dispatch(verifyPayment(response.reference)).unwrap();
 
-            // Empty cart after successful payment
-            dispatch(emptyCart());
+          // Empty cart after successful payment
+          dispatch(emptyCart());
 
-            // Clear coupon data
-            dispatch(clearCouponData());
+          // Clear coupon data
+          dispatch(clearCouponData());
 
-            closePaymentModal(); // this will close the modal programmatically
+          // closePaymentModal(); // this will close the modal programmatically
 
-            // Show success message
-            toast.success('Payment successful! Your order has been placed.');
+          // Show success message
+          toast.success('Payment successful! Your order has been placed.');
 
-            // Redirect to orders page
-            safeRouterPush(router, '/dashboard/orders');
-          } catch (error: any) {
-            toast.error(error.message || 'Payment verification failed');
-          } finally {
-            setIsPaying(false);
-          }
-        },
-        onClose: async () => {
-          // await dispatch(cancelPayment({ payment_id: reference }));
-          // handle when modal is closed
+          // Redirect to orders page
+          safeRouterPush(router, '/dashboard/orders');
+        } catch (error: any) {
+          toast.error(error.message || 'Payment verification failed');
+        } finally {
           setIsPaying(false);
-          toast('Payment window closed');
-        },
-      });
+        }
+      };
+
+      // you can call this function anything
+      const onClose = () => {
+        // implementation for  whatever you want to do when the Paystack dialog closed.
+        toast('Payment window closed');
+        console.log('closed');
+        setIsPaying(false);
+      };
+      initializePayment({ onSuccess, onClose: onClose()! as any });
     } catch (error: any) {
       toast.error(error.message || 'Payment failed.');
       setIsPaying(false);

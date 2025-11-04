@@ -71,6 +71,7 @@ export enum PaymentStatus {
 
 export enum PaymentMethod {
   PAYSTACK = 'PAYSTACK',
+  FLUTTERWAVE = 'FLUTTERWAVE',
 }
 
 export enum PurchaseItemType {
