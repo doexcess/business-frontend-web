@@ -74,6 +74,10 @@ export const sidebarLinks = [
         route: '/products/digital-products',
         label: 'Digital Products',
       },
+      {
+        route: '/products/physical-products',
+        label: 'Physical Products',
+      },
     ],
   },
   {
@@ -100,6 +104,10 @@ export const sidebarLinks = [
         route: '/dashboard/products/digital-products',
         label: 'Digital Products',
       },
+      // {
+      //   route: '/dashboard/products/physical-products',
+      //   label: 'Physical Products',
+      // },
     ],
   },
   {

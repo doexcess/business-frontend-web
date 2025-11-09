@@ -8,13 +8,18 @@ import {
 import {
   Course,
   DigitalProduct,
+  PhysicalProduct,
   TicketProduct,
   TicketTier,
 } from '@/types/product';
 import Link from 'next/link';
 import React from 'react';
 
-type ProductGridItemType = 'course' | 'ticket' | 'digital_product';
+type ProductGridItemType =
+  | 'course'
+  | 'ticket'
+  | 'digital_product'
+  | 'physical_product';
 
 interface ProductGridItemProps {
   id: string;
@@ -60,6 +65,12 @@ const ProductGridItem = ({
       formattedPrice = formatMoney(
         +digitalProductData.price,
         digitalProductData.currency
+      );
+    } else if (type === ProductType.PHYSICAL_PRODUCT) {
+      const physicalProductData = data as PhysicalProduct;
+      formattedPrice = formatMoney(
+        +physicalProductData.price,
+        physicalProductData.currency
       );
     }
   }

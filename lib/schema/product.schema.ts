@@ -359,6 +359,7 @@ export interface UpdateDigitalProductProps {
   multimedia_zip_id?: string;
   status?: ProductStatus;
   other_currencies?: OtherCurrencyProps[];
+  details?: PhysicalProductDetailsProps;
 }
 
 export interface OtherCurrencyFormFieldProps {
@@ -366,4 +367,159 @@ export interface OtherCurrencyFormFieldProps {
   field: string | keyof OtherCurrencyProps;
   value: string;
   defaultCurrency: string;
+}
+
+export enum PhysicalProductType {
+  PRODUCT = 'product',
+  BESPOKE = 'bespoke',
+}
+
+export enum PhysicalProductGender {
+  MALE = 'male',
+  FEMALE = 'female',
+  UNISEX = 'unisex',
+}
+
+export const createPhysicalProductSchema = Joi.object({
+  title: Joi.string().trim().min(3).max(255).required(),
+  slug: Joi.string().trim().min(2).max(36).required(),
+  description: Joi.string().trim().min(10).required(),
+  category_id: Joi.string()
+    .guid({ version: ['uuidv4'] })
+    .required(),
+  multimedia_id: Joi.string()
+    .guid({ version: ['uuidv4'] })
+    .required(),
+  status: Joi.string()
+    .valid(...Object.values(ProductStatus))
+    .optional(),
+  price: Joi.number().min(0).required(),
+  original_price: Joi.number().min(0).allow(null).optional(),
+  keywords: Joi.string().trim().optional(),
+  other_currencies: Joi.array()
+    .items(
+      Joi.object({
+        currency: Joi.string().trim().required(),
+        price: Joi.number().min(0).required(),
+        original_price: Joi.number().min(0).allow(null).optional(), // ✅ allow null
+      })
+    )
+    .optional(),
+  details: Joi.object({
+    sizes: Joi.array().items(Joi.string().trim().min(1)).optional(),
+
+    colors: Joi.array().items(Joi.string().trim().min(1)).optional(),
+
+    location: Joi.string().trim().required(),
+
+    stock: Joi.number().integer().min(0).required(),
+
+    type: Joi.string()
+      .valid(...Object.values(PhysicalProductType))
+      .optional(),
+
+    gender: Joi.string()
+      .valid(...Object.values(PhysicalProductGender))
+      .required(),
+
+    estimated_production_time: Joi.number().optional(),
+
+    min_required: Joi.number().integer().min(0).optional(),
+
+    multimedia_ids: Joi.array()
+      .items(Joi.string().guid({ version: ['uuidv4'] }))
+      .optional(),
+  }).required(),
+});
+
+export interface PhysicalProductDetailsProps {
+  sizes?: any[]; // You can replace with Array<{ label: string; value: string }> later
+  colors?: any[];
+  location: string;
+  stock: number | null;
+  type?: PhysicalProductType;
+  gender: PhysicalProductGender;
+  estimated_production_time?: number | null;
+  min_required?: number | null;
+  multimedia_ids?: string[]; // Multiple media attachments
+}
+
+export interface CreatePhysicalProductProps {
+  title: string;
+  slug: string;
+  description: string;
+  category_id: string;
+  multimedia_id: string;
+  status: ProductStatus;
+  price: number;
+  original_price: number | null;
+  keywords?: string;
+  other_currencies?: OtherCurrencyProps[];
+  details: PhysicalProductDetailsProps;
+}
+
+export const updatePhysicalProductSchema = Joi.object({
+  title: Joi.string().min(3).max(255).optional(),
+  slug: Joi.string().trim().min(2).max(36).optional(),
+  price: Joi.number().min(0).optional(),
+  original_price: Joi.number().min(0).allow(null).optional(),
+  description: Joi.string().min(10).optional(),
+  keywords: Joi.string().allow(null, '').optional(),
+  category_id: Joi.string().uuid().optional(),
+  multimedia_id: Joi.string().uuid().optional(),
+  multimedia_zip_id: Joi.string().uuid().optional(),
+  status: Joi.string()
+    .valid(...Object.values(ProductStatus))
+    .optional(),
+  other_currencies: Joi.array()
+    .items(
+      Joi.object({
+        currency: Joi.string().trim().required(),
+        price: Joi.number().min(0).required(),
+        original_price: Joi.number().min(0).allow(null).optional(), // ✅ allow null
+      })
+    )
+    .optional(),
+  details: Joi.object({
+    sizes: Joi.array().items(Joi.string().trim().min(1)).optional(),
+
+    colors: Joi.array().items(Joi.string().trim().min(1)).optional(),
+
+    location: Joi.string().trim().required(),
+
+    stock: Joi.number().integer().min(0).required(),
+
+    type: Joi.string()
+      .valid(...Object.values(PhysicalProductType))
+      .optional(),
+
+    measurements: Joi.object().unknown(true).optional(), // Accepts any JSON-like object
+
+    gender: Joi.string()
+      .valid(...Object.values(PhysicalProductGender))
+      .required(),
+
+    estimated_production_time: Joi.number().optional(),
+
+    min_required: Joi.number().integer().min(0).optional(),
+
+    multimedia_ids: Joi.array()
+      .items(Joi.string().guid({ version: ['uuidv4'] }))
+      .optional(),
+  }).optional(),
+});
+
+export interface UpdatePhysicalProductProps {
+  title?: string;
+  slug?: string;
+  price?: number;
+  original_price?: number | null;
+  description?: string;
+  keywords?: string;
+  category_id?: string;
+  multimedia_id?: string;
+  multimedia_zip_id?: string;
+  status?: ProductStatus;
+  other_currencies?: OtherCurrencyProps[];
+  details?: PhysicalProductDetailsProps;
 }
