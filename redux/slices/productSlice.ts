@@ -3,6 +3,8 @@ import api from '@/lib/api';
 import {
   DigitalProduct,
   DigitalProductResponse,
+  PhysicalProduct,
+  PhysicalProductResponse,
   ProductsResponse,
 } from '@/types/product';
 import { Product } from '@/types/org';
@@ -11,6 +13,7 @@ interface ProductState {
   products: Product[];
   product: Product | null;
   digital_products: DigitalProduct[];
+  physical_products: PhysicalProduct[];
   count: number;
   loading: boolean;
   error: string | null;
@@ -20,6 +23,7 @@ const initialState: ProductState = {
   products: [],
   product: null,
   digital_products: [],
+  physical_products: [],
   count: 0,
   loading: false,
   error: null,
@@ -148,6 +152,50 @@ export const fetchDigitalProducts = createAsyncThunk<
   }
 );
 
+/**
+ * Fetch paginated physical products
+ */
+export const fetchPhysicalProducts = createAsyncThunk<
+  { physical_products: PhysicalProduct[]; count: number },
+  {
+    page?: number;
+    limit?: number;
+    q?: string;
+    startDate?: string;
+    endDate?: string;
+    business_id?: string;
+  },
+  { rejectValue: string }
+>(
+  'product/fetchPhysicalProducts',
+  async (
+    { page, limit, q, startDate, endDate, business_id },
+    { rejectWithValue }
+  ) => {
+    const params: Record<string, any> = {};
+    if (page) params['pagination[page]'] = page;
+    if (limit) params['pagination[limit]'] = limit;
+    if (q) params.q = q;
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+
+    const headers: Record<string, string> = {};
+    if (business_id) headers['Business-Id'] = business_id;
+
+    try {
+      const { data } = await api.get<PhysicalProductResponse>(
+        '/product-physical-crud',
+        { params, headers }
+      );
+      return { physical_products: data.data, count: data.count };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch physical products'
+      );
+    }
+  }
+);
+
 const productSlice = createSlice({
   name: 'product',
   initialState,
@@ -214,6 +262,30 @@ const productSlice = createSlice({
       .addCase(fetchDigitalProducts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Error fetching digital products';
+      })
+
+      // fetchPhysicalProducts
+      .addCase(fetchPhysicalProducts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchPhysicalProducts.fulfilled,
+        (
+          state,
+          action: PayloadAction<{
+            physical_products: PhysicalProduct[];
+            count: number;
+          }>
+        ) => {
+          state.loading = false;
+          state.physical_products = action.payload.physical_products;
+          state.count = action.payload.count;
+        }
+      )
+      .addCase(fetchPhysicalProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Error fetching physical products';
       });
   },
 });

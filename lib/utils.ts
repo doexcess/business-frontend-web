@@ -79,6 +79,7 @@ export enum PurchaseItemType {
   TICKET = 'TICKET',
   SUBSCRIPTION = 'SUBSCRIPTION',
   DIGITAL_PRODUCT = 'DIGITAL_PRODUCT',
+  PHYSICAL_PRODUCT = 'PHYSICAL_PRODUCT',
 }
 
 export enum ProductType {
@@ -86,6 +87,7 @@ export enum ProductType {
   TICKET = 'TICKET',
   SUBSCRIPTION = 'SUBSCRIPTION',
   DIGITAL_PRODUCT = 'DIGITAL_PRODUCT',
+  PHYSICAL_PRODUCT = 'PHYSICAL_PRODUCT',
 }
 
 export enum CouponType {
@@ -448,6 +450,9 @@ export const getProductPath = (type: ProductType) => {
       break;
     case ProductType.DIGITAL_PRODUCT:
       path = 'digital-products';
+      break;
+    case ProductType.PHYSICAL_PRODUCT:
+      path = 'physical-products';
       break;
     case ProductType.SUBSCRIPTION:
       path = 'subscriptions';

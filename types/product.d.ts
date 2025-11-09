@@ -1,7 +1,11 @@
 import { ProductStatus, ProductType, TicketTierStatus } from '@/lib/utils';
 import { Media } from './multimedia';
 import { Product } from './org';
-import { OtherCurrencyProps } from '@/lib/schema/product.schema';
+import {
+  OtherCurrencyProps,
+  PhysicalProductGender,
+  PhysicalProductType,
+} from '@/lib/schema/product.schema';
 
 export interface BusinessInfo {
   id: string;
@@ -568,4 +572,83 @@ export interface UpdateDigitalProductResponse {
   statusCode: number;
   message: string;
   data: DigitalProductDetails;
+}
+
+// PHYSICAL PRODUCT
+export interface PhysicalProduct {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  price: string;
+  original_price?: string;
+  currency: string;
+  keywords: string | null;
+  metadata: any | null;
+  status: ProductStatus;
+  published_at: string | null;
+  archived_at: string | null;
+  creator_id: string;
+  created_at: string;
+  updated_at: string;
+  category_id: string;
+  business_id: string;
+  purchased_physical_products: PurchasedPhysicalProduct[];
+  creator: CreatorBasic;
+  multimedia: Media;
+  zip_file: Media;
+  category: Category;
+  business_info: BusinessInfo;
+  other_currencies: OtherCurrencyProps[];
+  physical_product: PhysicalProductDetails;
+}
+
+export interface PhysicalProductDetails {
+  product_id: string;
+  sizes: string[];
+  colors: string[];
+  location: string;
+  stock: number;
+  type: PhysicalProductType;
+  gender: PhysicalProductGender;
+  estimated_production_time: number;
+  min_required: number;
+  media: PhysicalProductMedia[];
+}
+
+export interface PhysicalProductMedia {
+  multimedia: Media;
+}
+
+export interface PurchasedPhysicalProduct {
+  id: string;
+  quantity: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PhysicalProductResponse {
+  statusCode: number;
+  data: PhysicalProduct[];
+  count: number;
+}
+
+export interface PhysicalProductDetailsResponse {
+  statusCode: number;
+  data: PhysicalProduct;
+}
+
+export interface DeletePhysicalProductResponse {
+  statusCode: number;
+  message: string;
+  data: {
+    id: string;
+    deleted: boolean;
+  };
+}
+
+export interface UpdatePhysicalProductResponse {
+  statusCode: number;
+  message: string;
+  data: PhysicalProductDetails;
 }
