@@ -121,6 +121,7 @@ const Home = () => {
       ticket: '#f472b6',
       subscription: '#65a30d',
       digital: '#d97706',
+      physical: '#06b6d4',
     };
 
     // find the matching currency block or use the first available one
@@ -150,7 +151,7 @@ const Home = () => {
     const datasets = (Object.keys(colorMap) as (keyof typeof colorMap)[]).map(
       (key) => ({
         label: key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' '), // e.g. "Digital"
-        data: currencyData.months.map((m) =>
+        data: currencyData.months.map((m: any) =>
           Number((m[key] as any)?.amount || 0)
         ),
         borderColor: colorMap[key],

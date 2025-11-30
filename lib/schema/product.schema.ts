@@ -422,9 +422,9 @@ export const createPhysicalProductSchema = Joi.object({
       .valid(...Object.values(PhysicalProductGender))
       .required(),
 
-    estimated_production_time: Joi.number().optional(),
+    estimated_production_time: Joi.number().optional().allow(null),
 
-    min_required: Joi.number().integer().min(0).optional(),
+    min_required: Joi.number().integer().min(0).optional().allow(null),
 
     multimedia_ids: Joi.array()
       .items(Joi.string().guid({ version: ['uuidv4'] }))
@@ -499,9 +499,9 @@ export const updatePhysicalProductSchema = Joi.object({
       .valid(...Object.values(PhysicalProductGender))
       .required(),
 
-    estimated_production_time: Joi.number().optional(),
+    estimated_production_time: Joi.number().optional().allow(null),
 
-    min_required: Joi.number().integer().min(0).optional(),
+    min_required: Joi.number().integer().min(0).optional().allow(null),
 
     multimedia_ids: Joi.array()
       .items(Joi.string().guid({ version: ['uuidv4'] }))
@@ -522,4 +522,8 @@ export interface UpdatePhysicalProductProps {
   status?: ProductStatus;
   other_currencies?: OtherCurrencyProps[];
   details?: PhysicalProductDetailsProps;
+}
+
+export interface UpdatePhysicalProductMediaProps {
+  multimedia_ids: string[];
 }

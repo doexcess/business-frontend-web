@@ -91,7 +91,7 @@ const Topbar = () => {
           <RecentNotifications />
 
           {/* Cart Icon with Badge */}
-          {profile?.role.role_id === SystemRole.USER && (
+          {profile?.role?.role_id === SystemRole.USER && (
             <Link
               href='/dashboard/cart'
               className='relative flex items-center mx-1 sm:mx-2'

@@ -14,8 +14,9 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { BsPatchCheck } from 'react-icons/bs';
 import BusinessAccountSettings from '@/components/settings/BusinessAccountSettings';
 import KYCSettings from '@/components/settings/KYCSettings';
-import { Coins } from 'lucide-react';
+import { Bus, Coins, MapPin } from 'lucide-react';
 import CurrenciesSettings from '@/components/settings/CurrenciesSettings';
+import ShippingLocationSettings from '@/components/settings/ShippingLocationSettings';
 
 const Settings = () => {
   const { profile } = useSelector((state: RootState) => state.auth);
@@ -82,6 +83,13 @@ const Settings = () => {
                       <Coins className='w-4 h-4' />
                       &nbsp; Currencies
                     </TabsTrigger>
+                    <TabsTrigger
+                      value='shipping-locations'
+                      className='w-full justify-start px-4 py-3 data-[state=active]:bg-primary-main text-black-1 dark:text-white data-[state=active]:text-white'
+                    >
+                      <MapPin className='w-4 h-4' />
+                      &nbsp; Shipping Locations
+                    </TabsTrigger>
                   </>
                 )}
                 <TabsTrigger
@@ -113,6 +121,9 @@ const Settings = () => {
                   </TabsContent>
                   <TabsContent value='currencies'>
                     <CurrenciesSettings />
+                  </TabsContent>
+                  <TabsContent value='shipping-locations'>
+                    <ShippingLocationSettings />
                   </TabsContent>
                 </>
               )}

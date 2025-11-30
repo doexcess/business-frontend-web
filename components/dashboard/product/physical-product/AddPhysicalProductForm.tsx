@@ -11,7 +11,13 @@ import {
   PhysicalProductGender,
   PhysicalProductType,
 } from '@/lib/schema/product.schema';
-import { baseUrl, cn, OnboardingProcess, ProductStatus } from '@/lib/utils';
+import {
+  baseUrl,
+  cn,
+  OnboardingProcess,
+  ProductStatus,
+  ProductType,
+} from '@/lib/utils';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
@@ -31,7 +37,7 @@ import { createDigitalProduct } from '@/redux/slices/digitalProductSlice';
 import { updateOnboardingProcess } from '@/redux/slices/orgSlice';
 import { Badge } from '@/components/ui/badge';
 import TinyMceEditor from '@/components/editor/TinyMceEditor';
-import { Globe } from 'lucide-react';
+import { Globe, XCircleIcon, XIcon } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import useCurrencies from '@/hooks/page/useCurrencies';
 import { createPhysicalProduct } from '@/redux/slices/physicalProductSlice';
@@ -74,6 +80,8 @@ const AddPhysicalProductForm = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const zipFileInputRef = useRef<HTMLInputElement>(null);
   const [zipFileName, setZipFileName] = useState('');
+  // const [mediaFiles, setMediaFiles] = useState([]);
+  const [mediaFiles, setMediaFiles] = useState<string[]>([]);
 
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
@@ -285,8 +293,6 @@ const AddPhysicalProductForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    console.log(formData);
 
     if (!validateForm()) {
       toast.error('Please fix the errors in the form');
@@ -808,45 +814,52 @@ const AddPhysicalProductForm = () => {
           </div>
         </div>
 
-        {/* Estimated Production Time & Minimum Required */}
-        <div className='grid md:grid-cols-2 gap-3'>
-          <div>
-            <label className='block text-sm font-medium mb-1'>
-              Estimated Production Time (in days)
-            </label>
-            <Input
-              type='number'
-              min={0}
-              value={formData.details.estimated_production_time!}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  details: {
-                    ...prev.details,
-                    estimated_production_time: +e.target.value,
-                  },
-                }))
-              }
-            />
-          </div>
+        {formData.details.type === PhysicalProductType.BESPOKE && (
+          <>
+            {/* Estimated Production Time & Minimum Required */}
+            <div className='grid md:grid-cols-2 gap-3'>
+              <div>
+                <label className='block text-sm font-medium mb-1'>
+                  Estimated Production Time (in days)
+                </label>
+                <Input
+                  type='number'
+                  min={0}
+                  value={formData.details.estimated_production_time!}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      details: {
+                        ...prev.details,
+                        estimated_production_time: +e.target.value,
+                      },
+                    }))
+                  }
+                />
+              </div>
 
-          <div>
-            <label className='block text-sm font-medium mb-1'>
-              Minimum Required Before Production
-            </label>
-            <Input
-              type='number'
-              min={0}
-              value={formData.details.min_required!}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  details: { ...prev.details, min_required: +e.target.value },
-                }))
-              }
-            />
-          </div>
-        </div>
+              <div>
+                <label className='block text-sm font-medium mb-1'>
+                  Minimum Required Before Production
+                </label>
+                <Input
+                  type='number'
+                  min={0}
+                  value={formData.details.min_required!}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      details: {
+                        ...prev.details,
+                        min_required: +e.target.value,
+                      },
+                    }))
+                  }
+                />
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Extra Multimedia Upload (details.multimedia_ids) */}
         <div>
@@ -862,6 +875,7 @@ const AddPhysicalProductForm = () => {
               if (!files?.length) return;
 
               const uploadedIds: string[] = [];
+              const uploadedFiles: string[] = [];
               for (const file of Array.from(files)) {
                 try {
                   const formData = new FormData();
@@ -870,6 +884,7 @@ const AddPhysicalProductForm = () => {
                     uploadImage({ form_data: formData, business_id: org?.id })
                   ).unwrap();
                   uploadedIds.push(response.multimedia.id);
+                  uploadedFiles.push(response.multimedia.url);
                 } catch (err) {
                   toast.error(`Failed to upload ${file.name}`);
                 }
@@ -886,6 +901,8 @@ const AddPhysicalProductForm = () => {
                     ],
                   },
                 }));
+
+                setMediaFiles((prev) => [...prev, ...uploadedFiles]);
                 toast.success('Additional media uploaded');
               }
             }}
@@ -893,13 +910,13 @@ const AddPhysicalProductForm = () => {
 
           {/* Preview */}
           {formData.details.multimedia_ids!.length > 0 && (
-            <div className='grid grid-cols-3 sm:grid-cols-4 gap-2 mt-3'>
+            <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mt-3'>
               {formData.details.multimedia_ids!.map((id, i) => (
                 <div key={i} className='relative'>
                   <img
-                    src={`${baseUrl}/api/multimedia/${id}`}
+                    src={`${mediaFiles[i]}`}
                     alt='Product media'
-                    className='w-full h-24 object-cover rounded-md border'
+                    className='w-full h-60 object-cover rounded-md border'
                   />
                   <button
                     type='button'
@@ -916,7 +933,7 @@ const AddPhysicalProductForm = () => {
                       }))
                     }
                   >
-                    ✕
+                    <XCircleIcon className='hover:text-red-400' />
                   </button>
                 </div>
               ))}

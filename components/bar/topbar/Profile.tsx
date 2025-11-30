@@ -112,7 +112,7 @@ const Profile = ({ handleClose }: { handleClose?: () => void }) => {
             <div>
               <div className='pt-3 px-4'>
                 <span className='block text-sm font-semibold text-gray-900 dark:text-white'>
-                  {profile?.role.role_id === SystemRole.USER
+                  {profile?.role?.role_id === SystemRole.USER
                     ? 'Switch Business Directory'
                     : 'Switch Business Account'}
                 </span>
@@ -146,7 +146,7 @@ const Profile = ({ handleClose }: { handleClose?: () => void }) => {
                   ))}
 
                 {[SystemRole.BUSINESS_SUPER_ADMIN].includes(
-                  profile?.role.role_id as SystemRole
+                  profile?.role?.role_id as SystemRole
                 ) && (
                   <li>
                     <Link

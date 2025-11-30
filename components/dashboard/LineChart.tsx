@@ -44,7 +44,8 @@ export function LineChart({ data }: LineChartProps) {
     courses: '#0ea5e9', // cyan-400 / sky-500
     tickets: '#f472b6', // pink-400 / fuchsia-600
     subscriptions: '#65a30d', // lime-400 / lime-700
-    digital: '#d97706', // yellow-400 / amber-600
+    digital: '#8b5cf6', // yellow-400 / amber-600
+    physical: '#d97706', // yellow-400 / amber-600
   };
 
   // Assign colors to datasets by label
@@ -58,6 +59,8 @@ export function LineChart({ data }: LineChartProps) {
         color = colorPalette.subscriptions;
       if (dataset.label.toLowerCase().includes('digital'))
         color = colorPalette.digital;
+      if (dataset.label.toLowerCase().includes('physical'))
+        color = colorPalette.physical;
       return {
         ...dataset,
         borderColor: color,
@@ -98,6 +101,8 @@ export function LineChart({ data }: LineChartProps) {
                 color = colorPalette.subscriptions;
               if (label.toLowerCase().includes('digital'))
                 color = colorPalette.digital;
+              if (label.toLowerCase().includes('physical'))
+                color = colorPalette.physical;
               return {
                 text: label,
                 fillStyle: color,

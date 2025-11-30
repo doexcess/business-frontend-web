@@ -19,6 +19,7 @@ import orderReducer from './slices/orderSlice';
 import firebaseReducer from './slices/firebaseSlice';
 import currencyReducer from './slices/currencySlice';
 import physicalProductReducer from './slices/physicalProductSlice';
+import shippingReducer from './slices/shippingSlice';
 import storage from 'redux-persist/lib/storage'; // Uses localStorage
 import { persistReducer } from 'redux-persist';
 
@@ -51,6 +52,7 @@ const rootReducer = combineReducers({
   firebase: firebaseReducer,
   currency: currencyReducer,
   physicalProduct: physicalProductReducer,
+  shipping: shippingReducer,
 });
 
 const loggerMiddleware = (store: any) => (next: any) => (action: any) => {
