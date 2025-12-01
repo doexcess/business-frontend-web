@@ -10,6 +10,7 @@ import useTickets from '@/hooks/page/useTickets'; // assuming path is correct
 import ProductGridItemSkeleton from '@/components/dashboard/product/ProductGridItemSkeleton';
 import { PAGINATION_LIMIT, ProductType } from '@/lib/utils';
 import Pagination from '@/components/Pagination';
+import { TicketIcon } from 'lucide-react';
 
 const Tickets = () => {
   const {
@@ -86,7 +87,17 @@ const Tickets = () => {
         ) : error ? (
           <p className='text-center text-red-500'>Failed to load tickets</p>
         ) : tickets?.length === 0 ? (
-          <p className='text-center text-gray-500'>No tickets found</p>
+          <div className='col-span-full flex flex-col items-center justify-center py-16 text-center'>
+            <TicketIcon className='w-10 h-10 text-gray-500 dark:text-gray-400 mb-2' />
+            <h3 className='text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2'>
+              {tickets.length === 0 ? 'No Tickets Found' : 'No Tickets Yet'}
+            </h3>
+            <p className='text-gray-500 dark:text-gray-400 max-w-md'>
+              {tickets.length === 0
+                ? 'Start by creating your first physical product. You can add products that customers can purchase and ship to them.'
+                : "Try adjusting your search terms or filters to find what you're looking for."}
+            </p>
+          </div>
         ) : (
           <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
             {tickets.map((ticket) => (

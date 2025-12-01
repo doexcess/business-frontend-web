@@ -16,8 +16,13 @@ import {
   Ticket,
   Package,
   ArrowRight,
+  Package2Icon,
 } from 'lucide-react';
 import { FaArrowRightLong } from 'react-icons/fa6';
+import {
+  fetchDigitalProducts,
+  fetchPhysicalProducts,
+} from '@/redux/slices/productSlice';
 
 const Products = () => {
   const router = useRouter();
@@ -30,8 +35,11 @@ const Products = () => {
   const { count: subscriptionsCount } = useSelector(
     (state: RootState) => state.subscriptionPlan
   );
-  const { count: digitalProductsCount } = useSelector(
-    (state: RootState) => state.digitalProduct
+  const { digital_products_count: digitalProductsCount } = useSelector(
+    (state: RootState) => state.products
+  );
+  const { physical_products_count: physicalProductsCount } = useSelector(
+    (state: RootState) => state.products
   );
 
   useEffect(() => {
@@ -39,6 +47,8 @@ const Products = () => {
       dispatch(fetchCourses({ business_id: org.id }));
       dispatch(fetchTickets({ business_id: org.id }));
       dispatch(fetchSubscriptionPlans({ business_id: org.id }));
+      dispatch(fetchPhysicalProducts({ business_id: org.id }));
+      dispatch(fetchDigitalProducts({ business_id: org.id }));
       // TODO: dispatch for fetching digital products count if not already
       // dispatch(fetchDigitalProducts({ business_id: org.id }));
     }
@@ -77,6 +87,15 @@ const Products = () => {
       icon: Package,
       action: () => router.push('/products/digital-products'),
       count: digitalProductsCount,
+    },
+    {
+      type: PurchaseItemType.PHYSICAL_PRODUCT,
+      title: 'Physical Products',
+      description:
+        'List and sell tangible items such as books, clothing, and other physical goods.',
+      icon: Package2Icon as React.ElementType,
+      action: () => router.push('/products/physical-products'),
+      count: physicalProductsCount,
     },
   ];
 

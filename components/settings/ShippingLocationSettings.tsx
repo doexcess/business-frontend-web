@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Plus, Trash2, Pencil, X, PackageX } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Input from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { City, Country, State } from 'country-state-city';
@@ -55,6 +56,8 @@ const DEFAULT_FORM: DefaultFormTypes = {
 
 const ShippingLocationSettings = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { org } = useSelector((state: RootState) => state.org);
   const { shippingLocation } = useSelector(
     (state: RootState) => state.shipping
@@ -151,6 +154,12 @@ const ShippingLocationSettings = () => {
 
         toast.success(response.message);
         handleRefresh();
+
+        // Check for redirect parameter and navigate if present
+        const redirectUrl = searchParams.get('redirect');
+        if (redirectUrl) {
+          router.push(redirectUrl);
+        }
       } else {
         // Submit logic here
         const response = await dispatch(
@@ -164,6 +173,12 @@ const ShippingLocationSettings = () => {
 
         toast.success(response.message);
         handleRefresh();
+
+        // Check for redirect parameter and navigate if present
+        const redirectUrl = searchParams.get('redirect');
+        if (redirectUrl) {
+          router.push(redirectUrl);
+        }
       }
     } catch (error: any) {
       console.error('Submission failed:', error);
@@ -426,7 +441,7 @@ const ShippingLocationSettings = () => {
                         <Pencil className='w-4 h-4' />
                       </Button>
 
-                      {!Boolean(location.payments.length) && (
+                      {!Boolean(location.payments?.length) && (
                         <Button
                           variant='destructive'
                           size='sm'
@@ -475,7 +490,7 @@ const ShippingLocationSettings = () => {
               required
               type='text'
               id='title'
-              placeholder='Enter Title/Area Name'
+              placeholder='E.g: Lagos Island'
               value={form.title}
               onChange={(e) =>
                 setForm((prev) => ({

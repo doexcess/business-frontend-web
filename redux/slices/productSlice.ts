@@ -13,7 +13,9 @@ interface ProductState {
   products: Product[];
   product: Product | null;
   digital_products: DigitalProduct[];
+  digital_products_count: number;
   physical_products: PhysicalProduct[];
+  physical_products_count: number;
   count: number;
   loading: boolean;
   error: string | null;
@@ -23,7 +25,9 @@ const initialState: ProductState = {
   products: [],
   product: null,
   digital_products: [],
+  digital_products_count: 0,
   physical_products: [],
+  physical_products_count: 0,
   count: 0,
   loading: false,
   error: null,
@@ -256,7 +260,7 @@ const productSlice = createSlice({
         ) => {
           state.loading = false;
           state.digital_products = action.payload.digital_products;
-          state.count = action.payload.count;
+          state.digital_products_count = action.payload.count;
         }
       )
       .addCase(fetchDigitalProducts.rejected, (state, action) => {
@@ -280,7 +284,7 @@ const productSlice = createSlice({
         ) => {
           state.loading = false;
           state.physical_products = action.payload.physical_products;
-          state.count = action.payload.count;
+          state.physical_products_count = action.payload.count;
         }
       )
       .addCase(fetchPhysicalProducts.rejected, (state, action) => {

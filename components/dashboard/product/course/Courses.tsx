@@ -9,8 +9,12 @@ import useCourses from '@/hooks/page/useCourses';
 import { PAGINATION_LIMIT, ProductStatus, ProductType } from '@/lib/utils';
 import ProductGridItemSkeleton from '../ProductGridItemSkeleton';
 import Pagination from '@/components/Pagination';
+import { useSearchParams } from 'next/navigation';
+import { GraduationCapIcon } from 'lucide-react';
 
 const CoursesComp = () => {
+  const searchParams = useSearchParams();
+
   const {
     courses,
     currentPage,
@@ -88,7 +92,7 @@ const CoursesComp = () => {
                 <ProductGridItemSkeleton key={idx} />
               ))}
             </div>
-          ) : (
+          ) : courses.length > 0 ? (
             courses.map((item, index) => (
               <ProductGridItem
                 key={index}
@@ -99,6 +103,18 @@ const CoursesComp = () => {
                 data={item}
               />
             ))
+          ) : (
+            <div className='col-span-full flex flex-col items-center justify-center py-16 text-center'>
+              <GraduationCapIcon className='w-10 h-10 text-gray-500 dark:text-gray-400 mb-2' />
+              <h3 className='text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2'>
+                {searchParams.has('q') ? 'No Courses Found' : 'No Courses Yet'}
+              </h3>
+              <p className='text-gray-500 dark:text-gray-400 max-w-md'>
+                {searchParams.has('q')
+                  ? "Try adjusting your search terms or filters to find what you're looking for."
+                  : 'Start by creating your first course. You can add educational content, lessons, modules, and resources that students can purchase and access.'}
+              </p>
+            </div>
           )}
         </div>
 
