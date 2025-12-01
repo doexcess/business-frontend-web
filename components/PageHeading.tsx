@@ -87,7 +87,9 @@ const PageHeading = ({
                     </svg>
                     {layer4 ? (
                       <>
-                        <span className='hidden lg:block'>{layer1}</span>
+                        <span className='hidden lg:block' title={layer1}>
+                          {layer1}
+                        </span>
                         <span className='lg:hidden'>...</span>
                       </>
                     ) : (
@@ -118,7 +120,16 @@ const PageHeading = ({
                       href={layer2Link ?? '#'}
                       className='ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white'
                     >
-                      {layer2}
+                      {layer4 ? (
+                        <>
+                          <span className='hidden lg:block' title={layer2}>
+                            {layer2}
+                          </span>
+                          <span className='lg:hidden'>...</span>
+                        </>
+                      ) : (
+                        layer2
+                      )}
                     </Link>
                   </div>
                 </li>
@@ -146,7 +157,16 @@ const PageHeading = ({
                       href={layer3Link ?? '#'}
                       className='ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white'
                     >
-                      {layer3}
+                      {layer4 ? (
+                        <>
+                          <span className='hidden lg:block' title={layer3}>
+                            {layer3}
+                          </span>
+                          <span className='lg:hidden'>...</span>
+                        </>
+                      ) : (
+                        layer3
+                      )}
                     </Link>
                     {/* </span> */}
                   </div>

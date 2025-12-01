@@ -22,22 +22,22 @@ import {
   PhysicalProductGender,
   PhysicalProductType,
   UpdateDigitalProductProps,
-  updateDigitalProductSchema,
   UpdatePhysicalProductProps,
   updatePhysicalProductSchema,
 } from '@/lib/schema/product.schema';
 import { baseUrl, cn, OnboardingProcess, ProductStatus } from '@/lib/utils';
-import {
-  setOnboardingStep,
-  updateOnboardingProcess,
-} from '@/redux/slices/orgSlice';
-import { updateDigitialProduct } from '@/redux/slices/digitalProductSlice';
+import { updateOnboardingProcess } from '@/redux/slices/orgSlice';
 import { AppDispatch, RootState } from '@/redux/store';
 import LoadingIcon from '@/components/ui/icons/LoadingIcon';
 import TinyMceEditor from '@/components/editor/TinyMceEditor';
-import { Globe } from 'lucide-react';
+import { Globe, XCircleIcon } from 'lucide-react';
 import useCurrencies from '@/hooks/page/useCurrencies';
-import { updatePhysicalProduct } from '@/redux/slices/physicalProductSlice';
+import {
+  updatePhysicalProduct,
+  updatePhysicalProductMedia,
+} from '@/redux/slices/physicalProductSlice';
+import { capitalize } from 'lodash';
+import { uploadImage } from '@/redux/slices/multimediaSlice';
 
 const defaultValue: UpdatePhysicalProductProps = {
   title: '',
@@ -76,6 +76,7 @@ const EditPhysicalProductForm = () => {
 
   const [formData, setFormData] =
     useState<UpdateDigitalProductProps>(defaultValue);
+  const [mediaFiles, setMediaFiles] = useState<string[]>([]);
   const [showCrossedOutPrice, setShowCrossedOutPrice] = useState(false);
 
   const [errors, setErrors] = useState<Partial<UpdateDigitalProductProps>>({});
@@ -171,13 +172,22 @@ const EditPhysicalProductForm = () => {
       const { error } = updatePhysicalProductSchema.validate(input);
       if (error) throw new Error(error.details[0].message);
 
-      const response = await dispatch(
-        updatePhysicalProduct({
-          id: physical_product?.id!,
-          credentials: input,
-          business_id: org?.id!,
-        })
-      ).unwrap();
+      const [response, response2] = await Promise.all([
+        dispatch(
+          updatePhysicalProduct({
+            id: physical_product?.id!,
+            credentials: input,
+            business_id: org?.id!,
+          })
+        ).unwrap(),
+        dispatch(
+          updatePhysicalProductMedia({
+            product_id: physical_product?.id!,
+            credentials: { multimedia_ids: input.details?.multimedia_ids! },
+            business_id: org?.id!,
+          })
+        ).unwrap(),
+      ]);
 
       // Update onboarding process
       if (
@@ -235,6 +245,14 @@ const EditPhysicalProductForm = () => {
       setPreviewImage(physical_product.multimedia?.url);
     }
   }, [physical_product, previewImage]);
+
+  useEffect(() => {
+    if (physical_product?.physical_product?.media) {
+      setMediaFiles([
+        ...physical_product.physical_product.media.map((m) => m.multimedia.url),
+      ]);
+    }
+  }, [physical_product]);
 
   return (
     <form
@@ -597,7 +615,7 @@ const EditPhysicalProductForm = () => {
             <SelectContent>
               {Object.values(PhysicalProductType).map((type) => (
                 <SelectItem key={type} value={type}>
-                  {type}
+                  {capitalize(type)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -627,7 +645,7 @@ const EditPhysicalProductForm = () => {
             <SelectContent>
               {Object.values(PhysicalProductGender).map((g) => (
                 <SelectItem key={g} value={g}>
-                  {g}
+                  {capitalize(g)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -635,54 +653,56 @@ const EditPhysicalProductForm = () => {
         </div>
       </div>
 
-      <div className='grid md:grid-cols-2 gap-4'>
-        {/* Estimated Production Time */}
-        <div>
-          <label className='block text-sm font-medium mb-1'>
-            Estimated Production Time (days)
-          </label>
-          <Input
-            type='number'
-            placeholder='e.g. 5'
-            value={formData.details?.estimated_production_time ?? ''}
-            onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                details: {
-                  ...prev.details!,
-                  estimated_production_time: +e.target.value || null,
-                },
-              }))
-            }
-            min={0}
-          />
-        </div>
+      {formData?.details?.type === PhysicalProductType.BESPOKE && (
+        <div className='grid md:grid-cols-2 gap-4'>
+          {/* Estimated Production Time */}
+          <div>
+            <label className='block text-sm font-medium mb-1'>
+              Estimated Production Time (days)
+            </label>
+            <Input
+              type='number'
+              placeholder='e.g. 5'
+              value={formData.details?.estimated_production_time ?? ''}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  details: {
+                    ...prev.details!,
+                    estimated_production_time: +e.target.value || null,
+                  },
+                }))
+              }
+              min={0}
+            />
+          </div>
 
-        {/* Minimum Required */}
-        <div>
-          <label className='block text-sm font-medium mb-1'>
-            Minimum Required Quantity
-          </label>
-          <Input
-            type='number'
-            placeholder='e.g. 10'
-            value={formData.details?.min_required ?? ''}
-            onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                details: {
-                  ...prev.details!,
-                  min_required: +e.target.value || null,
-                },
-              }))
-            }
-            min={1}
-          />
+          {/* Minimum Required */}
+          <div>
+            <label className='block text-sm font-medium mb-1'>
+              Minimum Required Quantity
+            </label>
+            <Input
+              type='number'
+              placeholder='e.g. 10'
+              value={formData.details?.min_required ?? ''}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  details: {
+                    ...prev.details!,
+                    min_required: +e.target.value || null,
+                  },
+                }))
+              }
+              min={1}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Upload additional multimedia */}
-      <div className='mt-4'>
+      {/* <div className='mt-4'>
         <label className='block text-sm font-medium mb-1'>
           Additional Product Images
         </label>
@@ -716,6 +736,85 @@ const EditPhysicalProductForm = () => {
             description: 'Supported: png, jpeg. Max 5MB each',
           }}
         />
+      </div> */}
+      {/* Extra Multimedia Upload (details.multimedia_ids) */}
+      <div>
+        <label className='block text-sm font-medium mb-2'>
+          Additional Product Media (Optional)
+        </label>
+        <input
+          type='file'
+          multiple
+          accept='image/png, image/jpeg'
+          onChange={async (e) => {
+            const files = e.target.files;
+            if (!files?.length) return;
+
+            const uploadedIds: string[] = [];
+            const uploadedFiles: string[] = [];
+            for (const file of Array.from(files)) {
+              try {
+                const formData = new FormData();
+                formData.append('image', file);
+                const response = await dispatch(
+                  uploadImage({ form_data: formData, business_id: org?.id })
+                ).unwrap();
+                uploadedIds.push(response.multimedia.id);
+                uploadedFiles.push(response.multimedia.url);
+              } catch (err) {
+                toast.error(`Failed to upload ${file.name}`);
+              }
+            }
+
+            if (uploadedIds.length) {
+              setFormData((prev) => ({
+                ...prev,
+                details: {
+                  ...prev.details!,
+                  multimedia_ids: [
+                    ...prev?.details?.multimedia_ids!,
+                    ...uploadedIds,
+                  ],
+                },
+              }));
+
+              setMediaFiles((prev) => [...prev, ...uploadedFiles]);
+              toast.success('Additional media uploaded');
+            }
+          }}
+        />
+
+        {/* Preview */}
+        {(formData?.details?.multimedia_ids as string[]).length > 0 && (
+          <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mt-3'>
+            {formData?.details?.multimedia_ids!.map((id, i) => (
+              <div key={i} className='relative'>
+                <img
+                  src={`${mediaFiles[i]}`}
+                  alt='Product media'
+                  className='w-full h-60 object-cover rounded-md border'
+                />
+                <button
+                  type='button'
+                  className='absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 text-xs'
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      details: {
+                        ...prev.details!,
+                        multimedia_ids: prev.details?.multimedia_ids!.filter(
+                          (m) => m !== id
+                        ),
+                      },
+                    }))
+                  }
+                >
+                  <XCircleIcon className='hover:text-red-400' />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <Button type='submit' disabled={isSubmitting}>

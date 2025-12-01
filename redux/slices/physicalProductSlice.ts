@@ -15,6 +15,7 @@ import {
   CreatePhysicalProductProps,
   CreateTicketProps,
   UpdateDigitalProductProps,
+  UpdatePhysicalProductMediaProps,
   UpdatePhysicalProductProps,
 } from '@/lib/schema/product.schema';
 import { GenericResponseAlt } from '@/types';
@@ -132,6 +133,44 @@ export const updatePhysicalProduct = createAsyncThunk(
   }
 );
 
+// Async thunk to update physical product media
+export const updatePhysicalProductMedia = createAsyncThunk(
+  'product-physical-crud/:product_id/media',
+  async (
+    {
+      product_id,
+      credentials,
+      business_id,
+    }: {
+      product_id: string;
+      credentials: UpdatePhysicalProductMediaProps;
+      business_id: string;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const { data } = await api.post<UpdatePhysicalProductResponse>(
+        `/product-physical-crud/${product_id}/media`,
+        credentials,
+        {
+          headers: {
+            'Business-Id': business_id,
+          },
+        }
+      );
+
+      return {
+        message: data.message,
+        physical_product: data.data,
+      };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data || 'Failed to update physical product media'
+      );
+    }
+  }
+);
+
 // Async thunk to delete physical product
 export const deletePhysicalProduct = createAsyncThunk(
   'product-physical-crud/:id/delete',
@@ -208,6 +247,17 @@ const physicalProductSlice = createSlice({
         state.loading = false;
         state.error =
           action.error.message || 'Failed to update physical product';
+      })
+      .addCase(updatePhysicalProductMedia.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updatePhysicalProductMedia.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(updatePhysicalProductMedia.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.error.message || 'Failed to update physical product media';
       })
       .addCase(deletePhysicalProduct.pending, (state) => {
         state.loading = true;

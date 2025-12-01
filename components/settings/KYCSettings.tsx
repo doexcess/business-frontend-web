@@ -238,22 +238,6 @@ const KYCSettings = () => {
             </div>
 
             <div>
-              <Label htmlFor='location'>Address</Label>
-              <Input
-                required
-                type='text'
-                id='location'
-                value={formData.location}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    location: e.target.value,
-                  }))
-                }
-              />
-            </div>
-
-            <div>
               <Label>Select Country</Label>
               <Select
                 name='country'
@@ -315,6 +299,22 @@ const KYCSettings = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div>
+              <Label htmlFor='location'>Address</Label>
+              <Input
+                required
+                type='text'
+                id='location'
+                value={formData.location}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    location: e.target.value,
+                  }))
+                }
+              />
             </div>
           </CardContent>
         </Card>
