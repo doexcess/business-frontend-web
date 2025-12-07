@@ -73,7 +73,7 @@ const config: Config = {
           '900': '#1e3a8a',
           '950': '#172554',
           main: '#4045e1',
-          faded: '#9a9df0',
+          faded: '#B0CAEF',
           grad: {
             main: 'linear-gradient(57deg, #EDEEFC 50%, #E7FDF2 91.95%, #F7F8F8 91.95%))',
           },

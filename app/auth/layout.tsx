@@ -19,7 +19,7 @@ const AuthLayoutContent = ({
 
   useEffect(() => {
     if (token) {
-      const redirUrl = searchParams.get('redir_url');
+      const redirUrl = searchParams.get('redirect_url');
 
       if (redirUrl) {
         // Decode the URL if it's encoded

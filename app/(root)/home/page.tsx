@@ -84,21 +84,22 @@ const Home = () => {
 
   // If no orgs exist at all, show a message to create one
   if (!org && orgs.length === 0) {
-    return (
-      <div className='section-container flex items-center justify-center min-h-screen'>
-        <div className='text-center'>
-          <h2 className='text-2xl font-semibold mb-4 dark:text-gray-400'>
-            No Business Account found
-          </h2>
-          <p className='text-gray-600 dark:text-gray-300 mb-6'>
-            You need to create a business account before proceeding.
-          </p>
-          <Button variant='primary' onClick={navigateToBusinessPage}>
-            Create a business account
-          </Button>
-        </div>
-      </div>
-    );
+    return router.push('/settings?tab=business-account');
+    // return (
+    //   <div className='section-container flex items-center justify-center min-h-screen'>
+    //     <div className='text-center'>
+    //       <h2 className='text-2xl font-semibold mb-4 dark:text-gray-400'>
+    //         No Business Account found
+    //       </h2>
+    //       <p className='text-gray-600 dark:text-gray-300 mb-6'>
+    //         You need to create a business account before proceeding.
+    //       </p>
+    //       <Button variant='primary' onClick={navigateToBusinessPage}>
+    //         Create a business account
+    //       </Button>
+    //     </div>
+    //   </div>
+    // );
   }
 
   type ChartDataType = {

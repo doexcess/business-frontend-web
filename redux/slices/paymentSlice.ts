@@ -4,19 +4,24 @@ import {
   CancelPaymentResponse,
   EarningsDetails,
   Payment,
+  PaymentData,
   PaymentDetailsResponse,
   PaymentInitResponse,
   PaymentsResponse,
+  QRValidationResponse,
   VerifyPaymentResponse,
 } from '@/types/payment';
 import {
   CancelPaymentPayload,
   CreatePaymentPayload,
 } from '@/lib/schema/payment.schema';
+import { GenericResponse } from '@/types';
 
 interface PaymentState {
   payments: Payment[];
   payment: Payment | null;
+  payment_qr_details: PaymentData | null;
+  payment_qr_message: string;
   total_credit: number;
   total_debit: number;
   total_trx: number;
@@ -32,6 +37,8 @@ interface PaymentState {
 const initialState: PaymentState = {
   payments: [],
   payment: null,
+  payment_qr_details: null,
+  payment_qr_message: '',
   total_credit: 0,
   total_debit: 0,
   total_trx: 0,
@@ -202,6 +209,65 @@ export const fetchClientPayments = createAsyncThunk(
   }
 );
 
+// Async thunk to validate the QR code for a (ticket) payment
+export const validatePaymentQr = createAsyncThunk(
+  'payment/verify-qr-code/:id',
+  async (
+    { id, business_id }: { id: string; business_id: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const headers: Record<string, string> = {};
+      if (business_id) headers['Business-Id'] = business_id;
+
+      const { data } = await api.post<QRValidationResponse>(
+        `/payment/verify-qr-code/${id}`,
+        {},
+        { headers }
+      );
+      return {
+        message: data.message,
+        data: data.data,
+      };
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data?.message || 'Failed to validate payment Qr code'
+      );
+    }
+  }
+);
+
+// Async thunk to send purchase QR code for a (ticket) payment
+export const sendPurchaseQr = createAsyncThunk(
+  'payment/send-purchase-qr',
+  async (
+    {
+      id,
+      business_id,
+      tier_id,
+    }: { id: string; business_id: string; tier_id: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const headers: Record<string, string> = {};
+      if (business_id) headers['Business-Id'] = business_id;
+
+      const { data } = await api.post<GenericResponse>(
+        `/payment/send-purchase-qr`,
+        { payment_id: id, tier_id },
+        { headers }
+      );
+      return {
+        message: data.message,
+      };
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data?.message || 'Failed to send purchase qr code'
+      );
+    }
+  }
+);
+
 const paymentSlice = createSlice({
   name: 'payment',
   initialState,
@@ -285,6 +351,31 @@ const paymentSlice = createSlice({
         state.loading = false;
       })
       .addCase(cancelPayment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(validatePaymentQr.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(validatePaymentQr.fulfilled, (state, action) => {
+        state.loading = false;
+        state.payment_qr_details = action.payload.data;
+        state.payment_qr_message = action.payload.message;
+      })
+      .addCase(validatePaymentQr.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.payment_qr_message = action.payload as string;
+      })
+      .addCase(sendPurchaseQr.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(sendPurchaseQr.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(sendPurchaseQr.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

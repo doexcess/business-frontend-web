@@ -3,7 +3,7 @@ import Input from '../ui/Input';
 import Link from 'next/link';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/redux/store';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { LoginFormSchema, LoginProps } from '@/lib/schema/auth.schema';
 import { login } from '@/redux/slices/authSlice';
 import { encryptInput, SystemRole } from '@/lib/utils';
@@ -19,6 +19,8 @@ const defaultValue = {
 
 const SigninForm = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const params = useSearchParams();
+
   const router = useRouter();
 
   const [body, setBody] = useState({
@@ -56,7 +58,11 @@ const SigninForm = () => {
       // Encrypt input
       const encrypted = encryptInput(JSON.stringify(body));
 
-      router.push(`/auth/verify-signin?token=${encrypted}`);
+      const redirect_url = params.get('redirect_url')
+        ? `&redirect_url=${params.get('redirect_url')}`
+        : '';
+
+      router.push(`/auth/verify-signin?token=${encrypted}${redirect_url}`);
     } catch (error: any) {
       console.error('Login failed:', error);
       toast.error(error.message);
