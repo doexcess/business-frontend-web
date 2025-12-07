@@ -30,6 +30,7 @@ import Link from 'next/link';
 import OnboardingAlert from '../OnboardingAlert';
 import { Textarea } from '../ui/textarea';
 import { Globe, X } from 'lucide-react';
+import slugify from 'slugify';
 
 enum BusinessAction {
   MODIFY = 'modify',
@@ -965,7 +966,11 @@ const BusinessAccountSettings = () => {
     >
   ) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === 'business_name') {
+      setFormData((prev) => ({ ...prev, business_slug: slugify(value) }));
+    }
   };
 
   const handleSocialMediaChange = (
@@ -1099,7 +1104,12 @@ const BusinessAccountSettings = () => {
         const orgs = await dispatch(fetchOrgs({})).unwrap();
 
         // Automatically select the newly added business
-        dispatch(switchToOrg({business_id: orgs.organizations[0].id, process: OnboardingProcess.BUSINESS_DETAILS}))
+        dispatch(
+          switchToOrg({
+            business_id: orgs.organizations[0].id,
+            process: OnboardingProcess.BUSINESS_DETAILS,
+          })
+        );
 
         // Update onboarding process for new business
 
@@ -1292,14 +1302,14 @@ const BusinessAccountSettings = () => {
             </div>
             <div>
               <label className='block text-sm font-medium mb-1'>
-                Business Shortlink
+                Business Store Page
               </label>
               <div className='relative'>
                 <Globe className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4' />
                 <Input
                   type='text'
                   name='business_slug'
-                  placeholder='Enter business shortlink'
+                  placeholder='Enter business store page'
                   value={formData.business_slug}
                   onChange={handleInputChange}
                   required
@@ -1474,37 +1484,48 @@ const BusinessAccountSettings = () => {
               </label>
               <div className='space-y-3'>
                 {formData.social_media_handles.map((handle, index) => (
-                  <div key={index} className='flex gap-2 items-center'>
-                    <Select
-                      name={`social_media_handle_${index}`}
-                      className='w-1/2'
-                      data={SOCIAL_MEDIA_PLATFORMS}
-                      value={handle.handle}
-                      onChange={(e: any) =>
-                        handleSocialMediaChange(index, 'handle', e.target.value)
-                      }
-                      defaultValue='Select Platform'
-                      placeholder='Select Platform'
-                    />
-                    <Input
-                      type='text'
-                      name={`social_media_link_${index}`}
-                      placeholder='Enter link'
-                      value={handle.link}
-                      onChange={(e) =>
-                        handleSocialMediaChange(index, 'link', e.target.value)
-                      }
-                      required
-                    />
-                    <Button
-                      variant='destructive'
-                      size='sm'
-                      onClick={() => handleRemoveSocialMedia(index)}
-                      className='flex-shrink-0'
-                    >
-                      <FiTrash2 className='w-4 h-4' />
-                    </Button>
-                  </div>
+                  <>
+                    <div key={index} className='flex gap-2 items-center'>
+                      <Select
+                        name={`social_media_handle_${index}`}
+                        className='w-1/2'
+                        data={SOCIAL_MEDIA_PLATFORMS}
+                        value={handle.handle}
+                        onChange={(e: any) =>
+                          handleSocialMediaChange(
+                            index,
+                            'handle',
+                            e.target.value
+                          )
+                        }
+                        defaultValue='Select Platform'
+                        placeholder='Select Platform'
+                      />
+                      <Input
+                        type='text'
+                        name={`social_media_link_${index}`}
+                        placeholder={`Link text`}
+                        value={handle.link}
+                        onChange={(e) =>
+                          handleSocialMediaChange(index, 'link', e.target.value)
+                        }
+                        required
+                      />
+
+                      <Button
+                        variant='destructive'
+                        size='sm'
+                        onClick={() => handleRemoveSocialMedia(index)}
+                        className='flex-shrink-0'
+                      >
+                        <FiTrash2 className='w-4 h-4' />
+                      </Button>
+                    </div>
+                    <small>
+                      Please include only the ending part of your social media
+                      handle.
+                    </small>
+                  </>
                 ))}
                 <Button
                   type='button'

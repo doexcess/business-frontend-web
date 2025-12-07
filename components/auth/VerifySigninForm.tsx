@@ -23,6 +23,7 @@ interface VerifySigninFormProps {
 
 const VerifySigninForm = ({ email }: VerifySigninFormProps) => {
   const dispatch = useDispatch<AppDispatch>();
+  const searchParam = useSearchParams();
   const router = useRouter();
 
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
@@ -58,11 +59,15 @@ const VerifySigninForm = ({ email }: VerifySigninFormProps) => {
 
       toast.success(response.payload.message);
 
+      const redirect_url = searchParam.get('redirect_url')
+        ? searchParam.get('redirect_url')!
+        : '/home';
+
       const route = [
         SystemRole.BUSINESS_SUPER_ADMIN,
         SystemRole.BUSINESS_ADMIN,
       ].includes(response.payload.data.role)
-        ? '/home'
+        ? redirect_url
         : '/dashboard/home';
 
       router.push(route);

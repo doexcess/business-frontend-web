@@ -8,6 +8,7 @@ import {
   getAvatar,
   maskSensitiveData,
   PaymentStatus,
+  PurchaseItemType,
   shortenId,
 } from '@/lib/utils';
 import React, { useState } from 'react';
@@ -19,15 +20,45 @@ import usePayment from '@/hooks/page/usePayment';
 import XIcon from '@/components/ui/icons/XIcon';
 import ThemeDivBorder from '@/components/ui/ThemeDivBorder';
 import ShimmerCard from '@/components/ShimmerCard';
+import toast from 'react-hot-toast';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/redux/store';
+import { sendPurchaseQr } from '@/redux/slices/paymentSlice';
 
 const ViewPayment = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { org } = useSelector((state: RootState) => state.org);
+
   const { payment, loading } = usePayment();
   const [chatOpen, setChatOpen] = useState(false);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const maskedEmail = (email: string) => {
     const [username, domain] = email.split('@')!;
     const maskedEmail = `${maskSensitiveData(username)}@${domain}`;
     return maskedEmail;
+  };
+
+  const handleSendPurchaseQr = async (tier_id: string) => {
+    try {
+      setIsSubmitting(true);
+
+      const response = await dispatch(
+        sendPurchaseQr({
+          id: payment?.id!,
+          tier_id,
+          business_id: org?.id!,
+        })
+      ).unwrap();
+
+      toast.success(response.message);
+    } catch (error: any) {
+      console.error('Submission failed:', error);
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -175,6 +206,14 @@ const ViewPayment = () => {
                       <strong>Price:</strong>{' '}
                       {formatMoney(item.price, payment.currency)}
                     </p>
+                    {item.purchase_type === PurchaseItemType.TICKET && (
+                      <Button
+                        variant='primary'
+                        onClick={() => handleSendPurchaseQr(item.id)}
+                      >
+                        Send QR Email
+                      </Button>
+                    )}
                   </div>
                 ))}
               </>

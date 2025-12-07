@@ -2,6 +2,7 @@ import {
   PaymentMethod,
   PaymentStatus,
   ProductType,
+  PurchaseItemType,
   RefundStatus,
   RefundType,
   TransactionType,
@@ -278,4 +279,75 @@ export interface PaystackPaymentResponse {
   trans: string;
   transaction: string;
   trxref: string;
+}
+
+export interface QRValidationResponse {
+  statusCode: number;
+  message: string;
+  data: PaymentData;
+}
+
+export interface PaymentData {
+  id: string;
+  user_id: string | null;
+  business_id: string | null;
+  withdraw_request_id: string | null;
+  purchase_type: PurchaseType | null;
+  purchase_id: string | null;
+  gross_amount: string | null;
+  amount: string;
+  final_amount: string | null;
+  fee_amount: string | null;
+  fee_percent: string | null;
+  discount_applied: string;
+  payment_status: PaymentStatus;
+  transaction_id: string | null;
+  access_code: string | null;
+  payment_method: PaymentMethod | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  billing_at_payment: any | null;
+  billing_id: string | null;
+  shipping_id: string | null;
+  shipping_at_payment: any | null;
+  interval: string | null;
+  currency: string;
+  auto_renew: boolean;
+  is_renewal: boolean;
+  is_upgrade: boolean;
+  additional_note: string | null;
+  metadata: any | null;
+  purchase: PurchaseDetails | null;
+  physical_product_confirmation_code: string | null;
+  transaction_type: string | null;
+  qr_expiry: string | null;
+  qr_confirmed: boolean | null;
+  user: UserInfo | null;
+}
+
+export interface UserInfo {
+  name: string;
+  email: string;
+  profile: any | null;
+}
+
+export interface PurchaseDetails {
+  items: PurchaseItem[];
+  currency: string;
+  coupon_id: string | null;
+  business_id: string;
+  coupon_type: string | null;
+  coupon_value: string | null;
+}
+
+export interface PurchaseItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  tier_name: string | null;
+  created_at: string;
+  product_id: string;
+  purchase_type: PurchaseItemType;
 }
