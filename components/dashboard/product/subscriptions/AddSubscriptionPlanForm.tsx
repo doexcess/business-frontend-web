@@ -385,7 +385,7 @@ const CreateSubscriptionPlanForm = ({
 
         <div>
           <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
-            Description
+            Description <span className='text-red-500'>*</span>
           </label>
           <Textarea
             name='description'
@@ -398,7 +398,7 @@ const CreateSubscriptionPlanForm = ({
 
         <div>
           <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
-            Cover Image
+            Cover Image <span className='text-red-500'>*</span>
           </label>
           <input
             type='file'

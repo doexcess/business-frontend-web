@@ -787,32 +787,49 @@ const EditPhysicalProductForm = () => {
         {/* Preview */}
         {(formData?.details?.multimedia_ids as string[]).length > 0 && (
           <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mt-3'>
-            {formData?.details?.multimedia_ids!.map((id, i) => (
-              <div key={i} className='relative'>
-                <img
+            {formData?.details?.multimedia_ids!.map((id, i) => {
+              const isVideo = mediaFiles[i].match(/\.(mp4|mov|webm)$/i);
+
+              return (
+                <div key={i} className='relative'>
+                  {isVideo ? (
+                    <video
+                      src={mediaFiles[i]}
+                      controls
+                      className='w-full h-60 rounded-md border object-cover bg-black'
+                    />
+                  ) : (
+                    <img
+                      src={mediaFiles[i]}
+                      alt='media'
+                      className='w-full h-60 rounded-md border object-cover'
+                    />
+                  )}
+                  {/* <img
                   src={`${mediaFiles[i]}`}
                   alt='Product media'
                   className='w-full h-60 object-cover rounded-md border'
-                />
-                <button
-                  type='button'
-                  className='absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 text-xs'
-                  onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      details: {
-                        ...prev.details!,
-                        multimedia_ids: prev.details?.multimedia_ids!.filter(
-                          (m) => m !== id
-                        ),
-                      },
-                    }))
-                  }
-                >
-                  <XCircleIcon className='hover:text-red-400' />
-                </button>
-              </div>
-            ))}
+                /> */}
+                  <button
+                    type='button'
+                    className='absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 text-xs'
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        details: {
+                          ...prev.details!,
+                          multimedia_ids: prev.details?.multimedia_ids!.filter(
+                            (m) => m !== id
+                          ),
+                        },
+                      }))
+                    }
+                  >
+                    <XCircleIcon className='hover:text-red-400' />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

@@ -834,3 +834,9 @@ export const countries = [
   { code: 'SG', name: 'Singapore', dialCode: '+65', flag: '🇸🇬' },
   { code: 'SX', name: 'Sint Maarten', dialCode: '+1721', flag: '🇸🇽' },
 ];
+
+export enum SaveState {
+  IDLE = 'idle',
+  SAVING = 'saving',
+  SAVED = 'saved',
+}

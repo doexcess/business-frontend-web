@@ -141,3 +141,21 @@ export interface PlanPriceProps {
   ) => void;
   onRemovePlanPriceTier: (index: number) => void;
 }
+
+export interface SubscriptionPlanPriceFieldsProps {
+  index: number;
+  plan_price_tier: SubscriptionPlanPriceProps;
+  periods: string[];
+  onPlanPriceTierChange: (
+    index: number,
+    field: keyof SubscriptionPlanPriceProps,
+    value: any
+  ) => void;
+  onOtherCurrencyChange: (
+    tierIndex: number,
+    currencyIndex: number,
+    field: keyof OtherCurrencyProps,
+    value: any
+  ) => void;
+  onRemovePlanPriceTier: (index: number) => void;
+}

@@ -23,7 +23,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/redux/store';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
-import { uploadImage, uploadRawDocument } from '@/redux/slices/multimediaSlice';
+import {
+  uploadImage,
+  uploadRawDocument,
+  uploadVideo,
+} from '@/redux/slices/multimediaSlice';
 import useProductCategory from '@/hooks/page/useProductCategory';
 import {
   Select,
@@ -41,6 +45,8 @@ import { Globe, XCircleIcon, XIcon } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import useCurrencies from '@/hooks/page/useCurrencies';
 import { createPhysicalProduct } from '@/redux/slices/physicalProductSlice';
+import { useFormLocalSave } from '@/hooks/useFormLocalSave';
+import AutosaveIndicator from '@/components/AutosaveIndicator';
 
 const defaultValue: CreatePhysicalProductProps = {
   title: '',
@@ -66,16 +72,23 @@ const defaultValue: CreatePhysicalProductProps = {
   },
 };
 
+const STORAGE_KEY = 'physical_product_draft';
+
 const AddPhysicalProductForm = () => {
-  const [formData, setFormData] =
-    useState<CreatePhysicalProductProps>(defaultValue);
+  // const [formData, setFormData] =
+  //   useState<CreatePhysicalProductProps>(defaultValue);
+  const { formData, setFormData, resetForm, saveStatus } =
+    useFormLocalSave<CreatePhysicalProductProps>(
+      'draft_physical_product',
+      defaultValue
+    );
   const [showCrossedOutPrice, setShowCrossedOutPrice] = useState(false);
 
   const [errors, setErrors] = useState<Partial<CreatePhysicalProductProps>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [zipFilePreview, setZipFilePreview] = useState<string | null>(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadingZipFile, setUploadingZipFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const zipFileInputRef = useRef<HTMLInputElement>(null);
@@ -188,21 +201,47 @@ const AddPhysicalProductForm = () => {
     }
   };
 
-  const handleImageUpload = async (file: File): Promise<void> => {
+  const handleFileUpload = async (file: File): Promise<void> => {
     if (!file) return;
 
-    const allowedTypes = ['image/jpeg', 'image/png'];
+    const allowedTypes = [
+      // Images
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/heic', // iPhone photos (newer)
+      'image/heif', // iPhone photos (high efficiency)
+
+      // Videos
+      'video/mp4',
+      'video/quicktime', // iPhone .mov files
+      'video/webm',
+    ];
+
     if (!allowedTypes.includes(file.type)) {
-      toast.error('Only PNG and JPEG images are allowed');
+      toast.error(
+        'Only images (JPEG, PNG, WEBP, HEIC/HEIF) and videos (MP4, MOV, WEBM) are allowed'
+      );
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size should be less than 5MB');
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+    const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+
+    if (isImage && file.size > MAX_IMAGE_SIZE) {
+      toast.error('Image must be less than 5MB');
       return;
     }
 
-    setUploadingImage(true);
+    if (isVideo && file.size > MAX_VIDEO_SIZE) {
+      toast.error('Video must be less than 50MB');
+      return;
+    }
+
+    setUploadingFile(true);
 
     try {
       const formData = new FormData();
@@ -223,23 +262,29 @@ const AddPhysicalProductForm = () => {
         multimedia_id: response.multimedia.id,
       }));
 
-      toast.success('Image uploaded successfully');
+      toast.success('File uploaded successfully');
     } catch (error) {
-      toast.error('Failed to upload image');
+      toast.error('Failed to upload file');
     } finally {
-      setUploadingImage(false);
+      setUploadingFile(false);
     }
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    handleImageUpload(file);
+    handleFileUpload(file);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleImageUpload(file);
+    const file = e.target.files?.[0]!;
+
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+
+    if (isImage || isVideo) {
+      handleFileUpload(file);
+    }
   };
 
   const removeImage = () => {
@@ -253,7 +298,7 @@ const AddPhysicalProductForm = () => {
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      handleImageUpload(file);
+      handleFileUpload(file);
     }
   };
 
@@ -334,6 +379,7 @@ const AddPhysicalProductForm = () => {
       }
 
       toast.success('Physical product created successfully!');
+      resetForm(); // ✨ Clears memory + resets form
       router.push(`/products/physical-products`);
     } catch (error: any) {
       console.error('Submission failed:', error);
@@ -355,6 +401,38 @@ const AddPhysicalProductForm = () => {
     }));
   }, []);
 
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+
+      setFormData((prev) => ({
+        ...prev,
+        ...parsed,
+        details: { ...prev.details, ...(parsed.details || {}) },
+        other_currencies: parsed.other_currencies ?? prev.other_currencies,
+      }));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+  }, [formData]);
+
+  const allowedTypes = [
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/heic',
+    'image/heif',
+    'video/mp4',
+    'video/quicktime', // .mov iPhone videos
+    'video/webm',
+  ];
+
+  const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+  const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+
   const isFormValid =
     formData.title &&
     formData.slug &&
@@ -368,8 +446,9 @@ const AddPhysicalProductForm = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className='bg-white dark:bg-gray-800 dark:text-white rounded-md shadow p-6 space-y-6'
+      className='relative bg-white dark:bg-gray-800 dark:text-white rounded-md shadow p-6 space-y-6'
     >
+      <AutosaveIndicator status={saveStatus} />
       {/* Title */}
       <div>
         <label className='block text-sm font-medium mb-1'>
@@ -637,7 +716,7 @@ const AddPhysicalProductForm = () => {
           )}
 
           {/* Uploading Overlay */}
-          {uploadingImage && (
+          {uploadingFile && (
             <div className='absolute inset-0 bg-[#000]/80 backdrop-blur-sm flex flex-col justify-center items-center z-10 px-4'>
               <p className='font-semibold text-white text-sm mb-3'>
                 Uploading...
@@ -869,22 +948,58 @@ const AddPhysicalProductForm = () => {
           <input
             type='file'
             multiple
-            accept='image/png, image/jpeg'
+            accept={allowedTypes.join(',')}
             onChange={async (e) => {
-              const files = e.target.files;
+              const files = e.target.files!;
               if (!files?.length) return;
 
               const uploadedIds: string[] = [];
               const uploadedFiles: string[] = [];
+
               for (const file of Array.from(files)) {
+                // Validate allowed type
+                if (!allowedTypes.includes(file.type)) {
+                  toast.error(
+                    'Unsupported file. Allowed: JPG, PNG, WEBP, HEIC, MP4, MOV, WEBM'
+                  );
+                  continue;
+                }
+
+                const isImage = file.type.startsWith('image/');
+                const isVideo = file.type.startsWith('video/');
+
+                // Validate size separately
+                if (isImage && file.size > MAX_IMAGE_SIZE) {
+                  toast.error(`Image '${file.name}' must be below 5MB`);
+                  continue;
+                }
+
+                if (isVideo && file.size > MAX_VIDEO_SIZE) {
+                  toast.error(`Video '${file.name}' must be below 50MB`);
+                  continue;
+                }
+
                 try {
                   const formData = new FormData();
-                  formData.append('image', file);
-                  const response = await dispatch(
-                    uploadImage({ form_data: formData, business_id: org?.id })
-                  ).unwrap();
-                  uploadedIds.push(response.multimedia.id);
-                  uploadedFiles.push(response.multimedia.url);
+
+                  let response = null;
+                  if (isImage) {
+                    formData.append('image', file);
+                    response = await dispatch(
+                      uploadImage({ form_data: formData, business_id: org?.id })
+                    ).unwrap();
+                  } else if (isVideo) {
+                    formData.append('video', file);
+                    response = await dispatch(
+                      uploadVideo({ form_data: formData, business_id: org?.id })
+                    ).unwrap();
+                  } else {
+                  }
+
+                  if (response) {
+                    uploadedIds.push(response.multimedia.id);
+                    uploadedFiles.push(response.multimedia.url);
+                  }
                 } catch (err) {
                   toast.error(`Failed to upload ${file.name}`);
                 }
@@ -903,40 +1018,53 @@ const AddPhysicalProductForm = () => {
                 }));
 
                 setMediaFiles((prev) => [...prev, ...uploadedFiles]);
-                toast.success('Additional media uploaded');
+                toast.success('Media uploaded successfully');
               }
             }}
           />
 
-          {/* Preview */}
+          {/* PREVIEW SECTION — supports image or video */}
           {formData.details.multimedia_ids!.length > 0 && (
             <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mt-3'>
-              {formData.details.multimedia_ids!.map((id, i) => (
-                <div key={i} className='relative'>
-                  <img
-                    src={`${mediaFiles[i]}`}
-                    alt='Product media'
-                    className='w-full h-60 object-cover rounded-md border'
-                  />
-                  <button
-                    type='button'
-                    className='absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 text-xs'
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        details: {
-                          ...prev.details,
-                          multimedia_ids: prev.details.multimedia_ids!.filter(
-                            (m) => m !== id
-                          ),
-                        },
-                      }))
-                    }
-                  >
-                    <XCircleIcon className='hover:text-red-400' />
-                  </button>
-                </div>
-              ))}
+              {mediaFiles.map((fileUrl, i) => {
+                const isVideo = fileUrl.match(/\.(mp4|mov|webm)$/i);
+
+                return (
+                  <div key={i} className='relative'>
+                    {isVideo ? (
+                      <video
+                        src={fileUrl}
+                        controls
+                        className='w-full h-60 rounded-md border object-cover bg-black'
+                      />
+                    ) : (
+                      <img
+                        src={fileUrl}
+                        alt='media'
+                        className='w-full h-60 rounded-md border object-cover'
+                      />
+                    )}
+
+                    <button
+                      type='button'
+                      className='absolute top-1 right-1 bg-black/60 text-white rounded-full p-1'
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          details: {
+                            ...prev.details,
+                            multimedia_ids: prev.details.multimedia_ids!.filter(
+                              (m) => m !== prev.details.multimedia_ids![i]
+                            ),
+                          },
+                        }))
+                      }
+                    >
+                      <XCircleIcon className='hover:text-red-400' />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

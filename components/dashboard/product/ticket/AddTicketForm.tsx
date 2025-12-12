@@ -8,6 +8,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import useProductCategory from '@/hooks/page/useProductCategory';
 import {
+  CreatePhysicalProductProps,
   CreateTicketProps,
   createTicketSchema,
   OtherCurrencyFormFieldProps,
@@ -40,6 +41,8 @@ import { Globe } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import TinyMceEditor from '@/components/editor/TinyMceEditor';
 import useCurrencies from '@/hooks/page/useCurrencies';
+import AutosaveIndicator from '@/components/AutosaveIndicator';
+import { useFormLocalSave } from '@/hooks/useFormLocalSave';
 
 const DEFAULT_FORM_VALUES: CreateTicketProps = {
   title: '',
@@ -325,9 +328,12 @@ const AddTicketForm = () => {
   const { categories } = useProductCategory();
   const { org } = useSelector((state: RootState) => state.org);
 
-  const [formData, setFormData] = useState<CreateTicketProps>({
-    ...DEFAULT_FORM_VALUES,
-  });
+  const { formData, setFormData, resetForm, saveStatus } =
+    useFormLocalSave<CreateTicketProps>(
+      'draft_ticket_product',
+      DEFAULT_FORM_VALUES
+    );
+
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -518,6 +524,12 @@ const AddTicketForm = () => {
         keywords: formData.keywords ? formData.keywords : undefined,
       };
 
+      // Remove unwanted
+      delete (input as any).name;
+      delete (input as any).cover_image;
+
+      console.log(input);
+
       const { error, value } = createTicketSchema.validate(input);
       if (error) throw new Error(error.details[0].message);
 
@@ -550,6 +562,7 @@ const AddTicketForm = () => {
       }
 
       toast.success('Ticket created successfully!');
+      resetForm(); // ✨ Clears memory + resets form
       router.push(`/products/tickets`);
     } catch (error: any) {
       console.error('Submission failed:', error);
@@ -590,8 +603,10 @@ const AddTicketForm = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className='bg-white dark:bg-gray-800 rounded-md shadow p-6 space-y-6'
+      className='relative bg-white dark:bg-gray-800 rounded-md shadow p-6 space-y-6'
     >
+      <AutosaveIndicator status={saveStatus} />
+
       <div>
         <label className='block font-medium mb-1 text-gray-700 dark:text-white'>
           Event Title <span className='text-red-500'>*</span>
